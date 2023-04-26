@@ -1,0 +1,298 @@
+{% load static %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div id="custom-progress-bar" class="progress-nav-02 mb-4">
+            <div class="progress" style="height: 1px;">
+                <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+
+            <ul class="nav nav-pills progress-bar-tab custom-nav" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <span class="nav-link rounded-pill" role="tab" aria-selected="false">Step1. 변수 선택</span>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <span class="nav-link rounded-pill active" role="tab" aria-selected="true">Step2. 데이터 분할</span>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <span class="nav-link rounded-pill" role="tab" aria-selected="false">Step3. 불균형 데이터 보정</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row g-2">
+    <div class="col-xl-2 col-lg-4">
+        <div class="card card-height-100">
+            <div class="card-header">
+                <h4 class="card-title fw-semibold mb-3">데이터 분할</h4>
+
+                <div class="bg-light rounded p-2 mb-2">
+                    <p class="text-truncate mb-0">데이터 사이즈 <span class="text-muted">{{ info.count }}</span></p>
+                    <p class="text-truncate mb-0">사용 변수 개수 <span class="text-muted">{{ info.size }}</span></p>
+                    <p class="text-truncate mb-0">목표 변수 <span class="text-muted">{{ info.target }}</span></p>
+                </div>
+            </div>
+
+            <div class="cord-body">
+                <div class="p-3" data-simplebar data-simplebar-auto-hide="false" data-simplebar-track="primary" style="height: 540px;">
+                    <div class="mb-2">
+                        <div class="form-check card-radio shadow">
+                            <input id="random-split" name="split" type="radio" class="form-check-input" checked>
+                            <label class="form-check-label" for="random-split">
+                                <span class="fs-14 text-wrap">Random Split</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="form-check card-radio">
+                            <input id="k-fold-split" name="split" type="radio" class="form-check-input">
+                            <label class="form-check-label" for="k-fold-split">
+                                <span class="fs-14 text-wrap">K-fold Cross Validation</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="form-check card-radio">
+                            <input id="shuffle-split" name="split" type="radio" class="form-check-input">
+                            <label class="form-check-label" for="shuffle-split">
+                                <span class="fs-14 text-wrap">Shuffle Split</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl col-lg">
+        <div class="card card-height-100">
+            <div class="card-header">
+                <div class="d-flex">
+                    <div class="flex-grow-1">
+                        <h4 class="card-title fw-semibold mb-1" id="split-title">RANDOM SPLIT</h4>
+                        <p class="text-muted mb-0" id="explain_for_split">학습 / 테스트 경계를 임의로 생성하여 지정한 범위 내의 데이터를 무작위로 분할합니다</p>
+                    </div>
+                    <div class="d-flex flex-shrink-0 gap-2">
+                        <button type="button" class="btn btn-primary" id="btn_for_prev">이전</button>
+                        <button type="button" class="btn btn-primary" id="btn_for_next">다음</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="d-flex mb-1">
+                    <h5 class="fs-15 fw-semibold flex-grow-1">파라미터 설정</h5>
+                    <div class="flex-shrink-0">
+                        <button type="button" class="btn btn-outline-primary" id="btn_for_optimization"><i class="bx bx-category-alt"></i> 최적화</button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-3">
+                        <p class="text-muted fs-15 mb-0">평가 분할 데이터</p>
+                        <div class="ms-1">
+                            <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="right"
+                                 title="모든 데이터를 사용하여 모델을 생성하는 경우, 사용된 데이터에 과적합되는 문제가 발생하기 때문에 예측력이 떨어지는 현상이 발생할 수 있습니다. 이를 방지하기 위해 Training / Validation data로 구분하여 사용하며, Test data 로 평가합니다.">
+
+                                <!-- Button trigger modal -->
+                                <button type="button" class="btn btn-ghost-tooltip btn-sm btn-icon">
+                                    <i data-feather="info" class="icon-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="my-5">
+                        <div class="slider mb-3" id="slider-random-split" data-slider-size="md" data-rangeslider></div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="input-group" style="margin-top: 3rem;">
+                            <span class="input-group-text">학습데이터 분할비율</span>
+                            <input type="text" class="form-control" id="inputNumber" aria-label="" value="70%" pattern="^[^0]\d*">
+                            <span class="input-group-text">반복 K횟수</span>
+                            <input type="text" class="form-control" aria-label="" id="k-split" pattern="[0-9]+" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- range slider init -->
+<script src="{% static 'js/pages/data-split.init.js' %}"></script>
+<script type="text/javascript">
+    $(function() {
+        $("input[name='split']").bind("change", function() {
+            $("#k-split").val("");
+            if( $(this).attr("id") == "random-split" ) {
+                $("#split-title").text("RANDOM SPLIT");
+                $("#explain_for_split").text("학습 / 테스트 경계를 임의로 생성하여 지정한 범위 내의 데이터를 무작위로 분할합니다");
+                $("#slider-random-split").show();
+                $("#inputNumber").prop("disabled", false);
+                $("#inputNumber").val($(".noUi-tooltip").text().trim());
+                $("#k-split").prop("disabled", true);
+            } else if ( $(this).attr("id") == "k-fold-split" ) {
+                $("#split-title").text("K-FOLD CROSS VALIDATION");
+                $("#explain_for_split").text("k 갯수만큼 나누어진 데이터 세트를 k번 반복하여 k개의 분할된 데이터 세트를 얻습니다");
+                $("#slider-random-split").hide();
+                $("#inputNumber").prop("disabled", true);
+                $("#inputNumber").val("");
+                $("#k-split").prop("disabled", false);
+            } else {
+                $("#split-title").text("SHUFFLE SPLIT");
+                $("#explain_for_split").text("분할 비율로 나누어진 데이터 세트를 k번 반복하여 k개의 분할된 데이터 세트를 얻습니다");
+                $("#slider-random-split").show();
+                $("#inputNumber").prop("disabled", false);
+                $("#inputNumber").val($(".noUi-tooltip").text().trim());
+                $("#k-split").prop("disabled", false);
+            }
+        });
+
+        randomSplitSlider.noUiSlider.on("update", function() {
+            $("#inputNumber").val($(".noUi-tooltip").text().trim());
+        });
+
+        $("#inputNumber").keyup(function() {
+            var value = $(this).val();
+
+            if ( value >= 100) {
+                Swal.fire({
+                    title:'100% 이상은 지정할 수 없습니다',
+                    icon: 'warning',
+                    confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                    buttonsStyling: false
+                })
+            } else {
+                randomSplitSlider.noUiSlider.set(value);
+                $(this).val(value);
+            }
+        });
+
+        $("#k-split").keyup(function() {
+            var value = $(this).val();
+            if ( value.includes('.') ) {
+                value = value.replace('.', '');
+                Swal.fire({
+                    title:'정수만 입력 가능합니다',
+                    icon: 'warning',
+                    confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                    buttonsStyling: false
+                })
+                $("#k-split").val(value);
+            }
+        });
+
+        $("#btn_for_optimization").bind("click", function() {
+            var value = $("input[name='split']:checked").parents("div.card-radio").text().trim();
+            if ( value == "Random Split" ) {
+                randomSplitSlider.noUiSlider.set(70);
+            } else if ( value == "K-fold Cross Validation" ) {
+                $("#k-split").val(5);
+            } else {
+                randomSplitSlider.noUiSlider.set(70);
+                $("#k-split").val(5);
+            }
+        });
+
+        $("#btn_for_prev").bind("click", function() {
+            $.ajax({
+                type: 'POST',
+                url: "/preprocess/select",
+                success: function(data) {
+                    $("#preprocess-03").html("");
+                    $("#preprocess-03").html(data);
+                }
+            });
+        });
+
+        $("#btn_for_next").bind("click", function() {
+            var algorithm = $("input[name='split']:checked").parents("div.card-radio").text().trim();
+            var split_value = $("#inputNumber").val().replace("%", "");
+            var k_value = $("#k-split").val();
+
+            if ( algorithm == "Random Split" ) {
+                if ( split_value < 10 ) {
+                    Swal.fire({
+                        title:'분할 비율을 10% 이상으로 설정하세요',
+                        icon: 'warning',
+                        confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                        buttonsStyling: false
+                    })
+                    return false;
+                }
+            } else if ( algorithm == "K-fold Cross Validation" ) {
+                if ( k_value < 2 ) {
+                    Swal.fire({
+                        title:'반복 K 횟수는 2 이상이어야 합니다',
+                        icon: 'warning',
+                        confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                        buttonsStyling: false
+                    })
+                    return false;
+                }
+            } else if ( algorithm == "Shuffle Split" ) {
+                if ( split_value < 10 ) {
+                    Swal.fire({
+                        title:'분할 비율을 10% 이상으로 설정하세요',
+                        icon: 'warning',
+                        confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                        buttonsStyling: false
+                    })
+                    return false;
+                } else if ( k_value < 1 ) {
+                    Swal.fire({
+                        title:'반복 K 횟수는 1 이상이어야 합니다',
+                        icon: 'warning',
+                        confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                        buttonsStyling: false
+                    })
+                    return false;
+                }
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: "/preprocess/sampling",
+                data: {
+                    'algorithm': algorithm,
+                    'split_value': split_value,
+                    'k_value': k_value
+                },
+                success: function(data) {
+                    $("#preprocess-03").html("");
+                    $("#preprocess-03").html(data);
+                }
+            });
+        });
+
+        init();
+    });
+
+function init() {
+    sessionStorage.setItem("datasetTab", "데이터 분할");
+
+    var split_algorithm = "{{ split_algorithm }}";
+    var split_rate = {{ split_rate }};
+    var k_value = {{ k_value }};
+
+    $("input[name='split']").each(function() {
+        if ( $(this).parents("div.card-radio").text().trim() == split_algorithm ) {
+            $(this).click();
+            if ( split_algorithm == "Random Split" ) {
+                randomSplitSlider.noUiSlider.set(split_rate);
+            } else if( split_algorithm == "K-fold Cross Validation" ) {
+                $("#k-split").prop("disabled", false);
+                $("#k-split").val(k_value);
+            } else {
+                randomSplitSlider.noUiSlider.set(split_rate);
+                $("#k-split").prop("disabled", false);
+                $("#k-split").val(k_value);
+            }
+        }
+    });
+}
+</script>

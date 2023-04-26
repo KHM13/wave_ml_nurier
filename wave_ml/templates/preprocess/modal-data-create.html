@@ -1,0 +1,35 @@
+<div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title text-white" id="myModalLabel">데이터 생성</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="row g-3">
+                <div class="col-lg-12">
+                    <label for="jobtitle-field" class="form-label">프로젝트명</label>
+                    <input type="text" id="jobtitle-field" class="form-control" value="{{ project_id }}" readonly />
+                </div>
+
+                <div class="col-lg-6">
+                    <div>
+                        <label for="experience-field" class="form-label">데이터 셋 이름</label>
+                        <input type="text" id="experience-field" class="form-control" placeholder="" required />
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div>
+                        <label class="create_date">생성일</label>
+                        <input type="text" class="form-control flatpickr-input" data-provider="flatpickr" data-date-format="Y.m.d" data-default-date="today" id="create_date" placeholder="" readonly="readonly">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">취소</button>
+            <button type="button" class="btn btn-primary" id="btn_for_create">저장</button>
+        </div>
+
+    </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->
+

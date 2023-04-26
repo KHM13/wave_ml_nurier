@@ -1,0 +1,160 @@
+<div class="d-flex">
+    <h4 class="card-title fw-semibold mb-0 flex-grow-1">실행 현황</h4>
+    <div class="flex-shrink-0">
+        <ul class="nav table-accordion-tab mb-3" role="tablist">
+            <li class="nav-item waves-effect waves-light">
+                <a class="nav-link table active" data-bs-toggle="tab" href="#table-1" role="tab">테이블</a>
+            </li>
+            <li class="nav-item waves-effect waves-light">
+                <a class="nav-link accordion" data-bs-toggle="tab" href="#accordion-1" role="tab">아코디언</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Tab panes -->
+<div class="tab-content text-muted">
+    <div class="tab-pane active" id="table-1" role="tabpanel">
+        <div data-simplebar data-simplebar-auto-hide="false" data-simplebar-track="primary" style="max-height: 608px;">
+            <table class="table table-nowrap text-center mb-0 variable-table" id="table_for_table_tab">
+                <thead class="align-middle">
+                    <tr>
+                        <th scope="col" class="sticky-top text-left ps-4" style="background: white;">변수</th>
+                        {% for fs in feature_select %}
+                        <th scope="col" class="sticky-top">
+                            <div class="form-check card-radio">
+                                <input name="variableSelect" type="radio" class="form-check-input" id="fs{{ forloop.counter }}">
+                                <label class="form-check-label" for="fs{{ forloop.counter }}">
+                                    <span class="fs-14 text-wrap">{{ fs.name }}</span>
+                                </label>
+                            </div>
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-left ps-4">{{ info.size }}개</td>
+                        {% for fs in feature_select %}
+                        <td>{{ fs.size }}개</td>
+                        {% endfor %}
+                    </tr>
+                    {% for col in info.columns %}
+                    <tr>
+                        <td class="text-left ps-4">{{ col }}</td>
+                        {% for fs in feature_select %}
+                        {% if col in fs.columns %}
+                        <td>Y</td>
+                        {% else %}
+                        <td>N</td>
+                        {% endif %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="tab-pane" id="accordion-1" role="tabpanel">
+        <div data-simplebar data-simplebar-auto-hide="false" data-simplebar-track="primary" style="max-height: 608px;">
+            <div class="accordion accordion-border-box" id="default-accordion-example">
+                {% for fs in feature_select %}
+                <div class="accordion-radio">
+                    <input id="accordion{{ forloop.counter }}" name="accordion" type="radio" class="form-check-input check-icon">
+                    <label class="form-check-label" for="accordion{{ forloop.counter }}">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="accordion_head{{ forloop.counter }}">
+                                <button class="accordion-button ps-5 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion_body{{ forloop.counter }}" aria-expanded="false" aria-controls="accordion_body{{ forloop.counter }}">
+                                    <div class="d-flex align-items-center">
+                                        <div>
+                                            <h5 class="fw-semibold text-uppercase fs-13 mb-2">{{ fs.name }}     <span class="badge badge-soft-success ms-2">{{ fs.size }}/{{ info.size }}</span></h5>
+                                        </div>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="accordion_body{{ forloop.counter }}" class="accordion-collapse collapse" aria-labelledby="accordion_head{{ forloop.counter }}" data-bs-parent="#default-accordion-example">
+                                <div class="accordion-body">
+                                    <div class="custom-scrollbar" style="max-height: 300px;">
+                                        <table class="table table-bordered table-sm table-nowrap text-center mb-0">
+                                            <tbody>
+                                                <tr>
+                                                {% for col in info.columns %}
+                                                    <td>{{ col }}</td>
+                                                    {% if col in fs.columns %}
+                                                    <td>Y</td>
+                                                    {% else %}
+                                                    <td>N</td>
+                                                    {% endif %}
+                                                {% if forloop.counter|divisibleby:3 %}
+                                                </tr>
+                                                <tr>
+                                                {% endif %}
+                                                {% endfor %}
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function() {
+    $("input[name='variableSelect']").bind("click", function() {
+        var idx = $("input[name='variableSelect']:checked").index("input[name='variableSelect']") + 1;
+        $("#select_algorithm").text($(this).closest("div").text().trim());
+
+        $("#table_for_table_tab > tbody > tr").each(function(i) {
+            $(this).children("td").each(function(n) {
+                if ( n == (idx) ) {
+                    $(this).addClass("active");
+                    if ( i >= 1 ) {
+                        if ( $(this).text().trim() == "Y" ) {
+                            $("input[name='col_select']").eq(i-1).prop("checked", true);
+                        } else {
+                            $("input[name='col_select']").eq(i-1).prop("checked", false);
+                        }
+                    }
+                } else {
+                    $(this).removeClass("active");
+                }
+            });
+        });
+
+        $("#accordion" + idx).prop("checked", true);
+        $("#accordion_head" + idx).children("button").click();
+
+        all_switch_check();
+    });
+
+    $("input[name='accordion']").bind("click", function() {
+        var idx = $("input[name='accordion']:checked").index("input[name='accordion']") + 1;
+        var temp = $("#accordion_head" + idx).text().trim().split("     ");
+        $("#select_algorithm").text(temp[0]);
+
+        $("#fs" + idx).click();
+    });
+
+    init();
+});
+
+function init() {
+    var select_algorithm = "{{ select_algorithm }}";
+    if ( select_algorithm != "" ) {
+        $("input[name='variableSelect']").each(function() {
+            var algorithm = $(this).closest("div.card-radio").text().trim();
+            if ( select_algorithm == algorithm ) {
+                $(this).click();
+            }
+        });
+    }
+}
+</script>

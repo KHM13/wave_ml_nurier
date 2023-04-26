@@ -1,0 +1,38 @@
+{% load static %}
+
+<div class="card-body p-0 pb-2">
+    <div class="w-100">
+        <div id="boxplot-chart" data-colors='["--vz-primary", "--vz-datablue", "--vz-danger"]' class="apex-charts" dir="ltr">
+            <script>
+                var graphs = {{ graph | safe }};
+                Plotly.newPlot('boxplot-chart',graphs,{});
+            </script>
+        </div>
+    </div>
+</div>
+
+<div class="card-body">
+    <h5 class="card-title fw-semibold mb-3">{{ column }}</h5>
+    <div class="table-responsive table-card my-0 border-top">
+        <table class="table table-centered table-hover align-middle table-nowrap mb-0">
+            <tbody>
+                <tr>
+                    <td>Q1</td>
+                    <td class="text-end">{{ outlier.q1 }}</td>
+                </tr>
+                <tr>
+                    <td>Q3</td>
+                    <td class="text-end">{{ outlier.q3 }}</td>
+                </tr>
+                <tr>
+                    <td>Median</td>
+                    <td class="text-end">{{ outlier.median }}</td>
+                </tr>
+                <tr>
+                    <td>Outlier</td>
+                    <td class="text-end">{{ outlier.outlier }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

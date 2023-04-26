@@ -1,0 +1,237 @@
+{% extends 'template-detection.html' %}
+{% load static %}
+
+{% block title %}탐지모델 학습{% endblock %}
+
+{% block contents %}
+    <div class="page-content">
+        <div class="container-fluid">
+            <div class="row g-2">
+                <div class="col-xl-2 col-lg-3">
+                    <div class="card card-height-100">
+                        <div class="card-header">
+                            <h4 class="card-title fw-semibold mb-3">프로젝트 검색</h4>
+                            <button class="btn btn-datablue w-100" data-bs-toggle="modal" data-bs-target="#searchModal">프로젝트 검색</button>
+                        </div>
+                        <div class="card-body">
+                            <h4 class="card-title fs-13 mb-3">모델 목록</h4>
+
+                            <div data-simplebar data-simplebar-auto-hide="false" data-simplebar-track="primary">
+                                <div class="mb-2">
+                                    <div class="form-check card-radio shadow">
+                                        <input id="variable01" name="variable" type="checkbox" class="form-check-input" checked>
+                                        <label class="form-check-label" for="variable01">
+                                            <p class="fs-14 text-wrap mb-2">Random Forest Classifier</p>
+                                            <p class="text-muted fs-13 mb-0">2023.01.01 12:01:01<span class="float-end badge badge-soft-secondary">93.2</span></p>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <div class="form-check card-radio">
+                                        <input id="variable02" name="variable" type="checkbox" class="form-check-input" checked>
+                                        <label class="form-check-label" for="variable02">
+                                            <p class="fs-14 text-wrap">Decision Tree Classifier</p>
+                                            <p class="text-muted fs-13 mb-0">2023.01.01 12:01:01<span class="float-end badge badge-soft-secondary">93.2</span></p>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <div class="form-check card-radio">
+                                        <input id="variable03" name="variable" type="checkbox" class="form-check-input" checked>
+                                        <label class="form-check-label" for="variable03">
+                                            <p class="fs-14 text-wrap">Gradient Boosted Tree Classifier</p>
+                                            <p class="text-muted fs-13 mb-0">2023.01.01 12:01:01<span class="float-end badge badge-soft-secondary">93.2</span></p>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <div class="form-check card-radio">
+                                        <input id="variable04" name="variable" type="checkbox" class="form-check-input">
+                                        <label class="form-check-label" for="variable04">
+                                            <p class="fs-14 text-wrap">Multilayer Perceptron Classifier</p>
+                                            <p class="text-muted fs-13 mb-0">2023.01.01 12:01:01<span class="float-end badge badge-soft-secondary">93.2</span></p>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <div class="form-check card-radio">
+                                        <input id="variable05" name="variable" type="checkbox" class="form-check-input">
+                                        <label class="form-check-label" for="variable05">
+                                            <p class="fs-14 text-wrap">Logistic Regression</p>
+                                            <p class="text-muted fs-13 mb-0">2023.01.01 12:01:01<span class="float-end badge badge-soft-secondary">93.2</span></p>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-7 col-lg">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h4 class="fs-16 fw-semibold mb-0">인터넷뱅킹 탐지모델 프로젝트_20231103</h4>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <button class="btn btn-primary btn-practice">실행 적용</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body bg-light">
+                            <div class="timeline">
+                                <div class="timeline-item right">
+                                    <i class="icon ri-stack-line"></i>
+                                    <div class="content">
+                                        <h5 class="fw-semibold text-datablue">Age</h5>
+                                        <p class="mb-0">이상치 처리>이상치 제거</p>
+                                    </div>
+                                </div>
+
+                                <div class="timeline-item left">
+                                    <i class="icon ri-filter-2-line"></i>
+                                    <div class="content">
+                                        <h5 class="fw-semibold text-datablue">Fbs</h5>
+                                        <p class="mb-0">데이터 유형 변경 > 숫자형(실수)</p>
+                                    </div>
+                                </div>
+
+                                <div class="timeline-item right">
+                                    <i class="icon ri-stack-line"></i>
+                                    <div class="content">
+                                        <h5 class="fw-semibold text-datablue">Trtbps</h5>
+                                        <p class="mb-0">결측치 처리>결측치 제거</p>
+                                    </div>
+                                </div>
+
+                                <div class="timeline-item left">
+                                    <i class="icon ri-filter-2-line"></i>
+                                    <div class="content">
+                                        <h5 class="fw-semibold text-datablue">oldpeak</h5>
+                                        <p class="mb-0">데이터 정규화 > RobustScaler</p>
+                                    </div>
+                                </div>
+
+                                <div class="timeline-item right">
+                                    <i class="icon mdi mdi-sitemap-outline"></i>
+                                    <div class="content">
+                                        <h5 class="fw-semibold text-datablue">데이터 분할</h5>
+                                        <p class="mb-0">k-fold cross validation 7 : 3</p>
+                                    </div>
+                                </div>
+                                <div class="timeline-item left">
+                                    <i class="icon ri-flow-chart"></i>
+                                    <div class="content">
+                                        <h5 class="fw-semibold text-datablue">불균형 보정</h5>
+                                        <p class="mb-0">Random Over Sampling</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-lg-3">
+                    <div class="card card-height-100">
+                        <div class="card-header">
+                            <h4 class="card-title fw-semibold mb-0">Spark 실행 내역</h4>
+                        </div>
+
+                        <div class="card-body px-0">
+                            <div class="spark-timeline">
+                                <div class="spark-item complete">
+                                    <div class="spark-content">
+                                        <h6 class="spark-title">데이터 전처리</h6>
+                                        <p class="mb-1">변수 전처리 > 데이터 정규화</p>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress animated-progress flex-grow-1">
+                                                <div class="progress-bar bg-datablue" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <div class="flex-shrink-0 text-muted fs-12 ms-2">100%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="spark-item complete">
+                                    <div class="spark-content">
+                                        <h6 class="spark-title">데이터 전처리</h6>
+                                        <p class="mb-1">데이터셋 전처리 > 변수 선택법</p>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress animated-progress flex-grow-1">
+                                                <div class="progress-bar bg-datablue" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <div class="flex-shrink-0 text-muted fs-12 ms-2">100%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="spark-item active">
+                                    <div class="spark-content">
+                                        <h6 class="spark-title">데이터 전처리</h6>
+                                        <p class="mb-1">데이터셋 전처리 > 데이터 분할</p>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress animated-progress flex-grow-1">
+                                                <div class="progress-bar bg-datablue" role="progressbar" style="width: 56%" aria-valuenow="56" aria-valuemin="0" aria-valuemax="56"></div>
+                                            </div>
+                                            <div class="flex-shrink-0 text-muted fs-12 ms-2">56%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="spark-item">
+                                    <div class="spark-content">
+                                        <h6 class="spark-title">데이터 전처리</h6>
+                                        <p class="mb-1">데이터셋 전처리 > 불균형 보정</p>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress animated-progress flex-grow-1">
+                                                <div class="progress-bar bg-datablue" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="0"></div>
+                                            </div>
+                                            <div class="flex-shrink-0 text-muted fs-12 ms-2">0%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- container-fluid -->
+    </div>
+    <!-- End Page-content -->
+
+    <script type="text/javascript">
+        // 닫기버튼
+        var btnClose = document.querySelectorAll('.btn-practice');
+        btnClose.forEach(function(e) {
+            e.addEventListener("click", function () {
+                Swal.fire({
+                    title: '실제 모델 생성은 자원과 시간이 많이 소요됩니다.',
+                    text: '생성하시겠습니까?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                    cancelButtonClass: 'btn btn-light w-xs me-2 mt-2',
+                    confirmButtonText: '생성',
+                    cancelButtonText: '취소',
+                    reverseButtons: true, // 버튼 순서 거꾸로
+                    //confirmButtonColor: '#3085d6',  confrim 버튼 색깔 지정
+                    //cancelButtonColor: '#d33', cancel 버튼 색깔 지정
+                    buttonsStyling: false,
+                    showCloseButton: true
+                })
+            });
+        });
+
+        // 검색팝업 클릭시
+        var projectSearchList = document.querySelectorAll('.project-search-list');
+        for(i=0; i<projectSearchList.length; i++) {
+            projectSearchList[i].addEventListener('click', function(e){
+                for(j=0; j<projectSearchList.length; j++) {
+                    projectSearchList[j].classList.remove('active');
+                }
+                this.classList.add('active');
+            })
+        }
+    </script>
+
+{% endblock %}

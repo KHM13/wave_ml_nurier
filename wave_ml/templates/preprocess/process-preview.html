@@ -1,0 +1,196 @@
+{% load static %}
+
+<div class="col-xl-2" id="div_for_dataset_raw">
+    <div class="card card-height-100">
+        <div class="card-header align-items-center">
+            <h4 class="card-title fw-semibold mb-0">데이터 상세</h4>
+        </div>
+
+        <div class="card-body">
+            <div class="mx-n3">
+                <div data-simplebar data-simplebar-auto-hide="false" data-simplebar-track="primary" style="height: 850px; margin: 3%;">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-nowrap">
+                            <colgroup>
+                                <col width="20%">
+                                <col width="80%">
+                            </colgroup>
+                            <tbody>
+                            {% for value in detail %}
+                                <tr>
+                                    <th scope="row">{{ forloop.counter }}</th>
+                                    <td class="text-truncate">{{ value }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-xl-7" id="div_for_data_graph">
+    <div class="card card-height-100">
+        <div class="card-header align-items-center">
+            <h4 class="card-title fw-semibold mb-0">데이터 분포</h4>
+        </div>
+
+        <div class="card-body">
+            <ul class="nav nav-tabs nav-tabs-custom nav-datablue" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#statistics" role="tab" aria-selected="true">
+                        데이터통계
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" data-bs-toggle="tab" href="#boxplot" role="tab" aria-selected="false" tabindex="-1">
+                        사분위/중앙값
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" data-bs-toggle="tab" href="#target-corr" role="tab" aria-selected="false" tabindex="-1">
+                        목표변수와의 분포
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Tab panes -->
+            <div class="tab-content border border-top-0 p-4">
+                <div class="tab-pane active show" id="statistics" role="tabpanel">
+                    <div class="card-header p-0 border-0 bg-soft-light">
+                        <div class="row g-0 text-center">
+                            <div class="col-6 col-sm-4">
+                                <div class="p-3 border border-dashed border-start-0">
+                                    <h5 class="mb-1"><span class="counter-value" data-target="7585">{{ desc.count }}</span></h5>
+                                    <p class="text-muted mb-0">COUNT</p>
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-4">
+                                <div class="p-3 border border-dashed border-start-0">
+                                    <h5 class="mb-1"><span class="counter-value" data-target="22.89">{{ desc.missing }}</span></h5>
+                                    <p class="text-muted mb-0">MISSING VALUE</p>
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-4">
+                                <div class="p-3 border border-dashed border-start-0">
+                                    <h5 class="mb-1"><span class="counter-value" data-target="367">{{ desc.unique }}</span></h5>
+                                    <p class="text-muted mb-0">UNIGUE VALUE</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-0 pb-2">
+                        <div class="w-100">
+                            <div id="customer_impression_charts" data-colors='["--vz-primary", "--vz-datablue", "--vz-danger"]' class="apex-charts" dir="ltr">
+                                <script>
+                                    var main_graph = {{ main_graph | safe }};
+                                    Plotly.newPlot('customer_impression_charts',main_graph,{});
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <h5 class="card-title fw-semibold mb-3">{{ column }}</h5>
+                        <div class="table-responsive table-card my-0 border-top">
+                            <table class="table table-centered table-hover align-middle table-nowrap mb-0">
+                                <tbody>
+                                {% if desc.mean %}
+                                    <tr>
+                                        <td>AVERAGE</td>
+                                        <td class="text-end">{{ desc.mean }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>MIN</td>
+                                        <td class="text-end">{{ desc.min }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>MAX</td>
+                                        <td class="text-end">{{ desc.max }}</td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td>TOP</td>
+                                        <td class="text-end">{{ desc.top }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>FREQ</td>
+                                        <td class="text-end">{{ desc.freq }}</td>
+                                    </tr>
+                                {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="boxplot" role="tabpanel">
+                    <div class="card-body p-0 pb-2">
+                        <div class="w-100">
+                            <div id="boxplot-chart" data-colors='["--vz-primary", "--vz-datablue", "--vz-danger"]' class="apex-charts" dir="ltr">
+                                <script>
+                                    var box_graph = {{ box_graph | safe }};
+                                    Plotly.newPlot('boxplot-chart',box_graph,{});
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <h5 class="card-title fw-semibold mb-3">{{ column }}</h5>
+                        <div class="table-responsive table-card my-0 border-top">
+                            <table class="table table-centered table-hover align-middle table-nowrap mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td>Q1</td>
+                                        <td class="text-end">{{ outlier.q1 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Q3</td>
+                                        <td class="text-end">{{ outlier.q3 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Median</td>
+                                        <td class="text-end">{{ outlier.median }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Outlier</td>
+                                        <td class="text-end">{{ outlier.outlier }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="target-corr" role="tabpanel">
+                    <div class="card-body p-0 pb-2">
+                        <div class="w-100">
+                            <div id="correlation-chart" data-colors='["--vz-primary", "--vz-datablue", "--vz-danger"]' class="apex-charts" dir="ltr">
+                                <script>
+                                    var corr_graph = {{ corr_graph | safe }};
+                                    Plotly.newPlot('correlation-chart',corr_graph,{});
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <h5 class="card-title fw-semibold mb-3">{{ column }}</h5>
+                        <div class="table-responsive table-card my-0 border-top">
+                            <table class="table table-centered table-hover align-middle table-nowrap mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td>최빈값</td>
+                                        <td class="text-end">{{ freq }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

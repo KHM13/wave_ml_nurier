@@ -1,0 +1,285 @@
+{% load static %}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card position-relative mt-n4 mx-n4">
+            <div class="data-create-bg">
+                <div class="card-body pb-0 px-4">
+                    <div class="row g-4 mb-3">
+                        <div class="col-auto">
+                            <div class="avatar-lg">
+                                <img src="{% static '/images/users/avatar-1.jpg' %}" alt="user-img" class="img-thumbnail rounded-circle" />
+                            </div>
+                        </div>
+                        <!--end col-->
+                        <div class="col">
+                            <div class="p-2">
+                                <h3 class="mb-1">은행 Project 1</h3>
+                                <p class="">금융&middot;은행</p>
+                                <div class="hstack gap-1">
+                                    <div class="me-2"><i class="bx bx-user me-1 fs-16 align-middle"></i>유재석 / 총괄</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--end col-->
+                        <div class="col-12 col-xl-3 order-last order-lg-0">
+                            <div class="row text text-center">
+                                <div class="col-4">
+                                    <div class="p-2">
+                                        <h4 class="mb-1">{{ data_info.count }}</h4>
+                                        <p class="fs-14 mb-0">데이터개수</p>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-2">
+                                        <h4 class="mb-1">{{ process_size }}</h4>
+                                        <p class="fs-14 mb-0">작업완료수</p>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-2">
+                                        <h4 class="mb-1">{{ dataset_size }}</h4>
+                                        <p class="fs-14 mb-0">데이터셋수</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <ul class="nav nav-tabs-custom border-bottom-0" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active fw-semibold" data-bs-toggle="tab" href="#project-overview" role="tab">
+                                상세
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold" data-bs-toggle="tab" href="#project-documents" role="tab">
+                                데이터셋
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="position-absolute bottom-0 end-0 p-3">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#dataCreateModal"><i class="ri-add-line align-bottom me-1"></i> 데이터 생성</button>
+                    </div>
+                </div>
+                <!-- end card body -->
+            </div>
+        </div>
+        <!-- end card -->
+    </div>
+    <!-- end col -->
+</div>
+<!-- end row -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="tab-content text-muted">
+            <div class="tab-pane fade show active" id="project-overview" role="tabpanel">
+                <div class="row">
+                    <div class="col-xxl-12">
+                        <div class="card card-height-100">
+                            <div class="card-body">
+                                <h5 class="card-title fw-semibold mb-3">신규 학습데이터 정보</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered text-center align-middle table-nowrap mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th scope="col" colspan="2">변수 전처리</th>
+                                                <th scope="col" colspan="3">데이터셋 전처리</th>
+                                            </tr>
+                                            <tr>
+                                                <th scope="col">데이터 개수</th>
+                                                <th scope="col">작업완료 개수</th>
+                                                <th scope="col">변수선택</th>
+                                                <th scope="col">데이터 분할</th>
+                                                <th scope="col">불균형 보정</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>{{ data_info.count }}</td>
+                                                <td>{{ process_size }}</td>
+                                                <td>{{ data_info.size }}</td>
+                                                <td>{{ sampling_models.split_rate }}% / {{ sampling_models.k_value }} Step ( {{ sampling_models.split_algorithm }} )</td>
+                                                <td>{{ sampling_models.sampling_algorithm }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xxl-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title fw-semibold">기존 데이터셋</h5>
+                                <!-- project-swiper -->
+                                <div class="swiper data-swiper mt-n4">
+                                    <div class="d-flex justify-content-end gap-2 mb-4">
+                                        <div class="slider-button-prev">
+                                            <div class="swiper-arrow fs-18 rounded px-1">
+                                                <i class="ri-arrow-left-s-line"></i>
+                                            </div>
+                                        </div>
+                                        <div class="slider-button-next">
+                                            <div class="swiper-arrow fs-18 rounded px-1">
+                                                <i class="ri-arrow-right-s-line"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="swiper-wrapper">
+                                        {% if list_models %}
+                                        {% for list in list_models %}
+                                        <div class="swiper-slide">
+                                            <div class="card profile-project-card shadow-none mb-0">
+                                                <div class="card-body p-4">
+                                                    <div class="d-flex">
+                                                        <div class="flex-grow-1 text-muted overflow-hidden">
+                                                            <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">{{ list.project_id }}</a></h5>
+                                                            <p class="text-muted text-truncate mb-0">변수 개수 : <span class="fw-semibold text-dark">{{ list.column_size }}</span></p>
+                                                            <p class="text-muted text-truncate mb-0">데이터 분할 : <span class="fw-semibold text-dark">{{ list.split_rate }}% / {{ list.k_value }} Step ( {{ list.split_algorithm }} )</span></p>
+                                                            <p class="text-muted text-truncate mb-0">불균형 보정 : <span class="fw-semibold text-dark">{{ list.sampling_algorithm }}</span></p>
+                                                        </div>
+                                                        <!-- <div class="flex-shrink-0 ms-2">
+                                                            <div class="badge badge-soft-warning fs-10"> Best</div>
+                                                        </div> -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                        {% else %}
+                                        <div class="swiper-slide">
+                                            <div class="card profile-project-card shadow-none mb-0">
+                                                <div class="card-body p-4">
+                                                    <div class="d-flex">
+                                                        <div class="flex-grow-1 text-muted overflow-hidden">
+                                                            <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">데이터셋이 존재하지 않습니다.</a></h5>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- end card body -->
+                        </div><!-- end card -->
+                    </div>
+                </div>
+            </div>
+            <!-- end tab pane -->
+            <div class="tab-pane fade" id="project-documents" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            {% for list in list_models %}
+                            <div class="col-xxl-4 col-sm-6">
+                                <div class="card profile-project-card shadow-none">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex">
+                                            <div class="flex-grow-1 text-muted overflow-hidden">
+                                                <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">{{ list.project_id }}</a></h5>
+                                                <p class="text-muted text-truncate mb-0">변수 개수 : <span class="fw-semibold text-dark">{{ list.column_size }}</span></p>
+                                                <p class="text-muted text-truncate mb-0">데이터 분할 : <span class="fw-semibold text-dark">{{ list.split_rate }}% / {{ list.k_value }} Step ( {{ list.split_algorithm }} )</span></p>
+                                                <p class="text-muted text-truncate mb-0">불균형 보정 : <span class="fw-semibold text-dark">{{ list.sampling_algorithm }}</span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+
+                            <div class="col-lg-12">
+                                <div class="mt-4">
+                                    <ul class="pagination pagination-separated justify-content-center mb-0">
+                                        <li class="page-item">
+                                            <a href="javascript:go_prev();" class="page-link"><i class="mdi mdi-chevron-left"></i></a>
+                                        </li>
+                                        {% for plinks in page_links %}
+                                            {{ plinks | safe }}
+                                        {% endfor %}
+                                        <li class="page-item">
+                                            <a href="javascript:go_next();" class="page-link"><i class="mdi mdi-chevron-right"></i></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!--end row-->
+                    </div>
+                    <!--end card-body-->
+                </div>
+                <!--end card-->
+            </div>
+            <!-- end tab pane -->
+        </div>
+    </div>
+    <!-- end col -->
+</div>
+
+<!-- profile init js -->
+<script src="{% static 'js/pages/data-create.init.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    init();
+    $("#project_id").val("{{ project_id }}");
+});
+
+function init() {
+    var current_page = $("li.page-item.active").text().trim();
+    var last_page = $("li.page-item").eq(-2).text().trim();
+
+    if ( current_page <= 1 ) {
+        $("li.page-item").first().addClass("disabled");
+        $("li.page-item").last().removeClass("disabled");
+    } else if ( current_page >= last_page ) {
+        $("li.page-item").last().addClass("disabled");
+        $("li.page-item").first().removeClass("disabled");
+    } else {
+        $("li.page-item").last().removeClass("disabled");
+        $("li.page-item").first().removeClass("disabled");
+    }
+}
+
+function go_page(page_num) {
+    $.ajax({
+        type: 'POST',
+        url: '/preprocess/dataset_list',
+        data: {
+            'page_num': page_num
+        },
+        success: function(data) {
+            $("#project-documents").html("");
+            $("#project-documents").html(data);
+        },
+        error: function(data) {
+            console.log("paginator error");
+        }
+    });
+}
+
+function go_prev() {
+    var page_num = $("li.page-item.active").text().trim();
+    if (page_num <= 1) {
+        return false;
+    } else {
+        go_page(Number(page_num)- 1);
+    }
+}
+
+function go_next() {
+    var last_page = $("li.page-item").eq(-2).text().trim();
+    var page_num = $("li.page-item.active").text().trim();
+    if (page_num >= last_page) {
+        return false;
+    } else {
+        go_page(Number(page_num) + 1);
+    }
+}
+
+</script>

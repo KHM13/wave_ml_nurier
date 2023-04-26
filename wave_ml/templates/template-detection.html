@@ -1,0 +1,344 @@
+{% load static %}
+<!doctype html>
+<html lang="ko" data-layout="vertical" data-sidebar="dark" data-sidebar-size="sm-hover" data-sidebar-image="none" data-preloader="disable" data-topbar="light" data-layout-style="default" data-layout-mode="light" data-layout-width="fluid" data-layout-position="fixed">
+
+<head>
+    <meta charset="utf-8" />
+    <title>{% block title %}{% endblock %} | WAVE&middot;ML</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
+    <meta content="Themesbrand" name="author" />
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
+
+    <!--Swiper slider css-->
+    <link href="{% static 'libs/swiper/swiper-bundle.min.css' %}" rel="stylesheet" type="text/css" />
+
+    <!-- nouisliderribute css -->
+    <link rel="stylesheet" href="{% static 'libs/nouislider/nouislider.min.css' %}">
+
+    <!-- Sweet Alert css-->
+    <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+
+    <!-- Layout config Js -->
+    <script src="{% static 'js/layout.js' %}"></script>
+    <!-- Bootstrap Css -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- Icons Css -->
+    <link href="{% static 'css/icons.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- App Css-->
+    <link href="{% static 'css/app.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- custom Css-->
+    <link href="{% static 'css/custom.min.css' %}" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    <!-- Begin page -->
+    <div id="layout-wrapper">
+        <header id="page-topbar">
+            <div class="layout-width">
+                <div class="navbar-header">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center flex-wrap">
+                            <button type="button" class="btn btn-sm px-3 fs-16 header-item vertical-menu-btn topnav-hamburger" id="topnav-hamburger-icon">
+                                <span class="hamburger-icon">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </span>
+                            </button>
+
+                            <h3 class="mb-0">탐지모델 학습</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        {% include 'navigator.html' %}
+
+        <!-- Vertical Overlay-->
+        <div class="vertical-overlay"></div>
+
+        <!-- ============================================================== -->
+        <!-- Start right Content here -->
+        <!-- ============================================================== -->
+        <div class="main-content">
+            {% block contents %}
+            {% endblock %}
+
+            {% include 'footer.html' %}
+        </div>
+        <!-- end main content -->
+
+        <!-- Modals -->
+        <div id="searchModal" class="modal fade" tabindex="-1" aria-labelledby="searchModalLabel" style="display: none;" aria-modal="true" role="dialog">
+            <!-- <div class="modal-dialog modal-dialog-centered modal-lg"> -->
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-white" id="searchModalLabel">프로젝트 검색</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-lg-12">
+                                <label for="project-name" class="form-label">프로젝트명</label>
+                                <div class="d-flex">
+                                    <div class="flex-grow-1">
+                                        <input type="search" id="project-name" class="form-control">
+                                    </div>
+                                    <div class="flex-shrink-0 ms-2">
+                                        <button class="btn btn-primary">검색</button>
+                                    </div>
+                                </div>
+                                <!-- <div class="input-group">
+                                    <input type="search" id="project-name" class="form-control">
+                                    <button class="btn btn-primary">검색</button>
+                                </div> -->
+                            </div>
+                        </div>
+
+                        <div class="accordion accordion-flush accordion-search" id="accordionFlushExample">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="flush-headingOne">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                                        상세검색
+                                    </button>
+                                </h2>
+                                <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne"
+                                    data-bs-parent="#accordionFlushExample">
+                                    <div class="accordion-body">
+                                        <div class="row g-3">
+                                            <div class="col-lg-6">
+                                                <label for="" class="form-label">대분류</label>
+                                                <select class="form-select" id="" required>
+                                                    <option selected="">대분류를 선택하세요</option>
+                                                    <option value="">Part Time</option>
+                                                    <option value="">Freelance</option>
+                                                    <option value="">Intership</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <label for="" class="form-label">소분류</label>
+                                                <select class="form-select" id="" required>
+                                                    <option selected="">소분류를 선택하세요</option>
+                                                    <option value="">Part Time</option>
+                                                    <option value="">Freelance</option>
+                                                    <option value="">Intership</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-lg-12">
+                                                <label class="">등록일시</label>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <input type="text" class="form-control flatpickr-input" data-provider="flatpickr" data-date-format="Y.m.d" readonly="readonly">
+                                                    <input type="text" class="form-control" data-provider="timepickr" data-time-seconds="true">
+                                                    <span> ~ </span>
+                                                    <input type="text" class="form-control flatpickr-input" data-provider="flatpickr" data-date-format="Y.m.d" readonly="readonly">
+                                                    <input type="text" class="form-control" data-provider="timepickr" data-time-seconds="true">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 mt-5">
+                                <!-- project-list-swiper -->
+                                <div class="swiper list-swiper mt-n4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1">
+                                            <h5 class="fs-13">프로젝트 목록</h5>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <div class="d-flex justify-content-end gap-2 mb-2">
+                                                <div class="slider-button-prev">
+                                                    <div class="swiper-arrow fs-18 rounded px-1">
+                                                        <i class="ri-arrow-left-s-line"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="slider-button-next">
+                                                    <div class="swiper-arrow fs-18 rounded px-1">
+                                                        <i class="ri-arrow-right-s-line"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="swiper-wrapper">
+                                        <div class="swiper-slide">
+                                            <a href="javascript:void(0)" class="project-search-list active">
+                                                <div class="card profile-project-card shadow-none mb-0">
+                                                    <div class="card-body p-4">
+                                                        <div class="d-flex">
+                                                            <div class="flex-grow-1 text-muted overflow-hidden">
+                                                                <h5 class="fs-14 fw-semibold text-truncate text-dark">Project 1</h5>
+                                                                <p class="text-muted text-truncate mb-0">채널 : <span class="fw-semibold text-dark">인터넷 뱅킹</span></p>
+                                                                <p class="text-muted text-truncate mb-0">Best Accuracy : <span class="fw-semibold text-dark">93.8</span></p>
+                                                                <p class="text-muted text-truncate mb-0">Best Recall : <span class="fw-semibold text-dark">93.1</span></p>
+                                                            </div>
+                                                            <!-- <div class="flex-shrink-0 ms-2">
+                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
+                                                            </div> -->
+                                                        </div>
+                                                    </div>
+                                                    <!-- end card body -->
+                                                </div>
+                                                <!-- end card -->
+                                            </a>
+                                        </div>
+                                        <!-- end slide item -->
+                                        <div class="swiper-slide">
+                                            <a href="javascript:void(0)" class="project-search-list">
+                                                <div class="card profile-project-card shadow-none mb-0">
+                                                    <div class="card-body p-4">
+                                                        <div class="d-flex">
+                                                            <div class="flex-grow-1 text-muted overflow-hidden">
+                                                                <h5 class="fs-14 fw-semibold text-truncate text-dark">Project 2</h5>
+                                                                <p class="text-muted text-truncate mb-0">채널 : <span class="fw-semibold text-dark">스마트뱅킹</span></p>
+                                                                <p class="text-muted text-truncate mb-0">Best Accuracy : <span class="fw-semibold text-dark">93.2</span></p>
+                                                                <p class="text-muted text-truncate mb-0">Best Recall : <span class="fw-semibold text-dark">92.7</span></p>
+                                                            </div>
+                                                            <!-- <div class="flex-shrink-0 ms-2">
+                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
+                                                            </div> -->
+                                                        </div>
+                                                    </div>
+                                                    <!-- end card body -->
+                                                </div>
+                                                <!-- end card -->
+                                            </a>
+                                        </div>
+                                        <!-- end slide item -->
+                                        <div class="swiper-slide">
+                                            <a href="javascript:void(0)" class="project-search-list">
+                                                <div class="card profile-project-card shadow-none mb-0">
+                                                    <div class="card-body p-4">
+                                                        <div class="d-flex">
+                                                            <div class="flex-grow-1 text-muted overflow-hidden">
+                                                                <h5 class="fs-14 fw-semibold text-truncate text-dark">Project 3</h5>
+                                                                <p class="text-muted text-truncate mb-0">채널 : <span class="fw-semibold text-dark">인터넷 뱅킹</span></p>
+                                                                <p class="text-muted text-truncate mb-0">Best Accuracy : <span class="fw-semibold text-dark">91.4</span></p>
+                                                                <p class="text-muted text-truncate mb-0">Best Recall : <span class="fw-semibold text-dark">91.3</span></p>
+                                                            </div>
+                                                            <!-- <div class="flex-shrink-0 ms-2">
+                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
+                                                            </div> -->
+                                                        </div>
+                                                    </div>
+                                                    <!-- end card body -->
+                                                </div>
+                                                <!-- end card -->
+                                            </a>
+                                        </div>
+                                        <!-- end slide item -->
+                                        <div class="swiper-slide">
+                                            <a href="javascript:void(0)" class="project-search-list">
+                                                <div class="card profile-project-card shadow-none mb-0">
+                                                    <div class="card-body p-4">
+                                                        <div class="d-flex">
+                                                            <div class="flex-grow-1 text-muted overflow-hidden">
+                                                                <h5 class="fs-14 fw-semibold text-truncate text-dark">Project 4</h5>
+                                                                <p class="text-muted text-truncate mb-0">채널 : <span class="fw-semibold text-dark">스마트뱅킹</span></p>
+                                                                <p class="text-muted text-truncate mb-0">Best Accuracy : <span class="fw-semibold text-dark">91.3</span></p>
+                                                                <p class="text-muted text-truncate mb-0">Best Recall : <span class="fw-semibold text-dark">91.3</span></p>
+                                                            </div>
+                                                            <!-- <div class="flex-shrink-0 ms-2">
+                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
+                                                            </div> -->
+                                                        </div>
+                                                    </div>
+                                                    <!-- end card body -->
+                                                </div>
+                                                <!-- end card -->
+                                            </a>
+                                        </div>
+                                        <!-- end slide item -->
+                                        <div class="swiper-slide">
+                                            <a href="javascript:void(0)" class="project-search-list">
+                                                <div class="card profile-project-card shadow-none mb-0">
+                                                    <div class="card-body p-4">
+                                                        <div class="d-flex">
+                                                            <div class="flex-grow-1 text-muted overflow-hidden">
+                                                                <h5 class="fs-14 fw-semibold text-truncate text-dark">Project 5</h5>
+                                                                <p class="text-muted text-truncate mb-0">채널 : <span class="fw-semibold text-dark">스마트뱅킹</span></p>
+                                                                <p class="text-muted text-truncate mb-0">Best Accuracy : <span class="fw-semibold text-dark">91.3</span></p>
+                                                                <p class="text-muted text-truncate mb-0">Best Recall : <span class="fw-semibold text-dark">91.3</span></p>
+                                                            </div>
+                                                            <!-- <div class="flex-shrink-0 ms-2">
+                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
+                                                            </div> -->
+                                                        </div>
+                                                    </div>
+                                                    <!-- end card body -->
+                                                </div>
+                                                <!-- end card -->
+                                            </a>
+                                        </div>
+                                        <!-- end slide item -->
+                                        <div class="swiper-slide">
+                                            <a href="javascript:void(0)" class="project-search-list">
+                                                <div class="card profile-project-card shadow-none mb-0">
+                                                    <div class="card-body p-4">
+                                                        <div class="d-flex">
+                                                            <div class="flex-grow-1 text-muted overflow-hidden">
+                                                                <h5 class="fs-14 fw-semibold text-truncate text-dark">Project 6</h5>
+                                                                <p class="text-muted text-truncate mb-0">채널 : <span class="fw-semibold text-dark">스마트뱅킹</span></p>
+                                                                <p class="text-muted text-truncate mb-0">Best Accuracy : <span class="fw-semibold text-dark">91.3</span></p>
+                                                                <p class="text-muted text-truncate mb-0">Best Recall : <span class="fw-semibold text-dark">91.3</span></p>
+                                                            </div>
+                                                            <!-- <div class="flex-shrink-0 ms-2">
+                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
+                                                            </div> -->
+                                                        </div>
+                                                    </div>
+                                                    <!-- end card body -->
+                                                </div>
+                                                <!-- end card -->
+                                            </a>
+                                        </div>
+                                        <!-- end slide item -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary">선택</button>
+                    </div>
+
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+    </div>
+    <!-- END layout-wrapper -->
+
+    <!-- JAVASCRIPT -->
+    <script src="{% static 'libs/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'libs/simplebar/simplebar.min.js' %}"></script>
+    <script src="{% static 'libs/node-waves/waves.min.js' %}"></script>
+    <script src="{% static 'libs/feather-icons/feather.min.js' %}"></script>
+    <script src="{% static 'js/pages/plugins/lord-icon-2.1.0.js' %}"></script>
+    <script src="{% static 'js/plugins.js' %}"></script>
+
+    <!-- Sweet Alerts js -->
+    <script src="{% static 'libs/sweetalert2/sweetalert2.min.js' %}"></script>
+
+    <!--Swiper slider js-->
+    <script src="{% static 'libs/swiper/swiper-bundle.min.js' %}"></script>
+
+    <!-- profile init js -->
+    <script src="{% static 'js/pages/project-search.init.js' %}"></script>
+    <!-- App js -->
+    <script src="{% static 'js/app.js' %}"></script>
+
+</body>
+</html>

@@ -1,0 +1,183 @@
+{% extends 'template-preprocess.html' %}
+{% load custom_filters %}
+{% load static %}
+
+{% block title %}데이터 전처리{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container-fluid">
+        <div class="tab-content">
+            <div class="tab-pane fade" id="preprocess-01" role="tabpanel" aria-labelledby="preprocess-01">
+                <div class="row">
+                    <div class="col">
+                        <div class="card card-height-100">
+                            <div class="card-header align-items-center">
+                                <h4 class="card-title fw-semibold mb-0">데이터 확인</h4>
+                            </div>
+
+                            <div class="card-body">
+                                <ul class="nav nav-tabs nav-tabs-custom nav-datablue" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link active" data-bs-toggle="tab" href="#explore" role="tab" aria-selected="true">
+                                            데이터 탐색
+                                        </a>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link" data-bs-toggle="tab" href="#correlation" role="tab" aria-selected="false" tabindex="-1">
+                                            상관관계 분석
+                                        </a>
+                                    </li>
+                                </ul>
+
+                                <!-- Tab panes -->
+                                <div class="tab-content border border-top-0">
+                                    <div class="tab-pane active show" id="explore" role="tabpanel">
+                                        <div class="overflow-auto" data-simplebar data-simplebar-auto-hide="false" data-simplebar-track="primary" style="max-height: 700px;">
+                                            <table class="table table-nowrap mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">변수명</th>
+                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">개수</th>
+                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">평균값</th>
+                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">표준편차</th>
+                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">최소값</th>
+                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">최대값</th>
+                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">유일값</th>
+                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">결측값</th>
+                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">변수유형</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for val in df_info.index %}
+                                                    <tr>
+                                                        <td>{{ val }}</td>
+                                                        {% with df_info.data|get_value_from_list:forloop.counter0 as value %}
+                                                        {% for v in value %}
+                                                        <td>{{ v }}</td>
+                                                        {% endfor %}
+                                                        {% endwith %}
+                                                        <td></td>
+                                                    </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane" id="correlation" role="tabpanel">
+                                        <div class="row">
+                                            <div class="col-xl-12">
+                                                 <div id="color_heatmap" data-colors='["--vz-info", "--vz-success", "--vz-primary", "--vz-warning"]' class="apex-charts" dir="ltr">
+                                                    <script>
+                                                        var graphs = {{ graph | safe }};
+                                                        Plotly.newPlot('color_heatmap',graphs,{});
+                                                    </script>
+                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- end tab pane -->
+            <div class="tab-pane fade" id="preprocess-02" role="tabpanel" aria-labelledby="preprocess-02">
+                변수 전처리
+            </div>
+            <!-- end tab pane -->
+
+            <div class="tab-pane fade" id="preprocess-03" role="tabpanel" aria-labelledby="preprocess-03">
+                데이터셋 전처리
+            </div>
+            <!-- end tab pane -->
+
+            <div class="tab-pane fade" id="preprocess-04" role="tabpanel" aria-labelledby="preprocess-04">
+                학습 데이터 생성
+            </div>
+            <!-- end tab pane -->
+        </div>
+        <!-- end tab content -->
+    </div>
+    <!-- container-fluid -->
+</div>
+<!-- End Page-content -->
+
+<!-- Dashboard init -->
+<script src="{% static 'js/pages/dashboard-analytics.init.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    data_reload();
+});
+
+function tab_progress(tabs) {
+console.log(tabs);
+   if ( tabs == '변수 전처리' ) {
+        var select_column = "";
+        if( $("#select_column") != "undefined" ) {
+            select_column = $("#select_column").val();
+        }
+        $.ajax({
+            type: 'POST',
+            url: '/preprocess/process',
+            data: {
+                'select_column': select_column
+            },
+            success: function(data) {
+                $("#preprocess-02").html("");
+                $("#preprocess-02").html(data);
+                sessionStorage.setItem("processTab", "변수 전처리");
+            }
+        });
+
+    } else if ( tabs == '데이터셋 전처리' ) {
+
+        var tab_value = sessionStorage.getItem("datasetTab");
+        var url_value = "/preprocess/select";
+
+        if ( tab_value == '데이터 분할' ) {
+            url_value = "/preprocess/split";
+        } else if ( tab_value == '불균형 데이터 보정' ) {
+            url_value = "/preprocess/sampling";
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: url_value,
+            success: function(data) {
+                $("#preprocess-03").html("");
+                $("#preprocess-03").html(data);
+                sessionStorage.setItem("processTab", "데이터셋 전처리");
+            }
+        });
+    } else if ( tabs == '학습 데이터 생성' ) {
+        $.ajax({
+            type: 'POST',
+            url: '/preprocess/data_create',
+            success: function(data) {
+                $("#preprocess-04").html("");
+                $("#preprocess-04").html(data);
+                sessionStorage.setItem("processTab", "학습 데이터 생성");
+            }
+        });
+    } else {
+        sessionStorage.setItem("processTab", "");
+    }
+}
+
+function data_reload() {
+    var tab_name = sessionStorage.getItem("processTab");
+    if ( tab_name == "변수 전처리" ) {
+        $("#preprocess-tab-02").click();
+    } else if ( tab_name == "데이터셋 전처리" ) {
+        $("#preprocess-tab-03").click();
+    } else if ( tab_name == "학습 데이터 생성" ) {
+        $("#preprocess-tab-04").click();
+    } else {
+        $("#preprocess-tab-01").click();
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,367 @@
+{% load static %}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card mb-2">
+            <div class="card-body">
+                <div class="d-flex flex-wrap align-items-center">
+                    <div class="col-xl-1 col-lg-2">
+                        <h5 class="fs-16 fw-semibold mb-2">{{column}}</h5>
+                    </div>
+
+                    <div class="col-xl-11 col-lg-10 filter-choices-input ms-auto">
+                        <div class="choices" data-type="text">
+                            <div class="choices__inner" style="min-height: auto;">
+                                <div class="choices__list choices__list--multiple" id="preprocess-choices">
+                                    {% for data in badge %}
+                                    <div class="choices__item choices__item--selectable bg-choicesbg text-choicesfont border-choicesbg">
+                                        {{ data.name }}
+                                        <button type="button" class="choices__button text-choicesfont border-choicesfont" onclick="remove_item(this);" data-process="{{ data.process_type }}" data-work="{{ data.work_type }}">Remove item</button>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row g-2" id="div_for_data_preview">
+    <div class="col-xl-2" id="div_for_dataset_raw">
+        <div class="card card-height-100">
+            <div class="card-header align-items-center">
+                <h4 class="card-title fw-semibold mb-0">데이터 상세</h4>
+            </div>
+
+            <div class="card-body">
+                <div class="mx-n3">
+                    <div data-simplebar data-simplebar-auto-hide="false" data-simplebar-track="primary" style="height: 850px; margin: 3%;">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-nowrap">
+                                <colgroup>
+                                    <col width="20%">
+                                    <col width="80%">
+                                </colgroup>
+                                <tbody>
+                                {% for value in detail %}
+                                    <tr>
+                                        <th scope="row">{{ forloop.counter }}</th>
+                                        <td class="text-truncate">{{ value }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-7" id="div_for_data_graph">
+        <div class="card card-height-100">
+            <div class="card-header align-items-center">
+                <h4 class="card-title fw-semibold mb-0">데이터 분포</h4>
+            </div>
+
+            <div class="card-body">
+                <ul class="nav nav-tabs nav-tabs-custom nav-datablue" role="tablist" id="nav-graph-tab">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#statistics" role="tab" aria-selected="true">
+                            데이터통계
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" data-bs-toggle="tab" href="#boxplot" role="tab" aria-selected="false" tabindex="-1">
+                            사분위/중앙값
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" data-bs-toggle="tab" href="#target-corr" role="tab" aria-selected="false" tabindex="-1">
+                            목표변수와의 분포
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content border border-top-0 p-4">
+                    <div class="tab-pane active show" id="statistics" role="tabpanel">
+                        <div class="card-header p-0 border-0 bg-soft-light">
+                            <div class="row g-0 text-center">
+                                <div class="col-6 col-sm-4">
+                                    <div class="p-3 border border-dashed border-start-0">
+                                        <h5 class="mb-1"><span class="counter-value" data-target="7585">{{ desc.count }}</span></h5>
+                                        <p class="text-muted mb-0">COUNT</p>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4">
+                                    <div class="p-3 border border-dashed border-start-0">
+                                        <h5 class="mb-1"><span class="counter-value" data-target="22.89">{{ desc.missing }}</span></h5>
+                                        <p class="text-muted mb-0">MISSING VALUE</p>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4">
+                                    <div class="p-3 border border-dashed border-start-0">
+                                        <h5 class="mb-1"><span class="counter-value" data-target="367">{{ desc.unique }}</span></h5>
+                                        <p class="text-muted mb-0">UNIGUE VALUE</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body p-0 pb-2">
+                            <div class="w-100">
+                                <div id="customer_impression_charts" data-colors='["--vz-primary", "--vz-datablue", "--vz-danger"]' class="apex-charts" dir="ltr">
+                                    <script>
+                                        var graphs = {{ main_graph | safe }};
+                                        Plotly.newPlot('customer_impression_charts',graphs,{});
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h5 class="card-title fw-semibold mb-3">{{ column }}</h5>
+                            <div class="table-responsive table-card my-0 border-top">
+                                <table class="table table-centered table-hover align-middle table-nowrap mb-0">
+                                    <tbody>
+                                    {% if desc.mean %}
+                                        <tr>
+                                            <td>AVERAGE</td>
+                                            <td class="text-end">{{ desc.mean }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>MIN</td>
+                                            <td class="text-end">{{ desc.min }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>MAX</td>
+                                            <td class="text-end">{{ desc.max }}</td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td>TOP</td>
+                                            <td class="text-end">{{ desc.top }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>FREQ</td>
+                                            <td class="text-end">{{ desc.freq }}</td>
+                                        </tr>
+                                    {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="boxplot" role="tabpanel">
+                    </div>
+                    <div class="tab-pane" id="target-corr" role="tabpanel">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3" id="div_for_process_work">
+        <div class="card card-height-100">
+            <div class="card-header align-items-center">
+                <h4 class="card-title fw-semibold mb-0">전처리 작업</h4>
+            </div>
+
+            <div class="card-body">
+                <div>
+                    <label for="input_for_data_type" class="form-label">데이터 유형</label>
+                    <input type="text" name="input_for_data_type" id="input_for_data_type" class="form-control" style="margin-bottom: 1rem;" data-type={{ type }}>
+                </div>
+                <hr>
+                <div>
+                    <label for="select_for_process" class="form-label">처리 유형</label>
+                    <select name="select_for_process" id="select_for_process" class="form-select mb-1" aria-label="Default select example">
+                        <option value="none" selected>선택</option>
+                        <option value="missing">결측치 처리</option>
+                        <option value="outlier">이상치 처리</option>
+                        <option value="replace">문자열 통합</option>
+                        <option value="datatype">데이터 유형 변경</option>
+                        <option value="dummy">가변수화</option>
+                        <option value="scaler">데이터 정규화</option>
+                    </select>
+                    <p name="explanation_for_process" class="text-muted fs-12"></p>
+                </div>
+
+                <div id="div_for_select_work">
+                    <label for="select_for_work" class="form-label">작업 유형</label>
+                    <select name="select_for_work" id="select_for_work" class="form-select mb-1" aria-label="Default select example">
+                        <option value="none" selected>처리 유형을 선택하세요</option>
+                    </select>
+                </div>
+                <div id="div_for_input" style="display: none;">
+                    <label for="workInput" class="form-label">대상값</label>
+                    <input type="text" class="form-control" style="margin-bottom: 1rem;" id="workInput" name="workInput" placeholder="대상값 입력">
+                </div>
+                <div id="div_for_replace" style="display: none;">
+                    <label for="replaceInput" class="form-label">변환값</label>
+                    <input type="text" class="form-control" style="margin-bottom: 1rem;" id="replaceInput" placeholder="변환값 입력">
+                </div>
+
+                <div class="mt-4 hstack gap-2">
+                    <button class="btn btn-soft02-primary w-100" id="btn_process_cancel">취소</button>
+                    <button class="btn btn-primary w-100" id="btn_process_apply">적용</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function() {
+    init();
+
+    $("select[name='select_for_process']").bind('change', function() {
+        change_preprocess();
+    });
+
+    $("select[name='select_for_work']").bind('change', function() {
+        var select_for_process = $("select[name='select_for_process']");
+        if( select_for_process.val() == 'missing' ) {
+            process_missing();
+        } else if ( select_for_process.val() == 'outlier' ) {
+            process_outlier();
+        } else if ( select_for_process.val() == 'datatype' ) {
+            change_datatype();
+        } else if ( select_for_process.val() == 'dummy' ) {
+            process_dummy();
+        } else if ( select_for_process.val() == 'scaler' ) {
+            process_scaler();
+        }
+    });
+
+    $("#replaceInput").keyup(function() {
+        process_replace_input();
+    });
+
+    $("#btn_process_cancel").bind("click", function() {
+        var col = $("#select_column").val();
+
+        $.ajax({
+            type: 'POST',
+            url: '/preprocess/process/detail',
+            data: {
+                'column': col
+            },
+            success: function(data) {
+                $("#preprocess-detail").html("");
+                $("#preprocess-detail").html(data);
+            }
+        });
+    });
+
+    $("#btn_process_apply").bind("click", function() {
+        var col = $("#select_column").val();
+        var process = $("select[name='select_for_process']").val();
+        var work = $("select[name='select_for_work']").val();
+        var workInput = $("#workInput").val();
+        var replaceInput = $("#replaceInput").val();
+
+        var name = $("select[name='select_for_process'] option:selected").text();
+        if ( process == "replace" ) {
+            name += ":" + replaceInput;
+        }
+
+        var apply = true;
+        var reprocess = false;
+        if ( $("#preprocess-choices").find("div.choices__item:contains('" + name + "')").length > 0 ) {
+            apply = confirm("이미 동일한 유형의 전처리 작업이 적용되어있습니다. 동일 처리 유형은 중복되지 않습니다. 변경하시겠습니까?");
+            reprocess = true;
+            if ( apply && ( process=="replace" || process=="dummy" )) {
+                return false;
+            }
+        }
+
+        if(apply) {
+            var prev = "";
+            if ( reprocess ) {
+                prev = $("#preprocess-choices").find("div.choices__item:contains('결측치 처리')").children("button").data('work');
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '/preprocess/process/apply',
+                data: {
+                    'column': col,
+                    'process': process,
+                    'work': work,
+                    'workInput': workInput,
+                    'replaceInput': replaceInput,
+                    'reprocess': reprocess,
+                    'prev': prev
+                },
+                success: function(data) {
+                    if(reprocess) {
+                        $("#preprocess-choices").find("div.choices__item:contains('" + name + "')").closest("div").detach();
+                        $("#div_for_dataset_raw").remove();
+                        $("#div_for_data_graph").remove();
+                        $("#div_for_data_preview").prepend(data);
+                        append_item(name);
+                    } else {
+                        append_item(data.name);
+                    }
+                    item_count();
+                },
+                error: function(data) {
+                    console.log("process apply error");
+                }
+            });
+        } else {
+            return false;
+        }
+    });
+});
+
+function init() {
+    var select = $("input[name='input_for_data_type']");
+    var type = select.data('type', "{{ type }}");
+    select_type();
+    boxplot();
+    corr();
+}
+
+function boxplot() {
+    var column = "{{column}}";
+
+    $.ajax({
+        type: 'POST',
+        url: '/preprocess/graph/boxplot',
+        data: {
+            'column': column,
+        },
+        success: function(data) {
+            $("#boxplot").html("");
+            $("#boxplot").html(data);
+        },
+        error: function(data) {
+            console.log("boxplot graph loading error");
+        }
+    });
+}
+
+function corr() {
+    var column = "{{column}}";
+
+    $.ajax({
+        type: 'POST',
+        url: '/preprocess/graph/corr',
+        data: {
+            'column': column,
+        },
+        success: function(data) {
+            $("#target-corr").html("");
+            $("#target-corr").html(data);
+        },
+        error: function(data) {
+            console.log("boxplot graph loading error");
+        }
+    });
+}
+
+</script>

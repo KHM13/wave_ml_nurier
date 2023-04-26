@@ -1,0 +1,26 @@
+{% load static %}
+
+<div class="card-body p-0 pb-2">
+    <div class="w-100">
+        <div id="correlation-chart" data-colors='["--vz-primary", "--vz-datablue", "--vz-danger"]' class="apex-charts" dir="ltr">
+            <script>
+                var graphs = {{ graph | safe }};
+                Plotly.newPlot('correlation-chart',graphs,{});
+            </script>
+        </div>
+    </div>
+</div>
+
+<div class="card-body">
+    <h5 class="card-title fw-semibold mb-3">{{ column }}</h5>
+    <div class="table-responsive table-card my-0 border-top">
+        <table class="table table-centered table-hover align-middle table-nowrap mb-0">
+            <tbody>
+                <tr>
+                    <td>최빈값</td>
+                    <td class="text-end">{{ freq }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

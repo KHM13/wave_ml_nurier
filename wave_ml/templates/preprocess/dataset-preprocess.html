@@ -1,0 +1,278 @@
+{% load static %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div id="custom-progress-bar" class="progress-nav-02 mb-4">
+            <div class="progress" style="height: 1px;">
+                <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+
+            <ul class="nav nav-pills progress-bar-tab custom-nav" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <span class="nav-link rounded-pill active" role="tab" aria-selected="true">Step1. 변수 선택</span>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <span class="nav-link rounded-pill" role="tab" aria-selected="false">Step2. 데이터 분할</span>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <span class="nav-link rounded-pill" role="tab" aria-selected="false">Step3. 불균형 데이터 보정</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row g-2">
+    <div class="col-xl-2 col-lg-4">
+        <div class="card card-height-100">
+            <div class="card-header">
+                <h4 class="card-title fw-semibold mb-3">변수 선택법</h4>
+
+                <div class="bg-light rounded p-2 mb-2">
+                    <p class="text-truncate mb-0">데이터 사이즈 <span class="text-muted">{{ info.count }}</span></p>
+                    <p class="text-truncate mb-0">총 변수 개수 <span class="text-muted">{{ info.size }}</span></p>
+                    <p class="text-truncate mb-0">목표 변수 <span class="text-muted">{{ info.target }}</span></p>
+                </div>
+
+                <button class="btn btn-datablue w-100" id="btn_executor">실행</button>
+            </div>
+
+            <div class="cord-body">
+                <div class="p-3" data-simplebar data-simplebar-auto-hide="false" data-simplebar-track="primary" style="max-height: 470px;">
+                    <div class="mb-2">
+                        <div class="form-check card-radio">
+                            <input id="variable01" name="variable" type="checkbox" class="form-check-input">
+                            <label class="form-check-label" for="variable01">
+                                <span class="fs-14 text-wrap">FeedForward Selection</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="form-check card-radio">
+                            <input id="variable02" name="variable" type="checkbox" class="form-check-input">
+                            <label class="form-check-label" for="variable02">
+                                <span class="fs-14 text-wrap">Backward Elimination</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="form-check card-radio">
+                            <input id="variable03" name="variable" type="checkbox" class="form-check-input">
+                            <label class="form-check-label" for="variable03">
+                                <span class="fs-14 text-wrap">Stepwise Selection</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-8 col-lg-4">
+        <div class="card card-height-100">
+            <div class="card-body" id="div_for_feature_select">
+                <div class="d-flex">
+                    <h4 class="card-title fw-semibold mb-0 flex-grow-1">실행 현황</h4>
+                </div>
+                <div class="border border-dashed rounded text-center p-3" style="margin-top:20%; background-color: #ddf2f3; color: #3d5653;">
+                    <p class="mb-0">확인하고 싶은 변수 선택법 알고리즘을 선택하여 실행해주세요</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-2 col-lg-4">
+        <div class="card card-height-100">
+            <div class="card-body">
+                <div class="mb-3">
+                    <button class="btn btn-primary w-100" type="button" id="btn_for_next">다음</button>
+                </div>
+
+                <div class="border border-dashed rounded text-center p-3 mb-3 select-text-bg">
+                    <p class="mb-0" id="select_algorithm">{{ feature_algorithm }}</p>
+                </div>
+
+                <div>
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="flex-grow-1">
+                            <span>{{ info.size }}개중에 <span id="select_count"></span>개 사용</span>
+                        </div>
+
+                        <div class="flex-shrink-0">
+                            <div class="form-check form-switch form-check-right full-use">
+                                <input class="form-check-input" type="checkbox" role="switch" id="all-switch" checked="true">
+                                <label class="form-check-label active" for="all-switch">전체 사용</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div data-simplebar data-simplebar-auto-hide="false" data-simplebar-track="primary" style="max-height: 525px;">
+                        <table class="table table-nowrap text-center mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" class="sticky-top text-left ps-4">변수</th>
+                                    <th scope="col" class="sticky-top">사용여부</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for col in info.columns %}
+                                <tr>
+                                    <td class="text-left ps-4">{{ col }}</td>
+                                    <td>
+                                        <div class="form-check form-switch text-center">
+                                            {% if col in select_column %}
+                                            <input class="form-check-input" type="checkbox" role="switch" name="col_select" data-col="{{ col }}" checked>
+                                            {% else %}
+                                            <input class="form-check-input" type="checkbox" role="switch" name="col_select" data-col="{{ col }}">
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function() {
+    init();
+
+    $("input[name='col_select']").bind("click", function() {
+        all_switch_check();
+        select_customizing();
+    });
+
+    $("#all-switch").bind("click", function() {
+        if( $(this).prop("checked") ) {
+            $("input[name='col_select']").each(function() {
+                $(this).prop("checked", true);
+            });
+        } else {
+            $("input[name='col_select']").each(function() {
+                $(this).prop("checked", false);
+            });
+        }
+        switch_count();
+        select_customizing();
+    });
+
+    $("#btn_executor").bind("click", function() {
+        if ( $("input[name='variable']:checked").length == 0 ) {
+            Swal.fire({
+                title:'실행할 변수 선택법 알고리즘을\n하나 이상 선택해주세요',
+                icon: 'warning',
+                confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                buttonsStyling: false
+            })
+        } else {
+            var feature_select = new Array();
+            $("input[name='variable']:checked").each(function() {
+                feature_select.push($(this).closest("div.card-radio").text().trim());
+            });
+
+            var select_algorithm = $("#select_algorithm").text().trim();
+            if ( select_algorithm == "Customizing" ) {
+                select_algorithm = "";
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '/preprocess/select/execute',
+                data: {
+                    "feature_select": JSON.stringify(feature_select),
+                    "select_algorithm": select_algorithm
+                },
+                success: function(data) {
+                    $("#div_for_feature_select").html("");
+                    $("#div_for_feature_select").html(data);
+                }
+            });
+        }
+    });
+
+    $("#btn_for_next").bind("click", function() {
+        var fs_name = $("#select_algorithm").text().trim();
+        var select_column = new Array();
+        $("input[name='col_select']:checked").each(function() {
+            select_column.push($(this).data('col'));
+        });
+
+        if ( select_column.length == 0 ) {
+            Swal.fire({
+                title:'사용할 변수가 최소 1개 이상 선택되어야 합니다',
+                icon: 'warning',
+                confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                buttonsStyling: false
+            })
+        } else {
+            $.ajax({
+                type: 'POST',
+                url: '/preprocess/split',
+                data: {
+                    "fs_name": fs_name,
+                    "select_column": JSON.stringify(select_column)
+                },
+                success: function(data) {
+                    $("#preprocess-03").html("");
+                    $("#preprocess-03").html(data);
+                }
+            });
+        }
+    });
+});
+
+function switch_count() {
+    var count = $("input[name='col_select']:checked").length;
+    $("#select_count").text(count);
+}
+
+function all_switch_check() {
+    var switch_size = $("input[name='col_select']").length;
+    var checked_size = $("input[name='col_select']:checked").length;
+
+    if ( switch_size == checked_size ) {
+        $("#all-switch").prop("checked", true);
+    } else {
+        $("#all-switch").prop("checked", false);
+    }
+    switch_count();
+}
+
+function select_customizing() {
+    $("#select_algorithm").text("Customizing");
+    $("input[name='variableSelect']").prop("checked", false);
+    $("#table_for_table_tab > tbody > tr > td").removeClass("active");
+    $("input[name='accordion']").prop("checked", false);
+}
+
+function init() {
+    sessionStorage.setItem("datasetTab", "변수 선택");
+    switch_count();
+
+    var feature_algorithm = "{{ feature_algorithm }}";
+    $("input[name='variable']").each(function() {
+        if ( feature_algorithm == $(this).closest("div.card-radio").text().trim() ) {
+            $(this).prop("checked", true);
+            var feature_select = new Array();
+            feature_select.push(feature_algorithm);
+
+            $.ajax({
+                type: 'POST',
+                url: '/preprocess/select/execute',
+                data: {
+                    "feature_select": JSON.stringify(feature_select),
+                    "select_algorithm": feature_algorithm
+                },
+                success: function(data) {
+                    $("#div_for_feature_select").html("");
+                    $("#div_for_feature_select").html(data);
+                }
+            });
+        }
+    });
+}
+</script>

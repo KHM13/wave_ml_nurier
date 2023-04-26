@@ -1,0 +1,46 @@
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            {% for list in list_models %}
+            <div class="col-xxl-4 col-sm-6">
+                <div class="card profile-project-card shadow-none">
+                    <div class="card-body p-4">
+                        <div class="d-flex">
+                            <div class="flex-grow-1 text-muted overflow-hidden">
+                                <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">{{ list.project_id }}</a></h5>
+                                <p class="text-muted text-truncate mb-0">변수 개수 : <span class="fw-semibold text-dark">{{ list.column_size }}</span></p>
+                                <p class="text-muted text-truncate mb-0">데이터 분할 : <span class="fw-semibold text-dark">{{ list.split_rate }}% / {{ list.k_value }} Step ( {{ list.split_algorithm }} )</span></p>
+                                <p class="text-muted text-truncate mb-0">불균형 보정 : <span class="fw-semibold text-dark">{{ list.sampling_algorithm }}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="col-lg-12">
+                <div class="mt-4">
+                    <ul class="pagination pagination-separated justify-content-center mb-0">
+                        <li class="page-item">
+                            <a href="javascript:go_prev();" class="page-link"><i class="mdi mdi-chevron-left"></i></a>
+                        </li>
+                        {% for plinks in page_links %}
+                            {{ plinks | safe }}
+                        {% endfor %}
+                        <li class="page-item">
+                            <a href="javascript:go_next();" class="page-link"><i class="mdi mdi-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!--end row-->
+    </div>
+    <!--end card-body-->
+</div>
+
+<script type="text/javascript">
+$(function() {
+    init();
+});
+</script>

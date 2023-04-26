@@ -1,0 +1,214 @@
+{% load static %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div id="custom-progress-bar" class="progress-nav-02 mb-4">
+            <div class="progress" style="height: 1px;">
+                <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+
+            <ul class="nav nav-pills progress-bar-tab custom-nav" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <span class="nav-link rounded-pill" role="tab" aria-selected="true">Step1. 변수 선택</span>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <span class="nav-link rounded-pill" role="tab" aria-selected="false">Step2. 데이터 분할</span>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <span class="nav-link rounded-pill active" role="tab" aria-selected="false">Step3. 불균형 데이터 보정</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row g-2">
+    <div class="col-xl-2 col-lg-4">
+        <div class="card card-height-100">
+            <div class="card-header">
+                <h4 class="card-title fw-semibold mb-3">불균형 보정 알고리즘</h4>
+
+                <div class="bg-light rounded p-2 mb-2">
+                    <p class="text-truncate mb-0">학습 데이터 사이즈 <span class="text-muted">{{ info.train_count }}</span></p>
+                    <p class="text-truncate mb-0">검증 데이터 사이즈 <span class="text-muted">{{ info.test_count }}</span></p>
+                    <p class="text-truncate mb-0">사용 변수 개수 <span class="text-muted">{{ info.size }}</span></p>
+                    <p class="text-truncate mb-0">목표 변수 <span class="text-muted">{{ info.target }}</span></p>
+                </div>
+
+                <button class="btn btn-datablue w-100" id="btn_for_executor">실행</button>
+            </div>
+
+            <div class="cord-body">
+                <div class="accordion accordion-flush filter-accordion">
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="flush-headingUnderSampling">
+                            <button class="accordion-button bg-transparent shadow-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseUnderSampling" aria-expanded="false" aria-controls="flush-collapseUnderSampling">
+                                <span class="text-uppercase fs-12 fw-semibold">Under Sampling</span> <span class="badge bg-success rounded-pill align-middle ms-1 filter-badge"></span>
+                            </button>
+                        </h2>
+
+                        <div id="flush-collapseUnderSampling" class="accordion-collapse collapse" aria-labelledby="flush-headingUnderSampling">
+                            <div class="accordion-body text-body pt-0">
+                                <div class="d-flex flex-column gap-2 mt-3 filter-check">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="sampling" value="RandomUnderSampling" id="UnderSampling01">
+                                        <label class="form-check-label" for="UnderSampling01">Random Under Sampling</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end accordion-item -->
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="flush-headingOverSampling">
+                            <button class="accordion-button bg-transparent shadow-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOverSampling" aria-expanded="false" aria-controls="flush-collapseOverSampling">
+                                <span class="text-uppercase fs-12 fw-semibold">Over Sampling</span> <span class="badge bg-success rounded-pill align-middle ms-1 filter-badge"></span>
+                            </button>
+                        </h2>
+                        <div id="flush-collapseOverSampling" class="accordion-collapse collapse" aria-labelledby="flush-headingOverSampling">
+                            <div class="accordion-body text-body pt-1">
+                                <div class="d-flex flex-column gap-2 filter-check">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="sampling" value="RandomOverSampling" id="overSampling01">
+                                        <label class="form-check-label" for="overSampling01">Random Over Sampling</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="sampling" value="SMOTE" id="overSampling02">
+                                        <label class="form-check-label" for="overSampling02">SMOTE</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end accordion-item -->
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="flush-headingCombineSampling">
+                            <button class="accordion-button bg-transparent shadow-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseCombineSampling" aria-expanded="false" aria-controls="flush-collapseCombineSampling">
+                                <span class="text-uppercase fs-12 fw-semibold">Combine Sampling</span> <span class="badge bg-success rounded-pill align-middle ms-1 filter-badge"></span>
+                            </button>
+                        </h2>
+
+                        <div id="flush-collapseCombineSampling" class="accordion-collapse collapse" aria-labelledby="flush-headingCombineSampling">
+                            <div class="accordion-body text-body">
+                                <div class="d-flex flex-column gap-2 filter-check">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="sampling" value="SMOTEENN" id="combineSampling01">
+                                        <label class="form-check-label" for="combineSampling01">SMOTE + ENN</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="sampling" value="SMOTETOMEK" id="combineSampling02">
+                                        <label class="form-check-label" for="combineSampling02">SMOTE + TOMEK</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end accordion-item -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl col-lg" id="div_for_imbalanced_data">
+        <div class="card card-height-100">
+            <div class="card-header">
+                <div class="d-flex">
+                    <div class="flex-grow-1">
+                        <h4 class="card-title fw-semibold">보정 결과</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="row justify-content-center mb-3">
+                    <div class="border border-dashed rounded text-center p-3" style="margin-bottom:20%; margin-top: 10%; background-color: #ddf2f3; color: #3d5653;">
+                        <p class="mb-0">확인하고 싶은 불균형 보정 알고리즘을 선택하여 실행해주세요</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function() {
+    init();
+
+    $("#btn_for_executor").bind("click", function() {
+        if ( $("input[name='sampling']:checked").length == 0 ) {
+            Swal.fire({
+                title:'실행할 불균형 보정 알고리즘을 선택해주세요',
+                icon: 'warning',
+                confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                buttonsStyling: false
+            })
+        } else {
+            var data_sampling = new Array();
+            $("input[name='sampling']:checked").each(function() {
+                data_sampling.push($(this).val());
+            });
+            var sampling_algorithm = $("#selected_sampling_algorithm").text().trim();
+
+            $.ajax({
+                type: 'POST',
+                url: "/preprocess/sampling/execute",
+                data: {
+                    'data_sampling': JSON.stringify(data_sampling),
+                    'sampling_algorithm': sampling_algorithm
+                },
+                success: function(data) {
+                    $("#div_for_imbalanced_data").html("");
+                    $("#div_for_imbalanced_data").html(data);
+                }
+            });
+        }
+    });
+
+    $("input[name='sampling']").bind("click", function() {
+        var text = $(this).closest("div.accordion-item").find("span.badge").text();
+        if ( text == "" ) {
+            text = 0;
+        } else {
+            text = Number(text);
+        }
+
+        if ( $(this).prop("checked") ) {
+            text += 1;
+        } else {
+            text -= 1;
+        }
+
+        if ( text == 0 ) {
+            text = "";
+        }
+
+        $(this).closest("div.accordion-item").find("span.badge").text(text);
+    });
+});
+
+function init() {
+    sessionStorage.setItem("datasetTab", "불균형 데이터 보정");
+
+    var sampling_algorithm = "{{ sampling_algorithm }}";
+    var select_algorithm = new Array();
+    if ( sampling_algorithm != "" ) {
+        select_algorithm.push(sampling_algorithm);
+    }
+
+    $.ajax({
+        type: 'POST',
+        url: "/preprocess/sampling/execute",
+        data: {
+            'data_sampling': JSON.stringify(select_algorithm),
+            'sampling_algorithm': sampling_algorithm
+        },
+        success: function(data) {
+            $("#div_for_imbalanced_data").html("");
+            $("#div_for_imbalanced_data").html(data);
+        }
+    });
+}
+</script>

@@ -1,0 +1,67 @@
+{% load static %}
+{% load custom_filters %}
+
+
+<form id="form_for_dataset" name="form_for_dataset" method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="select_column" id="select_column" value={{ column }}>
+</form>
+
+<div class="row g-2">
+    <div class="col-xl-2 col-lg-3">
+        <div class="card card-height-100">
+            <div class="card-body">
+                <div class="d-flex mb-1">
+                    <div class="flex-grow-1">
+                        <h5 class="fs-16 fw-semibold">변수 리스트</h5>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <a href="javascript:sorting_text();" class="align-middle text-muted" role="button">
+                            <i class="bx bx-sort-a-z fs-18"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="search-box mb-3">
+                    <input type="text" class="form-control" id="search-form" placeholder="검색">
+                    <i class="ri-search-line search-icon"></i>
+                </div>
+
+                <div data-simplebar data-simplebar-auto-hide="false" data-simplebar-track="primary" style="max-height: 1000px;">
+                    <ul class="list-unstyled mb-0 variable-list" id="data-column-list">
+                        {% for col in columns %}
+                        <li>
+                            <a href="javascript:select_column('{{col}}');" class="btn btn-custom-datablue mt-2">
+                                <div class="flex-grow-1" name="column-name">
+                                    <h5 class="fs-13 mb-0 listname text-datablue">{{ col }}</h5>
+                                </div>
+                                <div class="flex-shrink-0 ms-2">
+                                    <span class="badge bg-datablue text-white">{{ process_dict|get_value_from_dict:col }}</span>
+                                </div>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-10 col-lg-9" id="preprocess-detail"></div>
+</div>
+
+<!-- Dashboard init -->
+<script src="{% static 'js/pages/dashboard-ecommerce.init.js' %}"></script>
+<script src="{% static 'js/pages/page-preprocess.js' %}"></script>
+<script type="text/javascript">
+    $(function() {
+        select_column("{{ column }}");
+
+        $("#search-form").keyup(function() {
+            var k = $(this).val();
+            $("#data-column-list > li").hide();
+            var temp = $("#data-column-list > li > a > div > h5:contains('" + k + "')");
+            $(temp).closest("li").show();
+        });
+    });
+</script>

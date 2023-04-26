@@ -1,0 +1,207 @@
+{% extends 'template-project.html' %}
+{% load static %}
+
+{% block title %}프로젝트{% endblock %}
+{% block middle-title %}프로젝트{% endblock %}
+
+{% block content %}
+
+    <div class="page-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col">
+                    <div class="h-100">
+                        <div class="row mb-3 pb-1">
+                            <div class="col-sm">
+                                <form class="d-flex gap-1">
+                                    <div class="col-sm-4">
+                                        <div class="search-box">
+                                            <input type="text" class="form-control" id="" placeholder="키워드 입력">
+                                            <i class="ri-search-line search-icon"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <select class="form-select mb-3">
+                                            <option selected="">최신순</option>
+                                            <option value="1">One</option>
+                                            <option value="2">Two</option>
+                                            <option value="3">Three</option>
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="col-sm-auto">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal"><i class="ri-add-line align-bottom me-1"></i> 등록</button>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xl-6">
+                                <div class="card card-animate" name="project_list">
+                                    <div class="card-body">
+                                        <div class="d-flex flex-column h-100">
+                                            <div class="d-flex">
+                                                <div class="flex-grow-1">
+                                                    <p class="mb-4"><span class="text-muted">업데이트</span><span class="fw-semibold"> 2023.01.01 12:01:01</span></p>
+                                                    <!-- <p class="text-muted mb-4">Updated 2hrs ago</p> -->
+                                                </div>
+                                                <div class="flex-shrink-0">
+                                                    <div class="d-flex gap-1 align-items-center">
+                                                        <div class="dropdown">
+                                                            <button class="btn btn-link text-muted p-1 mt-n2 py-0 text-decoration-none fs-15" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal icon-sm"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                                                            </button>
+
+                                                            <div class="dropdown-menu dropdown-menu-end">
+                                                                <a class="dropdown-item" href="#"><i class="ri-pencil-fill align-bottom me-2 text-muted"></i> 편집</a>
+                                                                <a class="dropdown-item" href="#"><i class="ri-file-copy-fill align-bottom me-2 text-muted"></i> 복제</a>
+                                                                <a class="dropdown-item" href="#"><i class="ri-delete-bin-6-fill align-bottom me-2 text-muted"></i> 삭제</a>
+                                                                <a class="dropdown-item" href="#"><i class="ri-install-fill align-bottom me-2 text-muted"></i> 백업</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex mb-2">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="avatar-md">
+                                                        <span class="avatar-title bg-soft-indigo rounded p-2">
+                                                            <img src="{% static 'images/brands/mail_chimp.png' %}" alt="" class="img-fluid p-1">
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="card-subtitle mb-2">금융&middot;은행</h6>
+                                                    <h5 class="card-title mb-3 fw-semibold"><a href="/project/detail" class="text-dark">은행 Project 2</a></h5>
+
+                                                    <div class="row align-items-center mt-3">
+                                                        <div class="col-lg-3">
+                                                            <p class="text-muted mb-0">관리자</p>
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <p class="mb-0">유재석</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row align-items-center">
+                                                        <div class="col-lg-3">
+                                                            <p class="text-muted mb-0">권한</p>
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <p class="mb-0">글로벌</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row align-items-center">
+                                                        <div class="col-lg-3">
+                                                            <p class="text-muted mb-0">등록일</p>
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <p class="mb-0">2023.01.01 12:01:01</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div><!-- end card body -->
+                                </div>
+                            </div><!-- end col -->
+
+                            <div class="col-xl-6">
+                                <div class="card card-animate" name="project_list">
+                                    <div class="card-body">
+                                        <div class="d-flex flex-column h-100">
+                                            <div class="d-flex">
+                                                <div class="flex-grow-1">
+                                                    <p class="mb-4"><span class="text-muted">업데이트</span><span class="fw-semibold"> 2023.01.01 12:01:01</span></p>
+                                                    <!-- <p class="text-muted mb-4">Updated 2hrs ago</p> -->
+                                                </div>
+                                                <div class="flex-shrink-0">
+                                                    <div class="d-flex gap-1 align-items-center">
+                                                        <div class="dropdown">
+                                                            <button class="btn btn-link text-muted p-1 mt-n2 py-0 text-decoration-none fs-15" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal icon-sm"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                                                            </button>
+
+                                                            <div class="dropdown-menu dropdown-menu-end">
+                                                                <a class="dropdown-item" href="#"><i class="ri-pencil-fill align-bottom me-2 text-muted"></i> 편집</a>
+                                                                <a class="dropdown-item" href="#"><i class="ri-file-copy-fill align-bottom me-2 text-muted"></i> 복제</a>
+                                                                <a class="dropdown-item" href="#"><i class="ri-delete-bin-6-fill align-bottom me-2 text-muted"></i> 삭제</a>
+                                                                <a class="dropdown-item" href="#"><i class="ri-install-fill align-bottom me-2 text-muted"></i> 백업</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex mb-2">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="avatar-md">
+                                                        <span class="avatar-title bg-soft-indigo rounded p-2">
+                                                            <img src="{% static 'images/brands/mail_chimp.png' %}" alt="" class="img-fluid p-1">
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="card-subtitle mb-2">금융&middot;은행</h6>
+                                                    <h5 class="card-title mb-3 fw-semibold"><a href="/project/detail" class="text-dark">은행 Project 2</a></h5>
+
+                                                    <div class="row align-items-center mt-3">
+                                                        <div class="col-lg-3">
+                                                            <p class="text-muted mb-0">관리자</p>
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <p class="mb-0">유재석</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row align-items-center">
+                                                        <div class="col-lg-3">
+                                                            <p class="text-muted mb-0">권한</p>
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <p class="mb-0">글로벌</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row align-items-center">
+                                                        <div class="col-lg-3">
+                                                            <p class="text-muted mb-0">등록일</p>
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <p class="mb-0">2023.01.01 12:01:01</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div><!-- end card body -->
+                                </div>
+                            </div><!-- end col -->
+                        </div><!-- end row -->
+                    </div> <!-- end .h-100-->
+                </div> <!-- end col -->
+            </div>
+
+            <div class="row g-0 text-center text-sm-start align-items-center mb-3">
+                <div class="float-left">
+                    <div>
+                        <p class="mb-sm-0">Showing 1 to 8 of 12 entries</p>
+                    </div>
+                </div> <!-- end col -->
+                <div class="col">
+                    <ul class="pagination pagination-separated justify-content-center">
+                        <li class="page-item disabled"> <a href="#" class="page-link"><i class="mdi mdi-chevron-left"></i></a> </li>
+                        <li class="page-item active"> <a href="#" class="page-link">1</a> </li>
+                        <li class="page-item "> <a href="#" class="page-link">2</a> </li>
+                        <li class="page-item"> <a href="#" class="page-link">3</a> </li>
+                        <li class="page-item"> <a href="#" class="page-link">4</a> </li>
+                        <li class="page-item"> <a href="#" class="page-link">5</a> </li>
+                        <li class="page-item"> <a href="#" class="page-link"><i class="mdi mdi-chevron-right"></i></a> </li>
+                    </ul>
+                </div><!-- end col -->
+            </div>
+        </div>
+        <!-- container-fluid -->
+    </div>
+    <!-- End Page-content -->
+
+<!-- project-create init -->
+<script src="{% static 'js/pages/project-create.init.js' %}"></script>
+{% endblock %}
