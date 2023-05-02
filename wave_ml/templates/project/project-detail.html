@@ -26,7 +26,7 @@
                             <h3 class="text-white mb-1">은행 Project 1</h3>
                             <p class="text-white-75">금융&middot;은행</p>
                             <div class="hstack text-white-50 gap-1">
-                                <div class="me-2"><i class="bx bx-user me-1 text-white-75 fs-16 align-middle"></i>유재석 / 총괄</div>
+                                <div class="me-2"><i class="bx bx-user me-1 text-white-75 fs-16 align-middle"></i>유재석</div>
                             </div>
                         </div>
                     </div>
@@ -98,8 +98,8 @@
                                 </li>
                             </ul>
                             <div class="flex-shrink-0">
-                                <button class="btn btn-datablue"><i class="ri-add-line align-bottom me-1"></i> 등록</button>
-                                <button class="btn btn-transparent-datablue"><i class="ri-file-list-line"></i> 목록</button>
+                                <button class="btn btn-datablue" id="btn_for_model_create"><i class="ri-add-line align-bottom me-1"></i> 등록</button>
+                                <button class="btn btn-transparent-datablue" id="btn_for_return_project"><i class="ri-file-list-line"></i> 목록</button>
                             </div>
                         </div>
                         <!-- Tab panes -->
@@ -114,15 +114,15 @@
                                                     <table class="table table-borderless mb-0">
                                                         <tbody>
                                                             <tr>
-                                                                <th class="ps-0" scope="row">관리자 :</th>
-                                                                <td class="text-muted">유재석 [총괄]</td>
+                                                                <th class="ps-0" scope="row">등록자 :</th>
+                                                                <td class="text-muted">유재석</td>
                                                             </tr>
                                                             <tr>
                                                                 <th class="ps-0" scope="row">프로젝트 생성일시 :</th>
                                                                 <td class="text-muted">2023.01.01 (12:01:01)</td>
                                                             </tr>
                                                             <tr>
-                                                                <th class="ps-0" scope="row">업데이트</th>
+                                                                <th class="ps-0" scope="row">최종 업데이트</th>
                                                                 <td class="text-muted">2023.01.12 (11:25:07)</td>
                                                             </tr>
                                                             <tr>
@@ -975,5 +975,13 @@
 <script src="{% static 'libs/swiper/swiper-bundle.min.js' %}"></script>
 <!-- profile init js -->
 <script src="{% static 'js/pages/profile.init.js' %}"></script>
+
+<script type="text/javascript">
+$(function() {
+    $("#btn_for_return_project").bind("click", function() {
+        location.href="/project"
+    });
+});
+</script>
 
 {% endblock %}

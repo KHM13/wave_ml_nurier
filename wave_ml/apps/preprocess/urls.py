@@ -24,4 +24,5 @@ urlpatterns = [
     path('sampling_apply', views.data_sampling_apply, name="data-sampling-apply"),
     path('data_create', views.data_create, name="data-create"),
     path('dataset_list', views.load_dataset_list, name="dataset-list"),
+    path('dataset_save', views.dataset_save, name="dataset-save"),
 ]

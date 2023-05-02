@@ -100,7 +100,7 @@
                                                 <td>{{ data_info.count }}</td>
                                                 <td>{{ process_size }}</td>
                                                 <td>{{ data_info.size }}</td>
-                                                <td>{{ sampling_models.split_rate }}% / {{ sampling_models.k_value }} Step ( {{ sampling_models.split_algorithm }} )</td>
+                                                <td>{{ sampling_models.split_rate }} % / {{ sampling_models.k_value }} Step ( {{ sampling_models.split_algorithm }} )</td>
                                                 <td>{{ sampling_models.sampling_algorithm }}</td>
                                             </tr>
                                         </tbody>
@@ -228,6 +228,66 @@
 $(function() {
     init();
     $("#project_id").val("{{ project_id }}");
+
+    $("#btn_for_modal_data_create").bind("click", function() {
+        var project_id = $("#project_id").val();
+        var dataset_name = $("#dataset_name").val();
+        var create_date = $("#create_date").val();
+
+        if ( project_id != "{{ project_id }}" ) {
+            $("#project_id").val("{{ project_id }}");
+            Swal.fire({
+                title:'다시 시도해주세요',
+                icon: 'warning',
+                confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                buttonsStyling: false
+            })
+            return false;
+        } else if ( dataset_name == "" ) {
+            Swal.fire({
+                title:'데이터 셋 이름을 입력해주세요',
+                icon: 'warning',
+                confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                buttonsStyling: false
+            })
+            return false;
+        } else if ( create_date == "" ) {
+            Swal.fire({
+                title:'생성일이 입력되지 않았습니다',
+                icon: 'warning',
+                confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                buttonsStyling: false
+            })
+            return false;
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '/preprocess/dataset_save',
+            data: {
+                'project_id': project_id,
+                'dataset_name': dataset_name,
+                'create_date': create_date
+            },
+            success: function(data) {
+                Swal.fire({
+                    title:'학습 데이터가 정상적으로 생성되었습니다',
+                    icon: 'success',
+                    confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                    buttonsStyling: false
+                })
+            },
+            error: function(data) {
+                console.log("dataset save error");
+                Swal.fire({
+                    title:'데이터 생성이 정상적으로 이루어지지 않았습니다',
+                    icon: 'error',
+                    confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                    buttonsStyling: false
+                })
+            }
+        });
+    });
 });
 
 function init() {

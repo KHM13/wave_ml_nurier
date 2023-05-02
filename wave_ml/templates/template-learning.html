@@ -13,9 +13,9 @@
     <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
 
     <!-- nouisliderribute css -->
-    <link rel="stylesheet" href="assets/libs/nouislider/nouislider.min.css">
+    <link href="{% static 'libs/nouislider/nouislider.min.css' %}" rel="stylesheet" type="text/css" />
     <!-- Sweet Alert css-->
-    <link rel="stylesheet" href="{% static 'libs/nouislider/nouislider.min.css' %}" type="text/css" />
+    <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
 
     <!-- Layout config Js -->
     <script src="{% static 'js/layout.js' %}"></script>
@@ -48,7 +48,7 @@
                                 </span>
                             </button>
 
-                            <h3 class="mb-0">모델학습</h3>
+                            <h3 class="mb-0">모델 학습</h3>
                         </div>
                     </div>
                 </div>

@@ -30,7 +30,6 @@ ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -40,6 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'wave_ml.apps.preprocess',
     'wave_ml.apps.preprocess.templatetags',
+    'wave_ml.apps.project',
+    'wave_ml.apps.mlmodel',
+    'wave_ml.apps.learning',
+    'wave_ml.apps.detection',
 ]
 
 MIDDLEWARE = [
