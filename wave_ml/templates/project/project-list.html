@@ -226,9 +226,45 @@
     <!-- End Page-content -->
 
 <script type="text/javascript">
-$(function() {
-    $("#registrant_name").val("{{ user_name }}");
-});
+    $(function() {
+        $("#registrant_name").val("{{ user_name }}");
+    });
+
+    function go_page(page_num) {
+        $.ajax({
+            type: 'GET',
+            url: '/project/',
+            data: {
+                'page': page_num
+            },
+            success: function(data) {
+                $("#project-documents").html("");
+                $("#project-documents").html(data);
+            },
+            error: function(data) {
+                console.log("paginator error");
+            }
+        });
+    }
+
+    function go_prev() {
+        var page_num = $("li.page-item.active").text().trim();
+        if (page_num <= 1) {
+            return false;
+        } else {
+            go_page(Number(page_num)- 1);
+        }
+    }
+
+    function go_next() {
+        var last_page = $("li.page-item").eq(-2).text().trim();
+        var page_num = $("li.page-item.active").text().trim();
+        if (page_num >= last_page) {
+            return false;
+        } else {
+            go_page(Number(page_num) + 1);
+        }
+    }
 </script>
 
 {% endblock %}

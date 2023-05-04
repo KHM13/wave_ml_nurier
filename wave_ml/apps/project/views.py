@@ -1,64 +1,49 @@
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render
-from .models import Project
+from django.views.generic import ListView
 
+from .models import Project
 
 # 프로젝트 메인 첫페이지
 def main(request):
     # 사용자 정보 임시 하드코딩
-    user_name = "김소망"
-    user_id = "somangk"
-
-    # DB에 저장된 프로젝트 정보 조회
-    project_model = Project.objects.filter(registrant=user_id)
-    project_size = len(project_model.values())
-
-    # 페이징 처리
-    per_page = 8        # 한 화면에 보여줄 목록 갯수
-    paginator = Paginator(project_model, per_page)
-    page_num = request.POST.get("page_num", 1)
-    try:
-        current_page = paginator.page(page_num)
-    except PageNotAnInteger:    # 첫 진입시 page_num 1로 설정
-        current_page = paginator.page(1)
-    except EmptyPage:   # 마지막 페이지
-        current_page = paginator.page(paginator.num_pages)
-    list_data = current_page.object_list
-
-    max_index = 5   # 페이징 버튼 보여줄 최대 갯수
-    if paginator.num_pages <= max_index:    # 전체 페이지 갯수가 5보다 작을 경우
-        start_index = 1
-        end_index = paginator.num_pages
+    user_name = "손다니엘"
+    user_id = "daniel"
+    # 한 페이지에 보여줄 항목 수 지정
+    projects_per_page = 8
+    # DB에서 데이터 조회
+    project_list = Project.objects.filter(registrant=user_id)
+    # 페이징 처리를 위한 Paginator 객체 생성
+    paginator = Paginator(project_list, projects_per_page)
+    # 요청된 페이지 번호
+    page_number = request.GET.get('page', 1)
+    # 현재 페이지에 해당하는 프로젝트 리스트 반환
+    page_obj = paginator.get_page(page_number)
+    # 페이지 버튼의 범위 제한
+    if page_obj.number <= 3:
+        page_btn_range = range(1, min(6, paginator.num_pages + 1))
     else:
-        start_index = page_num - 2
-        set_num = 0
-        if start_index < 1:     # 첫 페이지 번호가 1보다 작을 경우
-            set_num = start_index - 1
-            start_index = 1
-        end_index = page_num + 2 - set_num
-        if end_index > paginator.num_pages:     # 마지막 페이지 번호가 end_index 보다 작을 경우
-            set_num = end_index - paginator.num_pages
-            start_index = start_index - set_num
-            end_index = paginator.num_pages
-    page_range = range(start_index, end_index + 1)  # 페이징 버튼 범위 조정
-
-    links = []
-    for pr in page_range:
-        if pr == current_page.number:   # 현재 선택된 페이징 버튼
-            links.append('<li class="page-item active"><a href="javascript:void(0);" class="page-link">%d</a></li>' % pr)
+        if page_obj.number <= paginator.num_pages - 2:
+            page_btn_range = range(max(page_obj.number - 2, 1), min(page_obj.number + 3, paginator.num_pages + 1))
         else:
-            links.append('<li class="page-item"><a href="javascript:go_page(%d);" class="page-link">%d</a></li>' % (pr, pr))
-
+            page_btn_range = range(paginator.num_pages - 4, paginator.num_pages + 1)
+    # 페이지 버튼 생성
+    links = []
+    for pr in page_btn_range:
+        if pr == page_number:
+            links.append('<li class="page-item active"><a href="javascript:void(0)" class="page-link">%d</a></li>' % pr)
+        else:
+            links.append('<li class="page-item"><a href="javascript:go_page(%d)" class="page-link">%d</a></li>' % (pr, pr))
+    # 페이지 이동
     return render(
         request,
         'project/project-list.html',
         {
-            'user_name': user_name,
             'page_links': links,
-            'list_models': list_data,
-            'project_size': project_size
+            'page_obj': page_obj
         }
     )
+
 
 
 # 프로젝트 상세조회
