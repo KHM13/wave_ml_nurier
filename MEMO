@@ -1,0 +1,24 @@
+### ML-WEB 웹페이지 메뉴에 해당하는 APP ###
+    1. 프로젝트 : project
+    2. 데이터전처리 : preprocess
+    3. 변수선택 : detection
+    4. 모델학습 : learning
+    5. 모델평가 : mlmodel
+
+
+### 모듈 일괄 다운로드 ###
+    1. pip freeze > requirements.txt : 현재 위치에 requirements.txt 파일 생성
+        ※ 주의 : venv 폴더 삭제 후 Python Interpreter 부터 재등록시 기존의 requirements.txt 파일이 존재하더라도 삭제 후 pip freeze > requirements.txt 명령부터 실행
+            - 에러 : ERROR: Could not open requirements file: [Errno 2] No such file or directory: 'requirements.txt'
+            - 해결 : 기존 requirements.txt 파일 삭제 후 명령어를 통해 requirements.txt 파일 재생성
+
+    2. requirements.txt : 필요한 모듈 작성
+        ※ 예시 : Django==3.2.16
+                numpy==1.24.2
+
+    3. pip install -r requirements.txt : 설치 실행
+        ※ 주의 : pip는 requirements.txt를 통해 업그레이드, 다운그레이드가 되지 않는 현상
+            - 에러 : ERROR: To modify pip, please run the following command:
+                    c:\nurier\workspacepython\wave_ml_nurier\venv\scripts\python.exe -m pip install -r requirements.txt
+            - 해결 : requirements.txt 상단의 install requirement 클릭 또는 개별 명령어로 실행
+
