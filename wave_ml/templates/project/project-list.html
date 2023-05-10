@@ -5,7 +5,7 @@
 {% block middle-title %}프로젝트{% endblock %}
 
 {% block content %}
-
+{% csrf_token %}
     <div class="page-content">
         <div class="container-fluid">
             <div class="row">
@@ -21,250 +21,273 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-2">
-                                        <select class="form-select mb-3">
-                                            <option value="update" selected>업데이트순</option>
+                                        <select id="project-search-select-box" class="form-select mb-3">
+                                            <option value="update">업데이트순</option>
                                             <option value="name">이름순</option>
                                             <option value="registration">등록순</option>
                                         </select>
                                     </div>
                                 </form>
                             </div>
-
                             <div class="col-sm-auto">
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal"><i class="ri-add-line align-bottom me-1"></i> 등록</button>
                             </div>
                         </div>
 
-                        {% if project_size == 0 %}
+                        {% if project_obj %}
+                        <div class="row" id="project-list-row">
+                            {% for project in project_obj %}
+                            <div class="col-xl-6">
+                                <div class="card card-animate" name="project_list">
+                                    <div class="card-body">
+                                        <div class="d-flex flex-column h-100">
+                                            <div class="d-flex">
+                                                <div class="flex-grow-1">
+                                                    <p class="mb-4"><span class="text-muted">업데이트</span><span class="fw-semibold"> {{project.project_update_date | date:'Y.m.d H:i:s' }} </span></p>
+                                                    <!-- <p class="text-muted mb-4">Updated 2hrs ago</p> -->
+                                                </div>
+                                                <div class="flex-shrink-0">
+                                                    <div class="d-flex gap-1 align-items-center">
+                                                        <div class="dropdown">
+                                                            <button class="btn btn-link text-muted p-1 mt-n2 py-0 text-decoration-none fs-15" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                                                <i class="ri-more-fill"></i>
+                                                            </button>
+                                                            <div class="dropdown-menu dropdown-menu-end">
+                                                                <a class="dropdown-item" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#myModal"><i class="ri-pencil-fill align-bottom me-2 text-muted"></i> 편집</a>
+                                                                <a class="dropdown-item" href="javascript:project_clone({{project.id}})"><i class="ri-file-copy-fill align-bottom me-2 text-muted"></i> 복제</a>
+                                                                <a class="dropdown-item" href="javascript:project_remove({{project.id}})"><i class="ri-delete-bin-6-fill align-bottom me-2 text-muted"></i> 삭제</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex mb-2">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="avatar-md">
+                                                        <span class="avatar-title bg-soft-indigo rounded p-2">
+                                                            <img src="{% static 'images/brands/mail_chimp.png' %}" alt="프로젝트 메인 이미지" class="img-fluid p-1">
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="card-subtitle mb-2">금융&middot;은행</h6>
+                                                    <h5 class="card-title mb-3 fw-semibold"><a href="/project/detail" class="text-dark">{{project.project_name}}</a></h5>
+                                                    <div class="row align-items-center mt-3">
+                                                        <div class="col-lg-3">
+                                                            <p class="text-muted mb-0">등록자</p>
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <p class="mb-0">{{project.registrant}}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row align-items-center">
+                                                        <div class="col-lg-3">
+                                                            <p class="text-muted mb-0">등록일</p>
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <p class="mb-0">{{project.project_registration_date | date:'Y.m.d H:i:s'}}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div><!-- end card body -->
+                                </div>
+                            </div><!-- end col -->
+                            {% endfor %}
+                        </div><!-- end row -->
+                        <!-- pagination -->
+                        <div class="row g-0 text-center text-sm-start align-items-center mb-3">
+                            <div class="float-left">
+                                <div>
+                                    <p class="mb-sm-0">Showing to {{project_obj.number}} of {{project_obj.paginator.num_pages}} entries</p>
+                                </div>
+                            </div> <!-- end col -->
+                            <div class="col">
+                                <ul class="pagination pagination-separated justify-content-center">
+                                    <li class="page-item disabled">
+                                        <a href="javascript:go_prev();" class="page-link"><i class="mdi mdi-chevron-left"></i></a>
+                                    </li>
+                                    {% for plinks in page_links %}
+                                        {{ plinks | safe }}
+                                    {% endfor %}
+                                    <li class="page-item">
+                                        <a href="javascript:go_next();" class="page-link"><i class="mdi mdi-chevron-right"></i></a>
+                                    </li>
+                                </ul>
+                            </div><!-- end col -->
+                        </div>
+                        {% else %}
                         <div class="row">
                             <div class="col-xxl-12">
                                 <div class="card">
                                     <div class="card-body">
                                         <h5 class="card-title fw-semibold">프로젝트</h5>
-
                                         <div class="text-center mt-3 pt-3">
-                                            <a href="javascript:void(0)" class="btn btn-soft-dark">
+                                            <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#myModal" class="btn btn-soft-dark">
                                                 <i class="bx bx-layer-plus display-6 text-white"></i>
                                             </a>
-
                                             <p class="mt-3">버튼을 선택해서 새 프로젝트를 등록해보세요.</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        {% else %}
-                        <div class="row">
-                            <div class="col-xl-6">
-                                <div class="card card-animate" name="project_list">
-                                    <div class="card-body">
-                                        <div class="d-flex flex-column h-100">
-                                            <div class="d-flex">
-                                                <div class="flex-grow-1">
-                                                    <p class="mb-4"><span class="text-muted">업데이트</span><span class="fw-semibold"> 2023.01.01 12:01:01</span></p>
-                                                    <!-- <p class="text-muted mb-4">Updated 2hrs ago</p> -->
-                                                </div>
-                                                <div class="flex-shrink-0">
-                                                    <div class="d-flex gap-1 align-items-center">
-                                                        <div class="dropdown">
-                                                            <button class="btn btn-link text-muted p-1 mt-n2 py-0 text-decoration-none fs-15" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                                                <i class="ri-more-fill"></i>
-                                                            </button>
-
-                                                            <div class="dropdown-menu dropdown-menu-end">
-                                                                <a class="dropdown-item" href="#"><i class="ri-pencil-fill align-bottom me-2 text-muted"></i> 편집</a>
-                                                                <a class="dropdown-item" href="#"><i class="ri-file-copy-fill align-bottom me-2 text-muted"></i> 복제</a>
-                                                                <a class="dropdown-item" href="#"><i class="ri-delete-bin-6-fill align-bottom me-2 text-muted"></i> 삭제</a>
-                                                                <a class="dropdown-item" href="#"><i class="ri-install-fill align-bottom me-2 text-muted"></i> 백업</a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="d-flex mb-2">
-                                                <div class="flex-shrink-0 me-3">
-                                                    <div class="avatar-md">
-                                                        <span class="avatar-title bg-soft-indigo rounded p-2">
-                                                            <img src="{% static 'images/brands/mail_chimp.png' %}" alt="프로젝트 메인 이미지" class="img-fluid p-1">
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <h6 class="card-subtitle mb-2">금융&middot;은행</h6>
-                                                    <h5 class="card-title mb-3 fw-semibold"><a href="/project/detail" class="text-dark">은행 Project 2</a></h5>
-
-                                                    <div class="row align-items-center mt-3">
-                                                        <div class="col-lg-3">
-                                                            <p class="text-muted mb-0">관리자</p>
-                                                        </div>
-                                                        <div class="col-auto">
-                                                            <p class="mb-0">유재석</p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row align-items-center">
-                                                        <div class="col-lg-3">
-                                                            <p class="text-muted mb-0">권한</p>
-                                                        </div>
-                                                        <div class="col-auto">
-                                                            <p class="mb-0">글로벌</p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row align-items-center">
-                                                        <div class="col-lg-3">
-                                                            <p class="text-muted mb-0">등록일</p>
-                                                        </div>
-                                                        <div class="col-auto">
-                                                            <p class="mb-0">2023.01.01 12:01:01</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div><!-- end card body -->
-                                </div>
-                            </div><!-- end col -->
-
-                            <div class="col-xl-6">
-                                <div class="card card-animate" name="project_list">
-                                    <div class="card-body">
-                                        <div class="d-flex flex-column h-100">
-                                            <div class="d-flex">
-                                                <div class="flex-grow-1">
-                                                    <p class="mb-4"><span class="text-muted">업데이트</span><span class="fw-semibold"> 2023.01.01 12:01:01</span></p>
-                                                    <!-- <p class="text-muted mb-4">Updated 2hrs ago</p> -->
-                                                </div>
-                                                <div class="flex-shrink-0">
-                                                    <div class="d-flex gap-1 align-items-center">
-                                                        <div class="dropdown">
-                                                            <button class="btn btn-link text-muted p-1 mt-n2 py-0 text-decoration-none fs-15" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                                                <i class="ri-more-fill"></i>
-                                                            </button>
-
-                                                            <div class="dropdown-menu dropdown-menu-end">
-                                                                <a class="dropdown-item" href="#"><i class="ri-pencil-fill align-bottom me-2 text-muted"></i> 편집</a>
-                                                                <a class="dropdown-item" href="#"><i class="ri-file-copy-fill align-bottom me-2 text-muted"></i> 복제</a>
-                                                                <a class="dropdown-item" href="#"><i class="ri-delete-bin-6-fill align-bottom me-2 text-muted"></i> 삭제</a>
-                                                                <a class="dropdown-item" href="#"><i class="ri-install-fill align-bottom me-2 text-muted"></i> 백업</a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="d-flex mb-2">
-                                                <div class="flex-shrink-0 me-3">
-                                                    <div class="avatar-md">
-                                                        <span class="avatar-title bg-soft-indigo rounded p-2">
-                                                            <img src="{% static 'images/brands/mail_chimp.png' %}" alt="프로젝트 메인 이미지" class="img-fluid p-1">
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <h6 class="card-subtitle mb-2">금융&middot;은행</h6>
-                                                    <h5 class="card-title mb-3 fw-semibold"><a href="/project/detail" class="text-dark">은행 Project 2</a></h5>
-
-                                                    <div class="row align-items-center mt-3">
-                                                        <div class="col-lg-3">
-                                                            <p class="text-muted mb-0">관리자</p>
-                                                        </div>
-                                                        <div class="col-auto">
-                                                            <p class="mb-0">유재석</p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row align-items-center">
-                                                        <div class="col-lg-3">
-                                                            <p class="text-muted mb-0">권한</p>
-                                                        </div>
-                                                        <div class="col-auto">
-                                                            <p class="mb-0">글로벌</p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row align-items-center">
-                                                        <div class="col-lg-3">
-                                                            <p class="text-muted mb-0">등록일</p>
-                                                        </div>
-                                                        <div class="col-auto">
-                                                            <p class="mb-0">2023.01.01 12:01:01</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div><!-- end card body -->
-                                </div>
-                            </div><!-- end col -->
-                        </div><!-- end row -->
                         {% endif %}
                     </div> <!-- end .h-100-->
                 </div> <!-- end col -->
             </div>
-
-            {% if project_size != 0 %}
-            <div class="row g-0 text-center text-sm-start align-items-center mb-3">
-                <div class="float-left">
-                    <div>
-                        <p class="mb-sm-0">Showing 1 to 8 of 12 entries</p>
-                    </div>
-                </div> <!-- end col -->
-                <div class="col">
-                    <ul class="pagination pagination-separated justify-content-center">
-                        <li class="page-item disabled">
-                            <a href="javascript:go_prev();" class="page-link"><i class="mdi mdi-chevron-left"></i></a>
-                        </li>
-                        {% for plinks in page_links %}
-                            {{ plinks | safe }}
-                        {% endfor %}
-                        <li class="page-item">
-                            <a href="javascript:go_next();" class="page-link"><i class="mdi mdi-chevron-right"></i></a>
-                        </li>
-                    </ul>
-                </div><!-- end col -->
-            </div>
-            {% endif %}
         </div>
         <!-- container-fluid -->
     </div>
     <!-- End Page-content -->
 
 <script type="text/javascript">
-    $(function() {
-        $("#registrant_name").val("{{ user_name }}");
+$(function() {
+    <!-- 초기화 -->
+    init();
+
+    <!-- 프로젝트 등록버튼 클릭 -->
+    $("#btn_for_project_registration").on("click", function(e){
+        e.preventDefault();
+        project_registration();
     });
 
-    function go_page(page_num) {
-        $.ajax({
-            type: 'GET',
-            url: '/project/',
-            data: {
-                'page': page_num
-            },
-            success: function(data) {
-                $("#project-documents").html("");
-                $("#project-documents").html(data);
-            },
-            error: function(data) {
-                console.log("paginator error");
-            }
-        });
-    }
+   <!-- 프로젝트 정렬 -->
+   $("#project-search-select-box").on("change", function(e){
+        var sort_option = $("#project-search-select-box option:selected").val();
+        $("#project-list-row").load(location.href + " #project-list-row", {'page': {{project_obj.number}}, 'sort_option': sort_option, 'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()});
+   });
+});
 
-    function go_prev() {
-        var page_num = $("li.page-item.active").text().trim();
-        if (page_num <= 1) {
-            return false;
-        } else {
-            go_page(Number(page_num)- 1);
-        }
-    }
+<!-- 프로젝트 등록, 편집  -->
+function project_registration() {
+    var project_type = $("#select_for_project_type option:selected").text();
+    var project_sub_type = $("#select_for_project_sub_type option:selected").text();
 
-    function go_next() {
-        var last_page = $("li.page-item").eq(-2).text().trim();
-        var page_num = $("li.page-item.active").text().trim();
-        if (page_num >= last_page) {
-            return false;
-        } else {
-            go_page(Number(page_num) + 1);
+    var form_data = new FormData($("#project_registration_form")[0]);
+    form_data.append('project_type', project_type);
+    form_data.append('project_sub_type', project_sub_type);
+
+    $.ajax({
+        type: 'POST',
+        url: '/project/registration/',
+        data: form_data,
+        processData: false,
+        contentType: false,
+        success: function(data) {
+            $("#project_registration_form")[0].reset();
+            $("#btn_for_project_cancel").trigger("click");
+            $("#project-list-row").load(location.href + " #project-list-row");
+        },
+        error: function(data) {
+            console.log("project registration error");
         }
+    });
+}
+
+<!-- 페이지 진입 초기화 설정 -->
+function init() {
+    var current_page = {{project_obj.number}};
+    var last_page = {{project_obj.paginator.num_pages}};
+    $("#registrant_name").val("{{ user_name }}");
+    $("#registration_date").attr("disabled", true);
+    $("#registrant_name").attr("disabled", true);
+
+    if ( current_page <= 1 ) {
+        $("li.page-item").first().addClass("disabled");
+        $("li.page-item").last().removeClass("disabled");
+    } else if ( current_page >= last_page ) {
+        $("li.page-item").last().addClass("disabled");
+        $("li.page-item").first().removeClass("disabled");
+    } else {
+        $("li.page-item").last().removeClass("disabled");
+        $("li.page-item").first().removeClass("disabled");
     }
+}
+
+<!-- pagination 이전버튼 -->
+function go_prev() {
+    if ({{project_obj.number}} > 1) {
+        var page_num = {{project_obj.number}} - 1;
+        location.href = '/project?page=' + page_num;
+    }
+}
+
+<!-- pagination 다음버튼 -->
+function go_next() {
+    if ({{project_obj.number}} < {{project_obj.paginator.num_pages}}) {
+        var page_num = {{project_obj.number}} + 1;
+        location.href = '/project?page=' + page_num;
+    }
+}
+
+<!-- 프로젝트 삭제 -->
+function project_remove(project_id){
+    Swal.fire({
+        title:'프로젝트를 삭제하시겠습니까?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonClass: 'btn btn-primary w-xs mt-2',
+        cancelButtonClass: 'btn btn-light w-xs me-2 mt-2',
+        confirmButtonText: '삭제',
+        cancelButtonText: '취소',
+        reverseButtons: true,
+        buttonsStyling: false,
+        showCloseButton: true
+    }).then(function(result){
+        if(result.value){
+            $.ajax({
+                type: 'POST',
+                url: '/project/remove/',
+                data: {
+                    'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val(),
+                    'project_id': project_id
+                },
+                success: function(data) {
+                    $('#project-list-row').load(location.href + ' #project-list-row');
+                },
+                error: function(data) {
+                    console.log("project remove error");
+                }
+            });
+        }
+    });
+}
+
+<!-- 프로젝트 복제 -->
+function project_clone(project_id){
+    Swal.fire({
+        title:'프로젝트를 복제하시겠습니까?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonClass: 'btn btn-primary w-xs mt-2',
+        cancelButtonClass: 'btn btn-light w-xs me-2 mt-2',
+        confirmButtonText: '복제',
+        cancelButtonText: '취소',
+        reverseButtons: true,
+        buttonsStyling: false,
+        showCloseButton: true
+    }).then(function(result){
+        if(result.value){
+            $.ajax({
+                type: 'POST',
+                url: '/project/clone/',
+                data: {
+                    'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val(),
+                    'project_id': project_id
+                },
+                success: function(data) {
+                    $('#project-list-row').load(location.href + ' #project-list-row');
+                },
+                error: function(data) {
+                    console.log("project clone error");
+                }
+            });
+        }
+    });
+}
+
 </script>
 
 {% endblock %}

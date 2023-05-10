@@ -16,7 +16,8 @@
     <link href="{% static 'libs/dropzone/dropzone.css' %}" rel="stylesheet" type="text/css" />
     <!-- swiper css -->
     <link rel="stylesheet" href="{% static 'libs/swiper/swiper-bundle.min.css' %}">
-
+    <!-- Sweet Alert css-->
+    <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
     <!-- Layout config Js -->
     <script src="{% static 'js/layout.js' %}"></script>
     <!-- JQuery -->
@@ -73,144 +74,145 @@
         <!-- end main content-->
 
         <!-- Modals -->
-        <div id="myModal" class="modal fade" tabindex="-1" aria-labelledby="myModalLabel" style="display: none;" aria-modal="true" role="dialog">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title text-white" id="myModalLabel">프로젝트 등록</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="text-center mb-4 mt-n3 pt-2">
-                            <div class="position-relative d-inline-block">
-                                <div class="position-absolute bottom-0 end-0">
-                                    <label for="companylogo-image-input" class="mb-0" data-bs-toggle="tooltip" data-bs-placement="right" title="Select Image">
-                                        <div class="avatar-xs cursor-pointer">
-                                            <div class="avatar-title bg-light border rounded-circle text-muted">
-                                                <i class="ri-image-fill"></i>
-                                            </div>
-                                        </div>
-                                    </label>
-                                    <input class="form-control d-none" value="" id="companylogo-image-input" type="file" accept="image/png, image/gif, image/jpeg">
-                                </div>
-                                <div class="avatar-lg p-1">
-                                    <div class="avatar-title bg-light rounded-circle">
-                                        <div class="bg-avatarbg avatar-md rounded-circle d-flex justify-content-center align-items-center">
-                                            <i class='bx bx-customize' style="font-size: 35px;"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        <form method="post" enctype="multipart/form-data" id="project_registration_form">
+            {% csrf_token %}
+            <div id="myModal" class="modal fade" tabindex="-1" aria-labelledby="myModalLabel" style="display: none;" aria-modal="true" role="dialog">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-white" id="myModalLabel">프로젝트 등록</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-
-                        <div class="row g-3">
-                            <div class="col-lg-6">
-                                <div>
-                                    <label for="select_for_project_type" class="form-label">대분류</label>
-                                    <select class="form-select" id="select_for_project_type" required>
-                                        <option value="ns" selected>누리어시스템</option>
-                                        <option value="nh">NH농협은행</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div>
-                                    <label for="select_for_project_sub_type" class="form-label">소분류</label>
-                                    <select class="form-select" id="select_for_project_sub_type" required>
-                                        <option value="IB" selected>인터넷 뱅킹</option>
-                                        <option value="SB">스마트 뱅킹</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-12">
-                                <label for="project_name" class="form-label">프로젝트명</label>
-                                <input type="text" id="project_name" class="form-control" placeholder="프로젝트명을 입력하세요" required />
-                            </div>
-
-                            <div class="col-lg-6">
-                                <div>
-                                    <label for="registrant_name" class="form-label">등록자</label>
-                                    <input type="text" id="registrant_name" class="form-control" required readonly />
-                                </div>
-                            </div>
-                            <!--<div class="col-lg-4">
-                                <div>
-                                    <label for="" class="form-label">권한</label>
-                                    <select class="form-select" id="" required>
-                                        <option selected="">총괄</option>
-                                        <option value="">Part Time</option>
-                                        <option value="">Freelance</option>
-                                        <option value="">Intership</option>
-                                    </select>
-                                </div>
-                            </div>-->
-                            <div class="col-lg-6">
-                                <div>
-                                    <label for="registration_date" class="form-label">등록일시</label>
-                                    <input type="text" id="registration_date" class="form-control flatpickr-input" data-provider="flatpickr" data-date-format="Y.m.d" data-default-date="today" placeholder="" readonly>
-                                </div>
-                            </div>
-
-                            <div class="col-12">
-                                <div>
-                                    <label for="project_explanation" class="form-label">프로젝트 내용</label>
-                                    <textarea class="form-control" id="project_explanation" placeholder="프로젝트 설명을 입력하세요" rows="3" spellcheck="false" style="resize: none;"></textarea>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <p class="mt-3 mb-2">파일등록</p>
-
-                            <div class="dropzone" style="min-height: 100px;">
-                                <div class="fallback">
-                                    <input name="file" type="file" multiple="multiple">
-                                </div>
-                                <div class="dz-message needsclick">
-                                    <div class="mb-3">
-                                        <i class="display-5 text-muted bx bx-cloud-upload"></i>
-                                    </div>
-                                    <h5 class="fs-6">버튼을 클릭하거나 파일을 마우스로 끌어 오세요.</h5>
-                                </div>
-                            </div>
-
-                            <ul class="list-unstyled mb-0" id="dropzone-preview">
-                                <li class="mt-2" id="dropzone-preview-list">
-                                    <!-- This is used as the file preview template -->
-                                    <div class="border rounded">
-                                        <div class="d-flex align-items-center p-2">
-                                            <div class="flex-shrink-0 me-3">
-                                                <div class="avatar-sm bg-light text-muted rounded d-flex align-items-center justify-content-center fs-3">
-                                                    <i class="ri-attachment-2"></i>
-                                                    <!-- <img src="#" alt="Project-Image" data-dz-thumbnail class="img-fluid rounded d-block" /> -->
+                        <div class="modal-body">
+                            <div class="text-center mb-4 mt-n3 pt-2">
+                                <div class="position-relative d-inline-block">
+                                    <div class="position-absolute bottom-0 end-0">
+                                        <label for="companylogo-image-input" class="mb-0" data-bs-toggle="tooltip" data-bs-placement="right" title="Select Image">
+                                            <div class="avatar-xs cursor-pointer">
+                                                <div class="avatar-title bg-light border rounded-circle text-muted">
+                                                    <i class="ri-image-fill"></i>
                                                 </div>
                                             </div>
-                                            <div class="flex-grow-1">
-                                                <div class="pt-1">
-                                                    <h5 class="fs-14 mb-1" data-dz-name>&nbsp;</h5>
-                                                    <p class="fs-13 text-muted mb-0" data-dz-size></p>
-                                                    <strong class="error text-danger" data-dz-errormessage></strong>
-                                                </div>
-                                            </div>
-                                            <div class="flex-shrink-0 ms-3">
-                                                <button data-dz-remove class="btn btn-sm btn-light text-muted lh-1 p-1"><i class='bx bx-x fs-4'></i></button>
+                                        </label>
+                                        <input class="form-control d-none" value="" id="companylogo-image-input" type="file" accept="image/png, image/gif, image/jpeg" onchange="check_img(this)">
+                                    </div>
+                                    <div class="avatar-lg p-1">
+                                        <div class="avatar-title bg-light rounded-circle">
+                                            <div class="bg-avatarbg avatar-md rounded-circle d-flex justify-content-center align-items-center">
+                                                <i class='bx bx-customize' style="font-size: 35px;"></i>
                                             </div>
                                         </div>
                                     </div>
-                                </li>
-                            </ul>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-lg-6">
+                                    <div>
+                                        <label for="select_for_project_type" class="form-label">대분류</label>
+                                        <select class="form-select" id="select_for_project_type" required>
+                                            <option value="ns" selected>누리어시스템</option>
+                                            <option value="nh">NH농협은행</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div>
+                                        <label for="select_for_project_sub_type" class="form-label">소분류</label>
+                                        <select class="form-select" id="select_for_project_sub_type" required>
+                                            <option value="IB" selected>인터넷 뱅킹</option>
+                                            <option value="SB">스마트 뱅킹</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <label for="project_name" class="form-label">프로젝트명</label>
+                                    <input type="text" id="project_name" class="form-control" name="project_name" placeholder="프로젝트명을 입력하세요" required />
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <div>
+                                        <label for="registrant_name" class="form-label">등록자</label>
+                                        <input type="text" id="registrant_name" name="registrant_name" class="form-control" required readonly />
+                                    </div>
+                                </div>
+                                <!--<div class="col-lg-4">
+                                    <div>
+                                        <label for="" class="form-label">권한</label>
+                                        <select class="form-select" id="" required>
+                                            <option selected="">총괄</option>
+                                            <option value="">Part Time</option>
+                                            <option value="">Freelance</option>
+                                            <option value="">Intership</option>
+                                        </select>
+                                    </div>
+                                </div>-->
+                                <div class="col-lg-6">
+                                    <div>
+                                        <label for="registration_date" class="form-label">등록일시</label>
+                                        <input type="text" id="registration_date" class="form-control flatpickr-input" data-provider="flatpickr" data-date-format="Y.m.d" data-default-date="today" placeholder="" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div>
+                                        <label for="project_explanation" class="form-label">프로젝트 내용</label>
+                                        <textarea class="form-control" id="project_explanation" name="project_explanation" placeholder="프로젝트 설명을 입력하세요" rows="3" spellcheck="false" style="resize: none;"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p class="mt-3 mb-2">파일등록</p>
+
+                                <div class="dropzone" style="min-height: 100px;">
+                                    <div class="fallback">
+                                        <input name="file" type="file" multiple="multiple">
+                                    </div>
+                                    <div class="dz-message needsclick">
+                                        <div class="mb-3">
+                                            <i class="display-5 text-muted bx bx-cloud-upload"></i>
+                                        </div>
+                                        <h5 class="fs-6">버튼을 클릭하거나 파일을 마우스로 끌어 오세요.</h5>
+                                    </div>
+                                </div>
+
+                                <ul class="list-unstyled mb-0" id="dropzone-preview">
+                                    <li class="mt-2" id="dropzone-preview-list">
+                                        <!-- This is used as the file preview template -->
+                                        <div class="border rounded">
+                                            <div class="d-flex align-items-center p-2">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="avatar-sm bg-light text-muted rounded d-flex align-items-center justify-content-center fs-3">
+                                                        <i class="ri-attachment-2"></i>
+                                                        <!-- <img src="#" alt="Project-Image" data-dz-thumbnail class="img-fluid rounded d-block" /> -->
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <div class="pt-1">
+                                                        <h5 class="fs-14 mb-1" data-dz-name>&nbsp;</h5>
+                                                        <p class="fs-13 text-muted mb-0" data-dz-size></p>
+                                                        <strong class="error text-danger" data-dz-errormessage></strong>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-shrink-0 ms-3">
+                                                    <button data-dz-remove class="btn btn-sm btn-light text-muted lh-1 p-1"><i class='bx bx-x fs-4'></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">취소</button>
-                        <button type="button" class="btn btn-primary" id="btn_for_project_registration">등록</button>
-                    </div>
-
-                </div><!-- /.modal-content -->
-            </div><!-- /.modal-dialog -->
-        </div><!-- /.modal -->
-
+                        <div class="modal-footer">
+                            <button type="button" id="btn_for_project_cancel" class="btn btn-light" data-bs-dismiss="modal">취소</button>
+                            <button type="button" id="btn_for_project_registration" class="btn btn-primary">등록</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+        </form>
     </div>
     <!-- END layout-wrapper -->
 
@@ -228,6 +230,8 @@
     <script src="{% static 'js/pages/project-create.init.js' %}"></script>
     <!-- App js -->
     <script src="{% static 'js/app.js' %}"></script>
+    <!-- Sweet Alerts js -->
+    <script src="{% static 'libs/sweetalert2/sweetalert2.min.js' %}"></script>
 
 </body>
 </html>
