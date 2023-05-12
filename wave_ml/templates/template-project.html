@@ -96,7 +96,7 @@
                                         </label>
                                         <input class="form-control d-none" value="" id="companylogo-image-input" type="file" accept="image/png, image/gif, image/jpeg" onchange="check_img(this)">
                                     </div>
-                                    <div class="avatar-lg p-1">
+                                    <div id="img_none" class="avatar-lg p-1">
                                         <div class="avatar-title bg-light rounded-circle">
                                             <div class="bg-avatarbg avatar-md rounded-circle d-flex justify-content-center align-items-center">
                                                 <i class='bx bx-customize' style="font-size: 35px;"></i>
@@ -110,18 +110,18 @@
                                 <div class="col-lg-6">
                                     <div>
                                         <label for="select_for_project_type" class="form-label">대분류</label>
-                                        <select class="form-select" id="select_for_project_type" required>
-                                            <option value="ns" selected>누리어시스템</option>
-                                            <option value="nh">NH농협은행</option>
+                                        <select class="form-select" id="select_for_project_type" name="project_type" required>
+                                            <option value="누리어시스템" selected>누리어시스템</option>
+                                            <option value="NH농협은행">NH농협은행</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div>
                                         <label for="select_for_project_sub_type" class="form-label">소분류</label>
-                                        <select class="form-select" id="select_for_project_sub_type" required>
-                                            <option value="IB" selected>인터넷 뱅킹</option>
-                                            <option value="SB">스마트 뱅킹</option>
+                                        <select class="form-select" id="select_for_project_sub_type" name="project_sub_type" required>
+                                            <option value="인터넷 뱅킹" selected>인터넷 뱅킹</option>
+                                            <option value="스마트 뱅킹">스마트 뱅킹</option>
                                         </select>
                                     </div>
                                 </div>
@@ -234,4 +234,138 @@
     <script src="{% static 'libs/sweetalert2/sweetalert2.min.js' %}"></script>
 
 </body>
+<script type="text/javascript">
+    $(function() {
+        <!-- 유저 정보 등록 -->
+        $('#registrant_name').val('{{ user_name }}');
+
+        <!-- 프로젝트 등록 -->
+        $("#btn_for_project_registration").on("click", function(e) {
+            e.preventDefault();
+            project_registration();
+        });
+
+        <!-- 모달 종료 시 이벤트 -->
+        $("#myModal").on("hidden.bs.modal", function(e){
+            <!-- 작성된 기존 폼 데이터 초기화 -->
+            $("#project_registration_form")[0].reset();
+            var file_size = $("#dropzone-preview li").length;
+            if(file_size > 0) {
+                $("#dropzone-preview").html("");
+            }
+
+            <!-- 편집으로 모달 접근 시 -->
+            if(sessionStorage.getItem('modify')) {
+                $("#btn_for_project_modify").removeAttr('data-bs-toggle');
+                $("#btn_for_project_modify").removeAttr('data-bs-target');
+                sessionStorage.removeItem('modify');
+            }
+        });
+
+        <!-- 모달 시작 시 이벤트 -->
+        $("#myModal").on("show.bs.modal", function(e){
+            <!-- 유저 정보 지정 -->
+            $('#registrant_name').val('{{ user_name }}');
+            <!-- 등록자, 등록일시 기본값 지정 -->
+            $("#registration_name").val($('#registrant_name').val());
+            var today = new Date();
+            var year = today.getFullYear();
+            var month = ('0' + (today.getMonth() + 1)).slice(-2);
+            var day = ('0' + today.getDate()).slice(-2);
+            var dateString = year + '.' + month  + '.' + day;
+            $("#registration_date").val(dateString);
+            <!-- 등록자, 등록일시 수정 불가 지정 -->
+            $("#registration_date").attr("disabled", true);
+            $("#registrant_name").attr("disabled", true);
+        });
+    });
+
+    <!-- 이미지 미리보기 설정 -->
+<!--    function check_img(imgFile) {-->
+<!--        if(imgFile.files && imgFile.files[0]) {-->
+<!--            var reader = new FileReader();-->
+<!--            reader.onload = function(e) {-->
+<!--                $("#img_none").hide();-->
+<!--                $("#img_regist").show();-->
+<!--                $("#img_regist img").src = e.target.result;-->
+<!--            }-->
+<!--            reader.readAsDataURL(imgFile.files[0]);-->
+<!--        } else {-->
+<!--            $("#img_none").show();-->
+<!--            $("#img_regist").hide();-->
+<!--            $("#img_regist img").src = "";-->
+<!--        }-->
+<!--    }-->
+
+    <!-- 프로젝트 등록 함수 -->
+    function project_registration() {
+        var form_data = new FormData($("#project_registration_form")[0]);
+
+        <!--대분류, 소분류, 프로젝트명, 등록자, 파일등록 유효성 검사-->
+<!--        project_type = form_data.get('project_type');-->
+<!--        project_sub_type = form_data.get('project_sub_type');-->
+<!--        project_name = form_data.get('project_name');-->
+<!--        registrant_name = form_data.get('registrant_name');-->
+<!--        project_file = form_data.get('project_file');-->
+
+<!--        if(typeof project_type == "undefined" || project_type == null || project_type == "") {-->
+<!--            Swal.fire({-->
+<!--                title:'대분류를 확인해주세요',-->
+<!--                icon: 'warning',-->
+<!--                confirmButtonClass: 'btn btn-primary w-xs mt-2',-->
+<!--                buttonsStyling: false-->
+<!--            })-->
+<!--            return false;-->
+<!--        } else if(typeof project_sub_type == "undefined" || project_sub_type == null || project_sub_type == "") {-->
+<!--            Swal.fire({-->
+<!--                title:'소분류를 확인해주세요',-->
+<!--                icon: 'warning',-->
+<!--                confirmButtonClass: 'btn btn-primary w-xs mt-2',-->
+<!--                buttonsStyling: false-->
+<!--            })-->
+<!--            return false;-->
+<!--        } else if(typeof project_name == "undefined" || project_name == null || project_name == "") {-->
+<!--            Swal.fire({-->
+<!--                title:'프로젝트명을 확인해주세요',-->
+<!--                icon: 'warning',-->
+<!--                confirmButtonClass: 'btn btn-primary w-xs mt-2',-->
+<!--                buttonsStyling: false-->
+<!--            })-->
+<!--            return false;-->
+<!--        } else if(typeof registrant_name == "undefined" || registrant_name == null || registrant_name == "") {-->
+<!--            Swal.fire({-->
+<!--                title:'등록자를 확인해주세요',-->
+<!--                icon: 'warning',-->
+<!--                confirmButtonClass: 'btn btn-primary w-xs mt-2',-->
+<!--                buttonsStyling: false-->
+<!--            })-->
+<!--            return false;-->
+<!--        } else if(typeof project_file == "undefined" || project_file == null || project_file == "") {-->
+<!--            Swal.fire({-->
+<!--                title:'파일등록을 확인해주세요',-->
+<!--                icon: 'warning',-->
+<!--                confirmButtonClass: 'btn btn-primary w-xs mt-2',-->
+<!--                buttonsStyling: false-->
+<!--            })-->
+<!--            return false;-->
+<!--        }-->
+
+        $.ajax({
+            type: 'POST',
+            url: '/project/registration/',
+            data: form_data,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function(data) {
+                $("#btn_for_project_cancel").trigger("click");
+                $("#project-list-row-container").html("");
+                $("#project-list-row-container").html(data);
+            },
+            error: function(data) {
+                console.log("project_registration error");
+            }
+        });
+    }
+    </script>
 </html>
