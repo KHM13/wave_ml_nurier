@@ -16,7 +16,11 @@
                             <form class="d-flex gap-1">
                                 <div class="col-sm-4">
                                     <div class="search-box">
-                                        <input type="text" class="form-control" id="input_for_search_keyword" placeholder="키워드 입력">
+                                        {% if keyword %}
+                                        <input type="text" class="form-control input_for_search_keyword" placeholder="키워드 입력" value="{{keyword}}">
+                                        {% else %}
+                                        <input type="text" class="form-control input_for_search_keyword" placeholder="키워드 입력">
+                                        {% endif %}
                                         <i class="ri-search-line search-icon"></i>
                                     </div>
                                 </div>
@@ -45,34 +49,37 @@
 <script type="text/javascript">
 
 $(function() {
+    <!-- 유저 정보 지정 -->
+    $('#registrant_name').val('{{ user_name }}');
+
+    <!-- 초기화 -->
     project_main_init();
 
     <!-- 프로젝트 정렬 -->
     $("#project-search-select-box").on("change", function(e) {
-        var page = sessionStorage.getItem('page');
-        var url = '/project/list/';
+        var sort = $("#project-search-select-box").val();
+        var keyword = $(".input_for_search_keyword").val();
+        project_main_init(sort, keyword);
+    });
 
-        if(typeof page == "undefined" || page == null || page == "") {
-            get_project_list(1, url);
-        } else {
-            get_project_list(page, url);
-        }
+    <!-- 키워드 검색 -->
+    $(".input_for_search_keyword").on("keyup", function(e) {
+        var sort = $("#project-search-select-box").val();
+        var keyword = $(".input_for_search_keyword").val();
+        project_main_init(sort, keyword);
     });
 });
 
 <!-- 페이지 진입 초기화 설정 -->
-function project_main_init() {
-    <!-- 유저 정보 지정 -->
-    $('#registrant_name').val('{{ user_name }}');
-
+function project_main_init(sort, keyword) {
     <!-- 초기 리스트 호출 ajax -->
     $.ajax({
         type: 'POST',
         url: '/project/list/',
         data: {
             'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val(),
-            'page': sessionStorage.getItem('page'),
-            'sort': sessionStorage.getItem('sort')
+            'sort': sort,
+            'keyword': keyword
         },
         success: function(data) {
             $("#project-list-row-container").html("");

@@ -1,6 +1,7 @@
 import json
 
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponse, HttpRequest, JsonResponse
 from django.shortcuts import render, redirect
 
@@ -8,42 +9,81 @@ from .models import Project
 
 # 프로젝트 메인 첫페이지
 def main(request):
-    return render(request, 'project/project-main.html')
+    sort = request.session.get('sort', 'update')
+    page = request.session.get('page', 1)
+    keyword = request.session.get('keyword', "")
+
+    return render(
+        request,
+        'project/project-main.html',
+        {
+            'sort': sort,
+            'page': page,
+            'keyword': keyword
+        }
+    )
 
 # 프로젝트 리스트 호출
 def list(request):
     if request.method == 'POST':
         # 추후 수정 필요
         user_id = 'TEST_USER'
-        sort = request.POST.get('sort', 'update')
-        page = request.POST.get('page', 1)
+        
+        # 기존 조건 확인
+        sort = request.POST.get('sort', request.session.get('sort'))
+        page = request.POST.get('page', request.session.get('page'))
+        keyword = request.POST.get('keyword', request.session.get('keyword'))
+
         # 리스트 정렬 조회
-        project_list = list_sort(sort, user_id)
+        project_list = list_sort(sort, user_id, keyword)
+        
         # 페이징 처리
         project_obj, links = paginator(page, project_list)
-
+        
+        # 세션 처리
+        request.session['sort'] = sort
+        request.session['page'] = page
+        request.session['keyword'] = keyword
+        
+        # 페이지 이동
         return render(
             request,
             'project/project-list.html',
             {
                 'page_links': links,
                 'project_obj': project_obj,
-                'sort': sort
+                'sort': sort,
+                'page': page,
+                'keyword': keyword
             }
         )
 
 # 프로젝트 리스트 정렬 조회
-def list_sort(sort, user_id):
-    if sort == 'name':
-        project_list = Project.objects.filter(registrant=user_id).order_by('project_name')
-    elif sort == 'registration':
-        project_list = Project.objects.filter(registrant=user_id).order_by('-project_registration_date')
+def list_sort(sort, user_id, keyword):
+    if keyword == "" or keyword == None:
+        if sort == 'name':
+            project_list = Project.objects.filter(registrant=user_id).order_by('project_name')
+        elif sort == 'registration':
+            project_list = Project.objects.filter(registrant=user_id).order_by('-project_registration_date')
+        else:
+            project_list = Project.objects.filter(registrant=user_id).order_by('-project_update_date')
     else:
-        project_list = Project.objects.filter(registrant=user_id).order_by('-project_update_date')
+        if sort == 'name':
+            project_list = Project.objects.filter(Q(registrant=user_id) & Q(project_name__contains=keyword)).order_by('project_name')
+        elif sort == 'registration':
+            project_list = Project.objects.filter(Q(registrant=user_id) & Q(project_name__contains=keyword)).order_by('-project_registration_date')
+        else:
+            project_list = Project.objects.filter(Q(registrant=user_id) & Q(project_name__contains=keyword)).order_by('-project_update_date')
     return project_list
 
 # 페이징 처리
 def paginator(page, project_list):
+    # 페이지가 None일 경우 1페이지 세팅
+    if page == None:
+        page = 1
+    # 페이지가 0보다 작을 경우 1페이지 세팅
+    if int(page) <= 0:
+        page = 1
     # 한 페이지에 보여줄 항목 수 지정
     projects_per_page = 8
     # 페이징 처리를 위한 Paginator 객체 생성
@@ -69,36 +109,64 @@ def paginator(page, project_list):
                 '<li class="page-item"><a href="javascript:go_page(%d)" class="page-link">%d</a></li>' % (pr, pr))
     return project_obj, links
 
+# 아이디로 특정 프로젝트 세부정보 가져오기
+def project_get_detail(request):
+    if request.method == 'POST':
+        project_obj = Project.objects.get(id=request.POST.get('project_id'))
+        project_registration_date = str(project_obj.project_registration_date).split()[0]
+        project_image = ""
+        if project_obj.project_image:
+            project_image = project_obj.project_image.url
+        data = {
+            'project_id': request.POST.get('project_id'),
+            'project_type': project_obj.project_type,
+            'project_sub_type': project_obj.project_sub_type,
+            'project_name': project_obj.project_name,
+            'registrant': project_obj.registrant,
+            'project_registration_date': project_registration_date,
+            'project_explanation': project_obj.project_explanation,
+            'project_image': project_image
+        }
+        data_json = json.dumps(data)
+        return HttpResponse(data_json, content_type='application/json')
+
 # 프로젝트 등록
 def registration(request):
     if request.method == 'POST':
+        project_img = ""
+        if request.FILES.get('project_image') is not None:
+            project_img = request.FILES.get('project_image')
         Project.objects.create(
             project_type=request.POST.get('project_type'),
             project_sub_type=request.POST.get('project_sub_type'),
             project_name=request.POST.get('project_name'),
             # 추후 수정 필요
             registrant='TEST_USER',
-            # registrant=request.POST.get('registrant_name', 'TEST_USER'),
             project_explanation=request.POST.get('project_explanation'),
+            project_image=project_img
         )
         return list(request)
 
 # 프로젝트 편집
 def modify(request):
     if request.method == 'POST':
-        project_obj = Project.objects.get(id=request.POST.get('project_id'))
-        project_registration_date = str(project_obj.project_registration_date).split()[0]
-        print(project_registration_date)
-        data = {
-            'project_type': project_obj.project_type,
-            'project_sub_type': project_obj.project_sub_type,
-            'project_name': project_obj.project_name,
-            'registrant': project_obj.registrant,
-            'project_registration_date': project_registration_date,
-            'project_explanation': project_obj.project_explanation
-        }
-        data_json = json.dumps(data)
-        return HttpResponse(data_json, content_type='application/json')
+        modify_project = Project.objects.get(id=request.POST.get('project_id_for_modify'))
+
+        # 이미지 유효성 검사
+        project_img = ""
+        if request.FILES.get('project_image') is not None:
+            project_img = request.FILES.get('project_image')
+        else:
+            if request.POST.get('project_modify_img_check') != "":
+                project_img = modify_project.project_image
+
+        modify_project.project_type = request.POST.get('project_type')
+        modify_project.project_sub_type = request.POST.get('project_sub_type')
+        modify_project.project_name = request.POST.get('project_name')
+        modify_project.project_explanation = request.POST.get('project_explanation')
+        modify_project.project_image = project_img
+        modify_project.save()
+        return list(request)
 
 # 프로젝트 복제
 def clone(request):

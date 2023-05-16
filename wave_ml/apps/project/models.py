@@ -9,9 +9,9 @@ class Project(models.Model):
     project_registration_date = models.DateTimeField(auto_now_add=True)
     project_update_date = models.DateTimeField(auto_now=True)
     project_explanation = models.TextField()
-    project_image = models.ImageField(upload_to='static/upload/image/%Y%m%d', default="")
+    project_image = models.ImageField(upload_to='image/%Y%m%d', default="", blank=True)
 
 # 파일 모델
 class ProjectFile(models.Model):
     project_id = models.ForeignKey(Project, related_name="project", on_delete=models.CASCADE)
-    project_file = models.FileField(upload_to='static/upload/file/%Y%m%d', default="")
+    project_file = models.FileField(upload_to='file/%Y%m%d', default="")

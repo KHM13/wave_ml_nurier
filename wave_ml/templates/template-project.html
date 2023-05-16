@@ -1,5 +1,4 @@
 {% load static %}
-<!doctype html>
 <html lang="ko" data-layout="vertical" data-sidebar="dark" data-sidebar-size="sm-hover" data-sidebar-image="none" data-preloader="disable" data-topbar="light" data-layout-style="default" data-layout-mode="light" data-layout-width="fluid" data-layout-position="fixed">
 
 <head>
@@ -94,13 +93,16 @@
                                                 </div>
                                             </div>
                                         </label>
-                                        <input class="form-control d-none" value="" id="companylogo-image-input" type="file" accept="image/png, image/gif, image/jpeg" onchange="check_img(this)">
+                                        <input class="form-control d-none" name="project_image" value="" id="companylogo-image-input" type="file" accept="image/png, image/gif, image/jpeg" onchange="check_img(this)">
                                     </div>
-                                    <div id="img_none" class="avatar-lg p-1">
-                                        <div class="avatar-title bg-light rounded-circle">
+                                    <div class="avatar-lg p-1">
+                                        <div class="avatar-title bg-light rounded-circle" id="img-none">
                                             <div class="bg-avatarbg avatar-md rounded-circle d-flex justify-content-center align-items-center">
                                                 <i class='bx bx-customize' style="font-size: 35px;"></i>
                                             </div>
+                                        </div>
+                                        <div id="img-exists" class="avatar-title bg-light rounded-circle" style="display: none;">
+                                            <img src="" class="img-thumbnail rounded-circle bg-light w-100 h-100" id="img-spot">
                                         </div>
                                     </div>
                                 </div>
@@ -212,6 +214,8 @@
                     </div><!-- /.modal-content -->
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
+            <input type="hidden" id="project_id_for_modify" name="project_id_for_modify" value="">
+            <input type="hidden" id="project_modify_img_check" name="project_modify_img_check" value="">
         </form>
     </div>
     <!-- END layout-wrapper -->
@@ -249,16 +253,21 @@
         $("#myModal").on("hidden.bs.modal", function(e){
             <!-- 작성된 기존 폼 데이터 초기화 -->
             $("#project_registration_form")[0].reset();
+
+            <!-- 등록한 파일 초기화 -->
             var file_size = $("#dropzone-preview li").length;
             if(file_size > 0) {
                 $("#dropzone-preview").html("");
             }
 
-            <!-- 편집으로 모달 접근 시 -->
-            if(sessionStorage.getItem('modify')) {
-                $("#btn_for_project_modify").removeAttr('data-bs-toggle');
-                $("#btn_for_project_modify").removeAttr('data-bs-target');
-                sessionStorage.removeItem('modify');
+            <!-- 등록한 이미지 초기화 -->
+            $("#img-none").show();
+            $("#img-spot").src = "";
+            $("#img-exists").hide();
+
+            <!-- 편집으로 모달에 접근했을 시 -->
+            if(sessionStorage.getItem('project_get_detail')) {
+                sessionStorage.removeItem('project_get_detail');
             }
         });
 
@@ -266,6 +275,7 @@
         $("#myModal").on("show.bs.modal", function(e){
             <!-- 유저 정보 지정 -->
             $('#registrant_name').val('{{ user_name }}');
+
             <!-- 등록자, 등록일시 기본값 지정 -->
             $("#registration_name").val($('#registrant_name').val());
             var today = new Date();
@@ -274,39 +284,32 @@
             var day = ('0' + today.getDate()).slice(-2);
             var dateString = year + '.' + month  + '.' + day;
             $("#registration_date").val(dateString);
+
             <!-- 등록자, 등록일시 수정 불가 지정 -->
             $("#registration_date").attr("disabled", true);
             $("#registrant_name").attr("disabled", true);
         });
-    });
 
-    <!-- 이미지 미리보기 설정 -->
-<!--    function check_img(imgFile) {-->
-<!--        if(imgFile.files && imgFile.files[0]) {-->
-<!--            var reader = new FileReader();-->
-<!--            reader.onload = function(e) {-->
-<!--                $("#img_none").hide();-->
-<!--                $("#img_regist").show();-->
-<!--                $("#img_regist img").src = e.target.result;-->
-<!--            }-->
-<!--            reader.readAsDataURL(imgFile.files[0]);-->
-<!--        } else {-->
-<!--            $("#img_none").show();-->
-<!--            $("#img_regist").hide();-->
-<!--            $("#img_regist img").src = "";-->
-<!--        }-->
-<!--    }-->
+        $("#companylogo-image-input").on("click", function(e) {
+            if ($("#companylogo-image-input").length) {
+
+            } else {
+
+            }
+            document.body.onfocus = null;
+        });
+    });
 
     <!-- 프로젝트 등록 함수 -->
     function project_registration() {
         var form_data = new FormData($("#project_registration_form")[0]);
 
         <!--대분류, 소분류, 프로젝트명, 등록자, 파일등록 유효성 검사-->
-<!--        project_type = form_data.get('project_type');-->
-<!--        project_sub_type = form_data.get('project_sub_type');-->
-<!--        project_name = form_data.get('project_name');-->
-<!--        registrant_name = form_data.get('registrant_name');-->
-<!--        project_file = form_data.get('project_file');-->
+        var project_type = form_data.get('project_type');
+        var project_sub_type = form_data.get('project_sub_type');
+        var project_name = form_data.get('project_name');
+        var registrant_name = form_data.get('registrant_name');
+        var project_file = form_data.get('project_file');
 
 <!--        if(typeof project_type == "undefined" || project_type == null || project_type == "") {-->
 <!--            Swal.fire({-->
@@ -349,10 +352,21 @@
 <!--            })-->
 <!--            return false;-->
 <!--        }-->
+        <!-- 등록, 편집 url 판단 -->
+        var url = "";
+        if(sessionStorage.getItem('project_get_detail')) {
+            url = '/project/modify/';
+            if(typeof $("#img-spot").attr('src') == "undefined" || $("#img-spot").attr('src') == null || $("#img-spot").attr('src') == "") {
+                $("#project_modify_img_check").val("");
+            }
+        } else {
+            url = '/project/registration/';
+        }
+        form_data.append('project_modify_img_check', $("#project_modify_img_check").val());
 
         $.ajax({
             type: 'POST',
-            url: '/project/registration/',
+            url: url,
             data: form_data,
             cache: false,
             contentType: false,
@@ -366,6 +380,23 @@
                 console.log("project_registration error");
             }
         });
+    }
+
+    <!-- 이미지 등록 미리보기 -->
+    function check_img(input) {
+        if(input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $("#img-none").hide();
+                $("#img-exists").show();
+                $("#img-spot").attr('src', e.target.result);
+            };
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            $("#img-spot").attr('src', "");
+            $("#img-exists").hide();
+            $("#img-none").show();
+        }
     }
     </script>
 </html>
