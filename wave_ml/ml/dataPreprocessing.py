@@ -166,7 +166,7 @@ def execute_fs(df, target, fs):
     x_data = df_data.drop([target], axis=1)
     y_data = df_data[target]
 
-    if fs == "FeedForward Selection":
+    if fs == "Forward Selection":
         best_model = forward_model(x_data, y_data)
     elif fs == "Backward Elimination":
         best_model = backword_model(x_data, y_data)

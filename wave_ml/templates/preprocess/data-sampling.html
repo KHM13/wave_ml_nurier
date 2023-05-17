@@ -137,7 +137,7 @@
 $(function() {
     init();
 
-    $("#btn_for_executor").bind("click", function() {
+    $("#btn_for_executor").on("click", function() {
         if ( $("input[name='sampling']:checked").length == 0 ) {
             Swal.fire({
                 title:'실행할 불균형 보정 알고리즘을 선택해주세요',
@@ -167,7 +167,7 @@ $(function() {
         }
     });
 
-    $("input[name='sampling']").bind("click", function() {
+    $("input[name='sampling']").on("click", function() {
         var text = $(this).closest("div.accordion-item").find("span.badge").text();
         if ( text == "" ) {
             text = 0;

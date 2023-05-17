@@ -116,7 +116,7 @@ def detail(request):
             "column": column,
             "detail": value_list,
             "desc": desc,
-            "type": data_type,
+            "data_type": data_type,
             "main_graph": main_graph,
             "badge": badge
         }
@@ -773,35 +773,26 @@ def data_create(request):
 
     # 페이징처리
     paginator = Paginator(list_models, per_page)
-    page_num = request.POST.get("page_num", 1)
-    try:
-        current_page = paginator.page(page_num)
-    except PageNotAnInteger:
-        current_page = paginator.page(1)
-    except EmptyPage:
-        current_page = paginator.page(paginator.num_pages)
-    list_data = current_page.object_list
-
-    max_index = 5
-    if paginator.num_pages <= max_index:
-        start_index = 1
-        end_index = paginator.num_pages
+    page_number = request.GET.get('page', 1)
+    if (page_number):
+        page_number = int(page_number)
     else:
-        start_index = page_num - 2
-        set_num = 0
-        if start_index < 1:
-            set_num = start_index - 1
-            start_index = 1
-        end_index = page_num + 2 - set_num
-        if end_index > paginator.num_pages:
-            set_num = end_index - paginator.num_pages
-            start_index = start_index - set_num
-            end_index = paginator.num_pages
-    page_range = range(start_index, end_index + 1)
+        page_number = 1
+    # 현재 페이지에 해당하는 프로젝트 리스트 반환
+    page_obj = paginator.page(page_number)
+
+    # 페이지 버튼의 범위 제한
+    if page_obj.number <= 3:
+        page_btn_range = range(1, min(6, paginator.num_pages + 1))
+    else:
+        if page_obj.number <= paginator.num_pages - 2:
+            page_btn_range = range(max(page_obj.number - 2, 1), min(page_obj.number + 3, paginator.num_pages + 1))
+        else:
+            page_btn_range = range(paginator.num_pages - 4, paginator.num_pages + 1)
 
     links = []
-    for pr in page_range:
-        if pr == current_page.number:
+    for pr in page_btn_range:
+        if pr == page_number:
             links.append('<li class="page-item active"><a href="javascript:void(0);" class="page-link">%d</a></li>' % pr)
         else:
             links.append('<li class="page-item"><a href="javascript:go_page(%d);" class="page-link">%d</a></li>' % (pr, pr))
@@ -815,7 +806,7 @@ def data_create(request):
             'process_size': process_size,
             'sampling_models': sampling_models,
             'dataset_size': dataset_size,
-            'list_models': list_data,
+            'list_models': page_obj,
             'page_links': links
         }
     )
@@ -823,42 +814,33 @@ def data_create(request):
 
 # 페이징처리
 @csrf_exempt
-def load_dataset_list(request):
+def load_dataset_list(request, page):
     project_id = request.session['project_id']
     per_page = 9
     list_models = MLSampling.objects.exclude(project_id=project_id)
     dataset_size = len(list_models.values())
 
     paginator = Paginator(list_models, per_page)
-    page_num = int(request.POST.get("page_num", 1))
-    try:
-        current_page = paginator.page(page_num)
-    except PageNotAnInteger:
-        current_page = paginator.page(1)
-    except EmptyPage:
-        current_page = paginator.page(paginator.num_pages)
-    list_data = current_page.object_list
-
-    max_index = 5
-    if paginator.num_pages <= max_index:
-        start_index = 1
-        end_index = paginator.num_pages
+    page_number = page
+    if (page_number):
+        page_number = int(page_number)
     else:
-        start_index = page_num - 2
-        set_num = 0
-        if start_index < 1:
-            set_num = start_index - 1
-            start_index = 1
-        end_index = page_num + 2 - set_num
-        if end_index > paginator.num_pages:
-            set_num = end_index - paginator.num_pages
-            start_index = start_index - set_num
-            end_index = paginator.num_pages
-    page_range = range(start_index, end_index+1)
+        page_number = 1
+    # 현재 페이지에 해당하는 프로젝트 리스트 반환
+    page_obj = paginator.page(page_number)
+
+    # 페이지 버튼의 범위 제한
+    if page_obj.number <= 3:
+        page_btn_range = range(1, min(6, paginator.num_pages + 1))
+    else:
+        if page_obj.number <= paginator.num_pages - 2:
+            page_btn_range = range(max(page_obj.number - 2, 1), min(page_obj.number + 3, paginator.num_pages + 1))
+        else:
+            page_btn_range = range(paginator.num_pages - 4, paginator.num_pages + 1)
 
     links = []
-    for pr in page_range:
-        if pr == current_page.number:
+    for pr in page_btn_range:
+        if pr == page_number:
             links.append(
                 '<li class="page-item active"><a href="javascript:void(0);" class="page-link">%d</a></li>' % pr)
         else:
@@ -870,7 +852,7 @@ def load_dataset_list(request):
         'preprocess/dataset-list.html',
         {
             'dataset_size': dataset_size,
-            'list_models': list_data,
+            'list_models': page_obj,
             'page_links': links
         }
     )

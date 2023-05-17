@@ -172,7 +172,7 @@
             <div class="card-body">
                 <div>
                     <label for="input_for_data_type" class="form-label">데이터 유형</label>
-                    <input type="text" name="input_for_data_type" id="input_for_data_type" class="form-control" style="margin-bottom: 1rem;" data-type={{ type }}>
+                    <input type="text" name="input_for_data_type" id="input_for_data_type" class="form-control" style="margin-bottom: 1rem;" data-type={{ data_type }}>
                 </div>
                 <hr>
                 <div>
@@ -217,11 +217,11 @@
 $(function() {
     init();
 
-    $("select[name='select_for_process']").bind('change', function() {
+    $("select[name='select_for_process']").on('change', function() {
         change_preprocess();
     });
 
-    $("select[name='select_for_work']").bind('change', function() {
+    $("select[name='select_for_work']").on('change', function() {
         var select_for_process = $("select[name='select_for_process']");
         if( select_for_process.val() == 'missing' ) {
             process_missing();
@@ -240,7 +240,7 @@ $(function() {
         process_replace_input();
     });
 
-    $("#btn_process_cancel").bind("click", function() {
+    $("#btn_process_cancel").on("click", function() {
         var col = $("#select_column").val();
 
         $.ajax({
@@ -256,7 +256,7 @@ $(function() {
         });
     });
 
-    $("#btn_process_apply").bind("click", function() {
+    $("#btn_process_apply").on("click", function() {
         var col = $("#select_column").val();
         var process = $("select[name='select_for_process']").val();
         var work = $("select[name='select_for_work']").val();
@@ -319,8 +319,6 @@ $(function() {
 });
 
 function init() {
-    var select = $("input[name='input_for_data_type']");
-    var type = select.data('type', "{{ type }}");
     select_type();
     boxplot();
     corr();

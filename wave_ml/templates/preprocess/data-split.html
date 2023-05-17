@@ -126,7 +126,7 @@
 <script src="{% static 'js/pages/data-split.init.js' %}"></script>
 <script type="text/javascript">
     $(function() {
-        $("input[name='split']").bind("change", function() {
+        $("input[name='split']").on("change", function() {
             $("#k-split").val("");
             if( $(this).attr("id") == "random-split" ) {
                 $("#split-title").text("RANDOM SPLIT");
@@ -186,7 +186,7 @@
             }
         });
 
-        $("#btn_for_optimization").bind("click", function() {
+        $("#btn_for_optimization").on("click", function() {
             var value = $("input[name='split']:checked").parents("div.card-radio").text().trim();
             if ( value == "Random Split" ) {
                 randomSplitSlider.noUiSlider.set(70);
@@ -198,7 +198,7 @@
             }
         });
 
-        $("#btn_for_prev").bind("click", function() {
+        $("#btn_for_prev").on("click", function() {
             $.ajax({
                 type: 'POST',
                 url: "/preprocess/select",
@@ -209,7 +209,7 @@
             });
         });
 
-        $("#btn_for_next").bind("click", function() {
+        $("#btn_for_next").on("click", function() {
             var algorithm = $("input[name='split']:checked").parents("div.card-radio").text().trim();
             var split_value = $("#inputNumber").val().replace("%", "");
             var k_value = $("#k-split").val();

@@ -170,7 +170,7 @@
 
 <script type="text/javascript">
 $(function() {
-    $("#btn_for_prev").bind("click", function() {
+    $("#btn_for_prev").on("click", function() {
         $.ajax({
             type: 'POST',
             url: '/preprocess/split',
@@ -181,7 +181,7 @@ $(function() {
         });
     });
 
-    $("#btn_for_next").bind("click", function() {
+    $("#btn_for_next").on("click", function() {
         if( $("input[name='formCheck']:checked").length < 1 ) {
             Swal.fire({
                 title:'적용할 불균형 데이터 보정 알고리즘을 선택해주세요',
@@ -219,7 +219,7 @@ $(function() {
         }
     });
 
-    $("input[name='formCheck']").bind("click", function() {
+    $("input[name='formCheck']").on("click", function() {
         var algorithm = $(this).closest("div.card-radio-right").find("h5").text().trim();
         $("#selected_sampling_algorithm").text(algorithm);
     });

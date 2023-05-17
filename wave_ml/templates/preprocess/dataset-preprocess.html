@@ -43,7 +43,7 @@
                         <div class="form-check card-radio">
                             <input id="variable01" name="variable" type="checkbox" class="form-check-input">
                             <label class="form-check-label" for="variable01">
-                                <span class="fs-14 text-wrap">FeedForward Selection</span>
+                                <span class="fs-14 text-wrap">Forward Selection</span>
                             </label>
                         </div>
                     </div>
@@ -141,12 +141,12 @@
 $(function() {
     init();
 
-    $("input[name='col_select']").bind("click", function() {
+    $("input[name='col_select']").on("click", function() {
         all_switch_check();
         select_customizing();
     });
 
-    $("#all-switch").bind("click", function() {
+    $("#all-switch").on("click", function() {
         if( $(this).prop("checked") ) {
             $("input[name='col_select']").each(function() {
                 $(this).prop("checked", true);
@@ -160,7 +160,7 @@ $(function() {
         select_customizing();
     });
 
-    $("#btn_executor").bind("click", function() {
+    $("#btn_executor").on("click", function() {
         if ( $("input[name='variable']:checked").length == 0 ) {
             Swal.fire({
                 title:'실행할 변수 선택법 알고리즘을\n하나 이상 선택해주세요',
@@ -194,7 +194,7 @@ $(function() {
         }
     });
 
-    $("#btn_for_next").bind("click", function() {
+    $("#btn_for_next").on("click", function() {
         var fs_name = $("#select_algorithm").text().trim();
         var select_column = new Array();
         $("input[name='col_select']:checked").each(function() {

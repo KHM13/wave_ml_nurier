@@ -229,7 +229,7 @@ $(function() {
     init();
     $("#project_id").val("{{ project_id }}");
 
-    $("#btn_for_modal_data_create").bind("click", function() {
+    $("#btn_for_modal_data_create").on("click", function() {
         var project_id = $("#project_id").val();
         var dataset_name = $("#dataset_name").val();
         var create_date = $("#create_date").val();
@@ -308,10 +308,10 @@ function init() {
 
 function go_page(page_num) {
     $.ajax({
-        type: 'POST',
-        url: '/preprocess/dataset_list',
+        type: 'GET',
+        url: '/preprocess/' + page_num,
         data: {
-            'page_num': page_num
+            'page': page_num
         },
         success: function(data) {
             $("#project-documents").html("");

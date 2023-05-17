@@ -108,7 +108,7 @@
 
 <script type="text/javascript">
 $(function() {
-    $("input[name='variableSelect']").bind("click", function() {
+    $("input[name='variableSelect']").on("click", function() {
         var idx = $("input[name='variableSelect']:checked").index("input[name='variableSelect']") + 1;
         $("#select_algorithm").text($(this).closest("div").text().trim());
 
@@ -135,7 +135,7 @@ $(function() {
         all_switch_check();
     });
 
-    $("input[name='accordion']").bind("click", function() {
+    $("input[name='accordion']").on("click", function() {
         var idx = $("input[name='accordion']:checked").index("input[name='accordion']") + 1;
         var temp = $("#accordion_head" + idx).text().trim().split("     ");
         $("#select_algorithm").text(temp[0]);
