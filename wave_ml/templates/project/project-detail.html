@@ -610,7 +610,7 @@ $(function() {
 
 <!-- 프로젝트 편집 초기값 지정 -->
 function project_get_detail() {
-    sessionStorage.setItem('project_detail', true);
+    sessionStorage.setItem('modify', true);
 
     $('#myModal').modal('show');
     $("#select_for_project_type").val('{{project_type}}');

@@ -114,9 +114,8 @@ $(function() {
 <!-- 페이지 진입 초기화 설정 -->
 function project_list_init() {
     $('#registrant_name').val('{{ user_name }}');
-    var current_page = {{page}};
+    var current_page = '{{page}}';
     var last_page = {{project_obj.paginator.num_pages}};
-
     if(current_page <= 1) {
         $("li.page-item").first().addClass("disabled");
         $("li.page-item").last().removeClass("disabled");
@@ -238,7 +237,7 @@ function project_get_detail(project_id) {
             $('#myModal').modal('show');
 
             <!-- 추후에 편집 판단을 위해 session에 값 세팅 -->
-            sessionStorage.setItem('project_list', true);
+            sessionStorage.setItem('modify', true);
         },
         error: function(data) {
             console.log("project_get_detail error");

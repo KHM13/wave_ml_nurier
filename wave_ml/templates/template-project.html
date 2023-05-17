@@ -266,14 +266,9 @@
             $("#img-spot").src = "";
             $("#img-exists").hide();
 
-            <!-- 리스트에서 편집으로 모달 접근 -->
-            if(sessionStorage.getItem('project_detail')) {
-                sessionStorage.removeItem('project_detail');
-            }
-
-            <!-- 상세에서 편집으로 모달 접근 -->
-            if(sessionStorage.getItem('project_list')) {
-                sessionStorage.removeItem('project_list');
+            <!-- 편집으로 모달 접근 -->
+            if(sessionStorage.getItem('modify')) {
+                sessionStorage.removeItem('modify');
             }
         });
 
@@ -351,7 +346,7 @@
 <!--        }-->
         <!-- 등록, 편집 url 판단 -->
         var url = "";
-        if(sessionStorage.getItem('project_detail')) {
+        if(sessionStorage.getItem('modify')) {
             url = '/project/modify/';
             if(typeof $("#img-spot").attr('src') == "undefined" || $("#img-spot").attr('src') == null || $("#img-spot").attr('src') == "") {
                 $("#project_modify_img_check").val("");
