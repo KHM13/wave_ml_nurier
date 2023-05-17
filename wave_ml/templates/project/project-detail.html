@@ -619,7 +619,7 @@ function project_get_detail() {
     $("#registrant_name").val('{{registrant}}');
     $("#registration_date").val('{{project_registration_date | date:"Y.m.d"}}');
     $("#project_explanation").val('{{project_explanation}}');
-    $("#project_id_for_modify").val('{{project_id}}');
+    $("#project_id_for_modify").val({{project_id}});
     $("#project_modify_position_check").val('detail');
 
     var project_img = '{{project_image.url}}';

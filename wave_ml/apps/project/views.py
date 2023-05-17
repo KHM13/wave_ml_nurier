@@ -12,6 +12,7 @@ def main(request):
     sort = request.session.get('sort', 'update')
     page = request.session.get('page', 1)
     keyword = request.session.get('keyword', "")
+    page = validate_page(page)
 
     return render(
         request,
@@ -33,6 +34,7 @@ def list(request):
         sort = request.POST.get('sort', request.session.get('sort'))
         page = request.POST.get('page', request.session.get('page'))
         keyword = request.POST.get('keyword', request.session.get('keyword'))
+        page = validate_page(page)
 
         # 리스트 정렬 조회
         project_list = list_sort(sort, user_id, keyword)
@@ -76,14 +78,19 @@ def list_sort(sort, user_id, keyword):
             project_list = Project.objects.filter(Q(registrant=user_id) & Q(project_name__contains=keyword)).order_by('-project_update_date')
     return project_list
 
+# 페이징 validation
+def validate_page(page):
+    if page is None:
+        page = 1
+    elif page == "":
+        page = 1
+    elif int(page) <= 0:
+        page = 1
+    return page
+
 # 페이징 처리
 def paginator(page, project_list):
-    # 페이지가 None일 경우 1페이지 세팅
-    if page == None:
-        page = 1
-    # 페이지가 0보다 작을 경우 1페이지 세팅
-    if int(page) <= 0:
-        page = 1
+    page = validate_page(page)
     # 한 페이지에 보여줄 항목 수 지정
     projects_per_page = 8
     # 페이징 처리를 위한 Paginator 객체 생성
