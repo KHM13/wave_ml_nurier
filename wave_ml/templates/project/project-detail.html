@@ -17,16 +17,20 @@
                 <div class="row g-4">
                     <div class="col-auto">
                         <div class="avatar-lg">
+                            {% if project_image %}
+                            <img src="{{project_image.url}}" alt="user-img" class="img-thumbnail rounded-circle w-100 h-100"/>
+                            {% else %}
                             <img src="{% static 'images/users/avatar-1.jpg' %}" alt="user-img" class="img-thumbnail rounded-circle" />
+                            {% endif %}
                         </div>
                     </div>
                     <!--end col-->
                     <div class="col">
                         <div class="p-2">
-                            <h3 class="text-white mb-1">은행 Project 1</h3>
+                            <h3 class="text-white mb-1">{{project_name}}</h3>
                             <p class="text-white-75">금융&middot;은행</p>
                             <div class="hstack text-white-50 gap-1">
-                                <div class="me-2"><i class="bx bx-user me-1 text-white-75 fs-16 align-middle"></i>유재석</div>
+                                <div class="me-2"><i class="bx bx-user me-1 text-white-75 fs-16 align-middle"></i>{{registrant}}</div>
                             </div>
                         </div>
                     </div>
@@ -59,10 +63,8 @@
                                         </a>
 
                                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuLink2">
-                                            <li><a class="dropdown-item" href="#"><i class="ri-pencil-fill align-bottom me-2 text-muted"></i> 편집</a></li>
-                                            <li><a class="dropdown-item" href="#"><i class="ri-file-copy-fill align-bottom me-2 text-muted"></i> 복제</a></li>
-                                            <li><a class="dropdown-item" href="#"><i class="ri-delete-bin-6-fill align-bottom me-2 text-muted"></i> 삭제</a></li>
-                                            <li><a class="dropdown-item" href="#"><i class="ri-install-fill align-bottom me-2 text-muted"></i> 백업</a></li>
+                                            <li><a class="dropdown-item" href="javascript:project_get_detail()"><i class="ri-pencil-fill align-bottom me-2 text-muted"></i> 편집</a></li>
+                                            <li><a class="dropdown-item" href="javascript:project_remove()"><i class="ri-delete-bin-6-fill align-bottom me-2 text-muted"></i> 삭제</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -98,7 +100,7 @@
                                 </li>
                             </ul>
                             <div class="flex-shrink-0">
-                                <button class="btn btn-datablue" id="btn_for_model_create"><i class="ri-add-line align-bottom me-1"></i> 등록</button>
+                                <button class="btn btn-datablue btn_for_model_create" id="btn_for_model_create"><i class="ri-add-line align-bottom me-1"></i> 등록</button>
                                 <button class="btn btn-transparent-datablue" id="btn_for_return_project"><i class="ri-file-list-line"></i> 목록</button>
                             </div>
                         </div>
@@ -115,15 +117,15 @@
                                                         <tbody>
                                                             <tr>
                                                                 <th class="ps-0" scope="row">등록자 :</th>
-                                                                <td class="text-muted">유재석</td>
+                                                                <td class="text-muted">{{registrant}}</td>
                                                             </tr>
                                                             <tr>
                                                                 <th class="ps-0" scope="row">프로젝트 생성일시 :</th>
-                                                                <td class="text-muted">2023.01.01 (12:01:01)</td>
+                                                                <td class="text-muted">{{project_registration_date | date:'Y.m.d (H:i:s)'}}</td>
                                                             </tr>
                                                             <tr>
                                                                 <th class="ps-0" scope="row">최종 업데이트</th>
-                                                                <td class="text-muted">2023.01.12 (11:25:07)</td>
+                                                                <td class="text-muted">{{project_update_date | date:'Y.m.d (H:i:s)'}}</td>
                                                             </tr>
                                                             <tr>
                                                                 <th class="ps-0" scope="row">첨부파일 :</th>
@@ -287,7 +289,7 @@
                                                 <h5 class="card-title fw-semibold">모델</h5>
 
                                                 <div class="text-center mt-3 pt-3">
-                                                    <a href="javascript:void(0)" class="btn btn-soft-dark">
+                                                    <a href="javascript:void(0)" class="btn btn-soft-dark btn_for_model_create">
                                                         <i class="bx bx-layer-plus display-6 text-white"></i>
                                                     </a>
 
@@ -302,387 +304,6 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="row">
-                                            <div class="col-xxl-3 col-sm-6">
-                                                <div class="card profile-project-card shadow-none profile-project-warning">
-                                                    <div class="card-body p-4">
-                                                        <div class="d-flex">
-                                                            <div class="flex-grow-1 text-muted overflow-hidden">
-                                                                <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">모델학습 Case 1</a></h5>
-                                                                <p class="text-muted text-truncate mb-0">Accuracy : <span class="fw-semibold text-dark">89.56</span></p>
-                                                                <p class="text-muted text-truncate mb-0">Recall : <span class="fw-semibold text-dark">79.46</span></p>
-                                                            </div>
-                                                            <div class="flex-shrink-0 ms-2">
-                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="d-flex mt-4">
-                                                            <div class="flex-grow-1">
-                                                                <div class="d-flex align-items-center">
-                                                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                                                        <img src="{% static 'images/users/avatar-3.jpg' %}" alt="" class="img-fluid rounded-circle">
-                                                                    </div>
-                                                                    <div class="flex-grow-1">
-                                                                        <div>
-                                                                            <p class="fs-13 fw-semibold mb-1">2023.01.01 12:01:01</p>
-                                                                            <h5 class="fs-14 text-muted mb-0">하동훈</h5>
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- end card body -->
-                                                </div>
-                                                <!-- end card -->
-                                            </div>
-                                            <!--end col-->
-                                            <div class="col-xxl-3 col-sm-6">
-                                                <div class="card profile-project-card shadow-none profile-project-success">
-                                                    <div class="card-body p-4">
-                                                        <div class="d-flex">
-                                                            <div class="flex-grow-1 text-muted overflow-hidden">
-                                                                <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">모델학습 Case 1</a></h5>
-                                                                <p class="text-muted text-truncate mb-0">Accuracy : <span class="fw-semibold text-dark">89.56</span></p>
-                                                                <p class="text-muted text-truncate mb-0">Recall : <span class="fw-semibold text-dark">79.46</span></p>
-                                                            </div>
-                                                            <div class="flex-shrink-0 ms-2">
-                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="d-flex mt-4">
-                                                            <div class="flex-grow-1">
-                                                                <div class="d-flex align-items-center">
-                                                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                                                        <img src="{% static 'images/users/avatar-3.jpg' %}" alt="" class="img-fluid rounded-circle">
-                                                                    </div>
-                                                                    <div class="flex-grow-1">
-                                                                        <div>
-                                                                            <p class="fs-13 fw-semibold mb-1">2023.01.01 12:01:01</p>
-                                                                            <h5 class="fs-14 text-muted mb-0">하동훈</h5>
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- end card body -->
-                                                </div>
-                                                <!-- end card -->
-                                            </div>
-                                            <!--end col-->
-                                            <div class="col-xxl-3 col-sm-6">
-                                                <div class="card profile-project-card shadow-none profile-project-info">
-                                                    <div class="card-body p-4">
-                                                        <div class="d-flex">
-                                                            <div class="flex-grow-1 text-muted overflow-hidden">
-                                                                <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">모델학습 Case 1</a></h5>
-                                                                <p class="text-muted text-truncate mb-0">Accuracy : <span class="fw-semibold text-dark">89.56</span></p>
-                                                                <p class="text-muted text-truncate mb-0">Recall : <span class="fw-semibold text-dark">79.46</span></p>
-                                                            </div>
-                                                            <div class="flex-shrink-0 ms-2">
-                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="d-flex mt-4">
-                                                            <div class="flex-grow-1">
-                                                                <div class="d-flex align-items-center">
-                                                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                                                        <img src="{% static 'images/users/avatar-3.jpg' %}" alt="" class="img-fluid rounded-circle">
-                                                                    </div>
-                                                                    <div class="flex-grow-1">
-                                                                        <div>
-                                                                            <p class="fs-13 fw-semibold mb-1">2023.01.01 12:01:01</p>
-                                                                            <h5 class="fs-14 text-muted mb-0">하동훈</h5>
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- end card body -->
-                                                </div>
-                                                <!-- end card -->
-                                            </div>
-                                            <!--end col-->
-                                            <div class="col-xxl-3 col-sm-6">
-                                                <div class="card profile-project-card shadow-none profile-project-primary">
-                                                    <div class="card-body p-4">
-                                                        <div class="d-flex">
-                                                            <div class="flex-grow-1 text-muted overflow-hidden">
-                                                                <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">모델학습 Case 1</a></h5>
-                                                                <p class="text-muted text-truncate mb-0">Accuracy : <span class="fw-semibold text-dark">89.56</span></p>
-                                                                <p class="text-muted text-truncate mb-0">Recall : <span class="fw-semibold text-dark">79.46</span></p>
-                                                            </div>
-                                                            <div class="flex-shrink-0 ms-2">
-                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="d-flex mt-4">
-                                                            <div class="flex-grow-1">
-                                                                <div class="d-flex align-items-center">
-                                                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                                                        <img src="{% static 'images/users/avatar-3.jpg' %}" alt="" class="img-fluid rounded-circle">
-                                                                    </div>
-                                                                    <div class="flex-grow-1">
-                                                                        <div>
-                                                                            <p class="fs-13 fw-semibold mb-1">2023.01.01 12:01:01</p>
-                                                                            <h5 class="fs-14 text-muted mb-0">하동훈</h5>
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- end card body -->
-                                                </div>
-                                                <!-- end card -->
-                                            </div>
-                                            <!--end col-->
-                                            <div class="col-xxl-3 col-sm-6">
-                                                <div class="card profile-project-card shadow-none profile-project-danger">
-                                                    <div class="card-body p-4">
-                                                        <div class="d-flex">
-                                                            <div class="flex-grow-1 text-muted overflow-hidden">
-                                                                <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">모델학습 Case 1</a></h5>
-                                                                <p class="text-muted text-truncate mb-0">Accuracy : <span class="fw-semibold text-dark">89.56</span></p>
-                                                                <p class="text-muted text-truncate mb-0">Recall : <span class="fw-semibold text-dark">79.46</span></p>
-                                                            </div>
-                                                            <div class="flex-shrink-0 ms-2">
-                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="d-flex mt-4">
-                                                            <div class="flex-grow-1">
-                                                                <div class="d-flex align-items-center">
-                                                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                                                        <img src="{% static 'images/users/avatar-3.jpg' %}" alt="" class="img-fluid rounded-circle">
-                                                                    </div>
-                                                                    <div class="flex-grow-1">
-                                                                        <div>
-                                                                            <p class="fs-13 fw-semibold mb-1">2023.01.01 12:01:01</p>
-                                                                            <h5 class="fs-14 text-muted mb-0">하동훈</h5>
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- end card body -->
-                                                </div>
-                                                <!-- end card -->
-                                            </div>
-                                            <!--end col-->
-                                            <div class="col-xxl-3 col-sm-6">
-                                                <div class="card profile-project-card shadow-none profile-project-primary">
-                                                    <div class="card-body p-4">
-                                                        <div class="d-flex">
-                                                            <div class="flex-grow-1 text-muted overflow-hidden">
-                                                                <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">모델학습 Case 1</a></h5>
-                                                                <p class="text-muted text-truncate mb-0">Accuracy : <span class="fw-semibold text-dark">89.56</span></p>
-                                                                <p class="text-muted text-truncate mb-0">Recall : <span class="fw-semibold text-dark">79.46</span></p>
-                                                            </div>
-                                                            <div class="flex-shrink-0 ms-2">
-                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="d-flex mt-4">
-                                                            <div class="flex-grow-1">
-                                                                <div class="d-flex align-items-center">
-                                                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                                                        <img src="{% static 'images/users/avatar-3.jpg' %}" alt="" class="img-fluid rounded-circle">
-                                                                    </div>
-                                                                    <div class="flex-grow-1">
-                                                                        <div>
-                                                                            <p class="fs-13 fw-semibold mb-1">2023.01.01 12:01:01</p>
-                                                                            <h5 class="fs-14 text-muted mb-0">하동훈</h5>
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- end card body -->
-                                                </div>
-                                                <!-- end card -->
-                                            </div>
-                                            <!--end col-->
-                                            <div class="col-xxl-3 col-sm-6">
-                                                <div class="card profile-project-card shadow-none profile-project-warning">
-                                                    <div class="card-body p-4">
-                                                        <div class="d-flex">
-                                                            <div class="flex-grow-1 text-muted overflow-hidden">
-                                                                <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">모델학습 Case 1</a></h5>
-                                                                <p class="text-muted text-truncate mb-0">Accuracy : <span class="fw-semibold text-dark">89.56</span></p>
-                                                                <p class="text-muted text-truncate mb-0">Recall : <span class="fw-semibold text-dark">79.46</span></p>
-                                                            </div>
-                                                            <div class="flex-shrink-0 ms-2">
-                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="d-flex mt-4">
-                                                            <div class="flex-grow-1">
-                                                                <div class="d-flex align-items-center">
-                                                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                                                        <img src="{% static 'images/users/avatar-3.jpg' %}" alt="" class="img-fluid rounded-circle">
-                                                                    </div>
-                                                                    <div class="flex-grow-1">
-                                                                        <div>
-                                                                            <p class="fs-13 fw-semibold mb-1">2023.01.01 12:01:01</p>
-                                                                            <h5 class="fs-14 text-muted mb-0">하동훈</h5>
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- end card body -->
-                                                </div>
-                                                <!-- end card -->
-                                            </div>
-                                            <!--end col-->
-                                            <div class="col-xxl-3 col-sm-6">
-                                                <div class="card profile-project-card shadow-none profile-project-success">
-                                                    <div class="card-body p-4">
-                                                        <div class="d-flex">
-                                                            <div class="flex-grow-1 text-muted overflow-hidden">
-                                                                <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">모델학습 Case 1</a></h5>
-                                                                <p class="text-muted text-truncate mb-0">Accuracy : <span class="fw-semibold text-dark">89.56</span></p>
-                                                                <p class="text-muted text-truncate mb-0">Recall : <span class="fw-semibold text-dark">79.46</span></p>
-                                                            </div>
-                                                            <div class="flex-shrink-0 ms-2">
-                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="d-flex mt-4">
-                                                            <div class="flex-grow-1">
-                                                                <div class="d-flex align-items-center">
-                                                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                                                        <img src="{% static 'images/users/avatar-3.jpg' %}" alt="" class="img-fluid rounded-circle">
-                                                                    </div>
-                                                                    <div class="flex-grow-1">
-                                                                        <div>
-                                                                            <p class="fs-13 fw-semibold mb-1">2023.01.01 12:01:01</p>
-                                                                            <h5 class="fs-14 text-muted mb-0">하동훈</h5>
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- end card body -->
-                                                </div>
-                                                <!-- end card -->
-                                            </div>
-                                            <!--end col-->
-                                            <div class="col-xxl-3 col-sm-6">
-                                                <div class="card profile-project-card shadow-none mb-xxl-0 profile-project-info">
-                                                    <div class="card-body p-4">
-                                                        <div class="d-flex">
-                                                            <div class="flex-grow-1 text-muted overflow-hidden">
-                                                                <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">모델학습 Case 1</a></h5>
-                                                                <p class="text-muted text-truncate mb-0">Accuracy : <span class="fw-semibold text-dark">89.56</span></p>
-                                                                <p class="text-muted text-truncate mb-0">Recall : <span class="fw-semibold text-dark">79.46</span></p>
-                                                            </div>
-                                                            <div class="flex-shrink-0 ms-2">
-                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="d-flex mt-4">
-                                                            <div class="flex-grow-1">
-                                                                <div class="d-flex align-items-center">
-                                                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                                                        <img src="{% static 'images/users/avatar-3.jpg' %}" alt="" class="img-fluid rounded-circle">
-                                                                    </div>
-                                                                    <div class="flex-grow-1">
-                                                                        <div>
-                                                                            <p class="fs-13 fw-semibold mb-1">2023.01.01 12:01:01</p>
-                                                                            <h5 class="fs-14 text-muted mb-0">하동훈</h5>
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- end card body -->
-                                                </div>
-                                                <!-- end card -->
-                                            </div>
-                                            <!--end col-->
-                                            <div class="col-xxl-3 col-sm-6">
-                                                <div class="card profile-project-card shadow-none mb-xxl-0  profile-project-success">
-                                                    <div class="card-body p-4">
-                                                        <div class="d-flex">
-                                                            <div class="flex-grow-1 text-muted overflow-hidden">
-                                                                <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">모델학습 Case 1</a></h5>
-                                                                <p class="text-muted text-truncate mb-0">Accuracy : <span class="fw-semibold text-dark">89.56</span></p>
-                                                                <p class="text-muted text-truncate mb-0">Recall : <span class="fw-semibold text-dark">79.46</span></p>
-                                                            </div>
-                                                            <div class="flex-shrink-0 ms-2">
-                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="d-flex mt-4">
-                                                            <div class="flex-grow-1">
-                                                                <div class="d-flex align-items-center">
-                                                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                                                        <img src="{% static 'images/users/avatar-3.jpg' %}" alt="" class="img-fluid rounded-circle">
-                                                                    </div>
-                                                                    <div class="flex-grow-1">
-                                                                        <div>
-                                                                            <p class="fs-13 fw-semibold mb-1">2023.01.01 12:01:01</p>
-                                                                            <h5 class="fs-14 text-muted mb-0">하동훈</h5>
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div><!-- end card body -->
-                                                </div><!-- end card -->
-                                            </div>
-                                            <!--end col-->
-                                            <div class="col-xxl-3 col-sm-6">
-                                                <div class="card profile-project-card shadow-none mb-sm-0  profile-project-danger">
-                                                    <div class="card-body p-4">
-                                                        <div class="d-flex">
-                                                            <div class="flex-grow-1 text-muted overflow-hidden">
-                                                                <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">모델학습 Case 1</a></h5>
-                                                                <p class="text-muted text-truncate mb-0">Accuracy : <span class="fw-semibold text-dark">89.56</span></p>
-                                                                <p class="text-muted text-truncate mb-0">Recall : <span class="fw-semibold text-dark">79.46</span></p>
-                                                            </div>
-                                                            <div class="flex-shrink-0 ms-2">
-                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="d-flex mt-4">
-                                                            <div class="flex-grow-1">
-                                                                <div class="d-flex align-items-center">
-                                                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                                                        <img src="{% static 'images/users/avatar-3.jpg' %}" alt="" class="img-fluid rounded-circle">
-                                                                    </div>
-                                                                    <div class="flex-grow-1">
-                                                                        <div>
-                                                                            <p class="fs-13 fw-semibold mb-1">2023.01.01 12:01:01</p>
-                                                                            <h5 class="fs-14 text-muted mb-0">하동훈</h5>
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div><!-- end card body -->
-                                                </div><!-- end card -->
-                                            </div>
-                                            <!--end col-->
                                             <div class="col-xxl-3 col-sm-6">
                                                 <div class="card profile-project-card shadow-none mb-0  profile-project-primary">
                                                     <div class="card-body p-4">
@@ -981,7 +602,71 @@ $(function() {
     $("#btn_for_return_project").bind("click", function() {
         location.href="/project"
     });
+
+    $(".btn_for_model_create").on("click", function(e) {
+        location.href="/preprocess"
+    });
 });
+
+<!-- 프로젝트 편집 초기값 지정 -->
+function project_get_detail() {
+    sessionStorage.setItem('project_detail', true);
+
+    $('#myModal').modal('show');
+    $("#select_for_project_type").val('{{project_type}}');
+    $("#select_for_project_sub_type").val('{{project_sub_type}}');
+    $("#project_name").val('{{project_name}}');
+    $("#registrant_name").val('{{registrant}}');
+    $("#registration_date").val('{{project_registration_date | date:"Y.m.d"}}');
+    $("#project_explanation").val('{{project_explanation}}');
+    $("#project_id_for_modify").val('{{project_id}}');
+    $("#project_modify_position_check").val('detail');
+
+    var project_img = '{{project_image.url}}';
+    if(project_img == "undefined" || project_img == null || project_img == "") {
+        $("#img-spot").attr('src', "");
+        $("#img-exists").hide();
+        $("#img-none").show();
+    } else {
+        $("#img-none").hide();
+        $("#img-exists").show();
+        $("#project_modify_img_check").val('true');
+        $("#img-spot").attr('src', project_img);
+    }
+}
+
+<!-- 프로젝트 삭제 -->
+function project_remove() {
+    Swal.fire({
+        title:'프로젝트를 삭제하시겠습니까?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonClass: 'btn btn-primary w-xs mt-2',
+        cancelButtonClass: 'btn btn-light w-xs me-2 mt-2',
+        confirmButtonText: '삭제',
+        cancelButtonText: '취소',
+        reverseButtons: true,
+        buttonsStyling: false,
+        showCloseButton: true
+    }).then(function(result){
+        if(result.value){
+            $.ajax({
+                type: 'POST',
+                url: '/project/remove/',
+                data: {
+                    'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val(),
+                    'project_id': '{{project_id}}'
+                },
+                success: function(data) {
+                    location.href = '/project/';
+                },
+                error: function(data) {
+                    console.log("project_remove error");
+                }
+            });
+        }
+    });
+}
 </script>
 
 {% endblock %}

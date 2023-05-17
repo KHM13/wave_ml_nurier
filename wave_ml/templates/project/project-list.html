@@ -40,7 +40,7 @@
                         </div>
                         <div class="flex-grow-1">
                             <h6 class="card-subtitle mb-2">금융&middot;은행</h6>
-                            <h5 class="card-title mb-3 fw-semibold project_title_for_search_keyword"><a href="/project/detail" class="text-dark">{{project.project_name}}</a>
+                            <h5 class="card-title mb-3 fw-semibold project_title_for_search_keyword"><a href="/project/detail?project_id={{project.id}}" class="text-dark">{{project.project_name}}</a>
                             </h5>
                             <div class="row align-items-center mt-3">
                                 <div class="col-lg-3">
@@ -220,9 +220,10 @@ function project_get_detail(project_id) {
             $("#registration_date").val(data.project_registration_date);
             $("#project_explanation").val(data.project_explanation);
             $("#project_id_for_modify").val(data.project_id);
+            $("#project_modify_position_check").val('list');
 
             <!-- 이미지 파일 유무 판단 -->
-            if (typeof data.project_image == "undefined" || data.project_image == null || data.project_image == ""){
+            if(typeof data.project_image == "undefined" || data.project_image == null || data.project_image == "") {
                 $("#img-spot").attr('src', "");
                 $("#img-exists").hide();
                 $("#img-none").show();
@@ -237,7 +238,7 @@ function project_get_detail(project_id) {
             $('#myModal').modal('show');
 
             <!-- 추후에 편집 판단을 위해 session에 값 세팅 -->
-            sessionStorage.setItem('project_get_detail', true);
+            sessionStorage.setItem('project_list', true);
         },
         error: function(data) {
             console.log("project_get_detail error");
@@ -246,7 +247,7 @@ function project_get_detail(project_id) {
 }
 
 <!-- 프로젝트 복제 -->
-function project_clone(project_id){
+function project_clone(project_id) {
     Swal.fire({
         title:'프로젝트를 복제하시겠습니까?',
         icon: 'warning',
@@ -267,7 +268,7 @@ function project_clone(project_id){
 }
 
 <!-- 프로젝트 삭제 -->
-function project_remove(project_id){
+function project_remove(project_id) {
     Swal.fire({
         title:'프로젝트를 삭제하시겠습니까?',
         icon: 'warning',

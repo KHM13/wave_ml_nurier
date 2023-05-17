@@ -215,6 +215,7 @@
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
             <input type="hidden" id="project_id_for_modify" name="project_id_for_modify" value="">
+            <input type="hidden" id="project_modify_position_check" name="project_modify_position_check" value="">
             <input type="hidden" id="project_modify_img_check" name="project_modify_img_check" value="">
         </form>
     </div>
@@ -265,9 +266,14 @@
             $("#img-spot").src = "";
             $("#img-exists").hide();
 
-            <!-- 편집으로 모달에 접근했을 시 -->
-            if(sessionStorage.getItem('project_get_detail')) {
-                sessionStorage.removeItem('project_get_detail');
+            <!-- 리스트에서 편집으로 모달 접근 -->
+            if(sessionStorage.getItem('project_detail')) {
+                sessionStorage.removeItem('project_detail');
+            }
+
+            <!-- 상세에서 편집으로 모달 접근 -->
+            if(sessionStorage.getItem('project_list')) {
+                sessionStorage.removeItem('project_list');
             }
         });
 
@@ -289,18 +295,9 @@
             $("#registration_date").attr("disabled", true);
             $("#registrant_name").attr("disabled", true);
         });
-
-        $("#companylogo-image-input").on("click", function(e) {
-            if ($("#companylogo-image-input").length) {
-
-            } else {
-
-            }
-            document.body.onfocus = null;
-        });
     });
 
-    <!-- 프로젝트 등록 함수 -->
+    <!-- 프로젝트 등록, 편집 함수 -->
     function project_registration() {
         var form_data = new FormData($("#project_registration_form")[0]);
 
@@ -354,15 +351,15 @@
 <!--        }-->
         <!-- 등록, 편집 url 판단 -->
         var url = "";
-        if(sessionStorage.getItem('project_get_detail')) {
+        if(sessionStorage.getItem('project_detail')) {
             url = '/project/modify/';
             if(typeof $("#img-spot").attr('src') == "undefined" || $("#img-spot").attr('src') == null || $("#img-spot").attr('src') == "") {
                 $("#project_modify_img_check").val("");
             }
+            form_data.append('project_modify_img_check', $("#project_modify_img_check").val());
         } else {
             url = '/project/registration/';
         }
-        form_data.append('project_modify_img_check', $("#project_modify_img_check").val());
 
         $.ajax({
             type: 'POST',
@@ -372,9 +369,13 @@
             contentType: false,
             processData: false,
             success: function(data) {
-                $("#btn_for_project_cancel").trigger("click");
-                $("#project-list-row-container").html("");
-                $("#project-list-row-container").html(data);
+                if($("#project_modify_position_check").val() == 'detail') {
+                    location.reload();
+                } else {
+                    $("#btn_for_project_cancel").trigger("click");
+                    $("#project-list-row-container").html("");
+                    $("#project-list-row-container").html(data);
+                }
             },
             error: function(data) {
                 console.log("project_registration error");

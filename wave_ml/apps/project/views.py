@@ -151,7 +151,6 @@ def registration(request):
 def modify(request):
     if request.method == 'POST':
         modify_project = Project.objects.get(id=request.POST.get('project_id_for_modify'))
-
         # 이미지 유효성 검사
         project_img = ""
         if request.FILES.get('project_image') is not None:
@@ -166,7 +165,13 @@ def modify(request):
         modify_project.project_explanation = request.POST.get('project_explanation')
         modify_project.project_image = project_img
         modify_project.save()
-        return list(request)
+
+        modify_checker = request.POST.get("project_modify_position_check")
+
+        if modify_checker == 'list':
+            return list(request)
+        else:
+            return detail(request)
 
 # 프로젝트 복제
 def clone(request):
@@ -183,10 +188,29 @@ def remove(request):
         Project.objects.get(id=request.POST.get('project_id')).delete()
         return list(request)
 
-
 # 프로젝트 상세조회
 def detail(request):
+    if request.method == 'POST':
+        project_obj = Project.objects.get(id=request.POST.get('project_id_for_modify'))
+    else:
+        project_obj = Project.objects.get(id=request.GET.get('project_id'))
+
+    project_image = ""
+    if project_obj.project_image:
+        project_image = project_obj.project_image
+
     return render(
         request,
-        'project/project-detail.html'
+        'project/project-detail.html',
+        {
+            'project_id': request.GET.get('project_id'),
+            'project_type': project_obj.project_type,
+            'project_sub_type': project_obj.project_sub_type,
+            'project_name': project_obj.project_name,
+            'registrant': project_obj.registrant,
+            'project_registration_date': project_obj.project_registration_date,
+            'project_update_date': project_obj.project_update_date,
+            'project_explanation': project_obj.project_explanation,
+            'project_image': project_image
+        }
     )
