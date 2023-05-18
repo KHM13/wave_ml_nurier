@@ -140,6 +140,7 @@ def project_get_detail(request):
 # 프로젝트 등록
 def registration(request):
     if request.method == 'POST':
+        print(request.FILES.get('project-file'))
         project_img = ""
         if request.FILES.get('project_image') is not None:
             project_img = request.FILES.get('project_image')

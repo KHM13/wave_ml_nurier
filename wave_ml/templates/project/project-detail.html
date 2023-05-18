@@ -105,7 +105,7 @@
                             </div>
                         </div>
                         <!-- Tab panes -->
-                        <div class="tab-content pt-4 text-muted">
+                        <div class="tab-content pt-4 text-muted" id="project-detail-menu">
                             <div class="tab-pane active" id="overview-tab" role="tabpanel">
                                 <div class="row">
                                     <div class="col-xxl-4">
@@ -124,7 +124,7 @@
                                                                 <td class="text-muted">{{project_registration_date | date:'Y.m.d (H:i:s)'}}</td>
                                                             </tr>
                                                             <tr>
-                                                                <th class="ps-0" scope="row">최종 업데이트</th>
+                                                                <th class="ps-0" scope="row">최종 업데이트 :</th>
                                                                 <td class="text-muted">{{project_update_date | date:'Y.m.d (H:i:s)'}}</td>
                                                             </tr>
                                                             <tr>
@@ -281,18 +281,15 @@
                                         </div>
                                     </div>
                                 </div>
-
                                 <div class="row">
                                     <div class="col-xxl-12">
                                         <div class="card">
                                             <div class="card-body">
                                                 <h5 class="card-title fw-semibold">모델</h5>
-
                                                 <div class="text-center mt-3 pt-3">
                                                     <a href="javascript:void(0)" class="btn btn-soft-dark btn_for_model_create">
                                                         <i class="bx bx-layer-plus display-6 text-white"></i>
                                                     </a>
-
                                                     <p class="mt-3">버튼을 선택해서 새로운 작업을 시작해보세요.</p>
                                                 </div>
                                             </div>
@@ -371,7 +368,6 @@
                                 </div>
                                 <!--end card-->
                             </div>
-                            <!--end tab-pane-->
                             <div class="tab-pane fade" id="projects" role="tabpanel">
                                 <div class="card">
                                     <div class="card-body">
@@ -405,7 +401,7 @@
                                                             <tr>
                                                                 <td>
                                                                     <div class="form-check">
-                                                                        <input class="form-check-input" type="checkbox" value="" id="cardtableCheck01">
+                                                                        <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck01">
                                                                         <label class="form-check-label" for="cardtableCheck01"></label>
                                                                     </div>
                                                                 </td>
@@ -429,7 +425,7 @@
                                                             <tr>
                                                                 <td>
                                                                     <div class="form-check">
-                                                                        <input class="form-check-input" type="checkbox" value="" id="cardtableCheck02">
+                                                                        <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck02">
                                                                         <label class="form-check-label" for="cardtableCheck02"></label>
                                                                     </div>
                                                                 </td>
@@ -452,7 +448,7 @@
                                                             <tr>
                                                                 <td>
                                                                     <div class="form-check">
-                                                                        <input class="form-check-input" type="checkbox" value="" id="cardtableCheck03">
+                                                                        <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck03">
                                                                         <label class="form-check-label" for="cardtableCheck03"></label>
                                                                     </div>
                                                                 </td>
@@ -475,7 +471,7 @@
                                                             <tr>
                                                                 <td>
                                                                     <div class="form-check">
-                                                                        <input class="form-check-input" type="checkbox" value="" id="cardtableCheck04">
+                                                                        <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck04">
                                                                         <label class="form-check-label" for="cardtableCheck04"></label>
                                                                     </div>
                                                                 </td>
@@ -498,7 +494,7 @@
                                                             <tr>
                                                                 <td>
                                                                     <div class="form-check">
-                                                                        <input class="form-check-input" type="checkbox" value="" id="cardtableCheck05">
+                                                                        <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck05">
                                                                         <label class="form-check-label" for="cardtableCheck05"></label>
                                                                     </div>
                                                                 </td>
@@ -521,7 +517,7 @@
                                                             <tr>
                                                                 <td>
                                                                     <div class="form-check">
-                                                                        <input class="form-check-input" type="checkbox" value="" id="cardtableCheck06">
+                                                                        <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck06">
                                                                         <label class="form-check-label" for="cardtableCheck06"></label>
                                                                     </div>
                                                                 </td>
@@ -582,13 +578,9 @@
                             </div>
                             <!--end tab-pane-->
                         </div>
-                        <!--end tab-content-->
-                    </div>
-                </div>
-                <!--end col-->
-            </div>
-            <!--end row-->
-
+                    </div><!--end tab-content-->
+                </div><!--end col-->
+            </div><!--end row-->
         </div><!-- container-fluid -->
     </div><!-- End Page-content -->
 
@@ -599,13 +591,36 @@
 
 <script type="text/javascript">
 $(function() {
+    <!-- 목록 클릭 시 프로젝트 메인으로 이동 -->
     $("#btn_for_return_project").bind("click", function() {
         location.href="/project"
     });
 
+    <!-- 등록 클릭 시 데이터전처리 페이지로 이동 -->
     $(".btn_for_model_create").on("click", function(e) {
         location.href="/preprocess"
     });
+
+    <!-- 문서탭 체크박스 일괄선택 기능 -->
+    $("#cardtableCheck").on("click", function(e) {
+        if($("#cardtableCheck").is(":checked")) {
+            $("input[name=form-check-input]").prop("checked", true);
+        } else {
+            $("input[name=form-check-input]").prop("checked", false);
+        }
+    });
+
+    <!-- 문서탭 체크박스 단일선택으로 전체 항목체크 시 일괄선택 체크박스 이벤트 지정 -->
+    $("input[name=form-check-input]").on("click", function(e) {
+        var max_checkbox_len = $("input[name=form-check-input]").length;
+        var checkced_checkbox_len = $("input[name=form-check-input]:checked").length;
+        if(max_checkbox_len == checkced_checkbox_len) {
+            $("#cardtableCheck").prop("checked", true);
+        } else {
+            $("#cardtableCheck").prop("checked", false);
+        }
+    });
+
 });
 
 <!-- 프로젝트 편집 초기값 지정 -->
@@ -667,6 +682,7 @@ function project_remove() {
         }
     });
 }
+
 </script>
 
 {% endblock %}
