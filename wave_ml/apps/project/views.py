@@ -124,10 +124,21 @@ def paginator(page, project_list):
 def project_get_detail(request):
     if request.method == 'POST':
         project_obj = Project.objects.get(id=request.POST.get('project_id'))
-        project_registration_date = str(project_obj.project_registration_date).split()[0]
+        project_files = project_obj.project.all()
+
         project_image = ""
         if project_obj.project_image:
             project_image = project_obj.project_image.url
+
+        file_name = []
+        file_size = []
+        if project_files:
+            for project_file in project_files:
+                file_name.append(project_file.project_file_name)
+                file_size.append(project_file.project_file_size)
+
+        project_registration_date = str(project_obj.project_registration_date).split()[0]
+
         data = {
             'project_id': request.POST.get('project_id'),
             'project_type': project_obj.project_type,
@@ -136,7 +147,9 @@ def project_get_detail(request):
             'registrant': project_obj.registrant,
             'project_registration_date': project_registration_date,
             'project_explanation': project_obj.project_explanation,
-            'project_image': project_image
+            'project_image': project_image,
+            'project_file_name': file_name,
+            'project_file_size': file_size
         }
         data_json = json.dumps(data)
 
@@ -162,10 +175,14 @@ def registration(request):
         # 파일
         if request.FILES.getlist('project-file-list') is not None:
             project_files = request.FILES.getlist('project-file-list')
-            for project_file in project_files:
+            project_files_size = request.POST.get('project_file_size').split(',')
+            project_files_name = request.POST.get('project_file_name').split(',')
+            for i in range(len(project_files)):
                 ProjectFile.objects.create(
                     project_id=new_project,
-                    project_file=project_file
+                    project_file=project_files[i],
+                    project_file_name=project_files_name[i],
+                    project_file_size=project_files_size[i]
                 )
 
         return list(request)

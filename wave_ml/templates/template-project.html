@@ -197,6 +197,8 @@
             <input type="hidden" id="project_id_for_modify" name="project_id_for_modify" value="">
             <input type="hidden" id="project_modify_position_check" name="project_modify_position_check" value="">
             <input type="hidden" id="project_modify_img_check" name="project_modify_img_check" value="">
+            <input type="hidden" id="project_file_size" name="project_file_size" value="">
+            <input type="hidden" id="project_file_name" name="project_file_name" value="">
         </form>
     </div>
     <!-- END layout-wrapper -->
@@ -222,6 +224,8 @@
 <script type="text/javascript">
     <!-- 파일 다중 업로드용 변수 -->
     var dataTransfer = new DataTransfer();
+    var dataFileSize = [];
+    var dataFileName = [];
 
     $(function() {
         <!-- 유저 정보 등록 -->
@@ -284,7 +288,7 @@
                         dataTransfer.items.add(files[i]);
                         document.getElementById("project-file-list").files = dataTransfer.files;
                         <!-- 파일 미리보기 태그 생성 -->
-                        file_preview_tag_create(files[i]);
+                        file_preview_tag_create(files[i].name, files[i].size, false);
                     }
                 }
             }
@@ -305,7 +309,7 @@
                         if(validate_file_extension(files[i])) {
                             dataTransfer.items.add(files[i]);
                             document.getElementById("project-file-list").files = dataTransfer.files;
-                            file_preview_tag_create(files[i]);
+                            file_preview_tag_create(files[i].name, files[i].size, false);
                         }
                     }
                 }
@@ -314,11 +318,24 @@
     });
 
     <!-- 파일 미리보기 태그 생성 -->
-    function file_preview_tag_create(file) {
-        var fileName = file.name;
-        var fileInfo = getByteSize(file.size);
-        var fileSize = fileInfo[0];
-        var fileUnit = fileInfo[1];
+    function file_preview_tag_create(fileName, fileSize, status) {
+        var fileSizeConversion = "";
+        var fileUnit = "";
+        if(!status) {
+            var fileInfo = getByteSize(fileSize);
+            fileSizeConversion = fileInfo[0];
+            fileUnit = fileInfo[1];
+        } else {
+            fileSizeConversion = fileSize.split('/')[0];
+            fileUnit = fileSize.split('/')[1];
+        }
+
+        <!-- 파일 사이즈, 실제 파일명 세팅 -->
+        dataFileSize.push(fileSizeConversion + '/' + fileUnit);
+        dataFileName.push(fileName);
+        $("#project_file_size").val(dataFileSize);
+        $("#project_file_name").val(dataFileName);
+
         var li = document.createElement("li");
         li.classList.add("mt-2", "rounded");
         li.id = "project-selected-file";
@@ -334,7 +351,7 @@
         htmlCode += '<div class="flex-grow-1">';
         htmlCode += '<div class="pt-1">';
         htmlCode += '<h5 class="fs-14 mb-1">' + fileName + '</h5>';
-        htmlCode += '<p class="fs-13 text-muted mb-0"><strong>' + fileSize + '</strong> ' + fileUnit + '</p>';
+        htmlCode += '<p class="fs-13 text-muted mb-0"><strong>' + fileSizeConversion + '</strong> ' + fileUnit + '</p>';
         htmlCode += '</div>';
         htmlCode += '</div>';
         htmlCode += '<div class="flex-shrink-0 ms-3" id="file-remove-btn-wrapper">';
@@ -472,6 +489,8 @@
                     $("#project-list-row-container").html(data);
                 }
                 dataTransfer.clearData();
+                dataFileSize.length = 0;
+                dataFileName.length = 0;
             },
             error: function(data) {
                 console.log("project_registration error");

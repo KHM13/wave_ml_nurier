@@ -221,6 +221,11 @@ function project_get_detail(project_id) {
             $("#project_id_for_modify").val(data.project_id);
             $("#project_modify_position_check").val('list');
 
+            <!-- file html 생성 -->
+            for(var i=0; i<data.project_file_name.length; i++) {
+                file_preview_tag_create(data.project_file_name[i], data.project_file_size[i], true);
+            }
+
             <!-- 이미지 파일 유무 판단 -->
             if(typeof data.project_image == "undefined" || data.project_image == null || data.project_image == "") {
                 $("#img-spot").attr('src', "");
