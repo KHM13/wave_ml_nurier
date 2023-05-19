@@ -5,7 +5,8 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponse, HttpRequest, JsonResponse
 from django.shortcuts import render, redirect
 
-from .models import Project
+from .models import Project, ProjectFile
+
 
 # 프로젝트 메인 첫페이지
 def main(request):
@@ -76,6 +77,7 @@ def list_sort(sort, user_id, keyword):
             project_list = Project.objects.filter(Q(registrant=user_id) & Q(project_name__contains=keyword)).order_by('-project_registration_date')
         else:
             project_list = Project.objects.filter(Q(registrant=user_id) & Q(project_name__contains=keyword)).order_by('-project_update_date')
+
     return project_list
 
 # 페이징 validation
@@ -86,6 +88,7 @@ def validate_page(page):
         page = 1
     elif int(page) <= 0:
         page = 1
+
     return page
 
 # 페이징 처리
@@ -114,6 +117,7 @@ def paginator(page, project_list):
         else:
             links.append(
                 '<li class="page-item"><a href="javascript:go_page(%d)" class="page-link">%d</a></li>' % (pr, pr))
+
     return project_obj, links
 
 # 아이디로 특정 프로젝트 세부정보 가져오기
@@ -135,16 +139,18 @@ def project_get_detail(request):
             'project_image': project_image
         }
         data_json = json.dumps(data)
+
         return HttpResponse(data_json, content_type='application/json')
 
 # 프로젝트 등록
 def registration(request):
     if request.method == 'POST':
-        print(request.FILES.get('project-file'))
+        # 이미지
         project_img = ""
         if request.FILES.get('project_image') is not None:
-            project_img = request.FILES.get('project_image')
-        Project.objects.create(
+            project_img = request.FILES.get('project_image');
+        # 프로젝트 모델 생성
+        new_project = Project.objects.create(
             project_type=request.POST.get('project_type'),
             project_sub_type=request.POST.get('project_sub_type'),
             project_name=request.POST.get('project_name'),
@@ -153,6 +159,15 @@ def registration(request):
             project_explanation=request.POST.get('project_explanation'),
             project_image=project_img
         )
+        # 파일
+        if request.FILES.getlist('project-file-list') is not None:
+            project_files = request.FILES.getlist('project-file-list')
+            for project_file in project_files:
+                ProjectFile.objects.create(
+                    project_id=new_project,
+                    project_file=project_file
+                )
+
         return list(request)
 
 # 프로젝트 편집
@@ -188,12 +203,14 @@ def clone(request):
         clone_project.id = None
         clone_project.project_name = clone_project.project_name + "_복제본"
         clone_project.save()
+
         return list(request)
 
 # 프로젝트 삭제
 def remove(request):
     if request.method == 'POST':
         Project.objects.get(id=request.POST.get('project_id')).delete()
+
         return list(request)
 
 # 프로젝트 상세조회
