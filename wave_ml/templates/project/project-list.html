@@ -218,7 +218,7 @@ function project_get_detail(project_id) {
             $("#registrant_name").val(data.registrant);
             $("#registration_date").val(data.project_registration_date);
             $("#project_explanation").val(data.project_explanation);
-            $("#project_id_for_modify").val(data.project_id);
+            $("#project_modify_id").val(data.project_id);
             $("#project_modify_position_check").val('list');
 
             <!-- file html 생성 -->
@@ -240,9 +240,6 @@ function project_get_detail(project_id) {
 
             <!-- Form 수동으로 띄우기 -->
             $('#myModal').modal('show');
-
-            <!-- 추후에 편집 판단을 위해 session에 값 세팅 -->
-            sessionStorage.setItem('modify', true);
         },
         error: function(data) {
             console.log("project_get_detail error");

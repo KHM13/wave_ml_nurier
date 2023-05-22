@@ -190,7 +190,7 @@ def registration(request):
 # 프로젝트 편집
 def modify(request):
     if request.method == 'POST':
-        modify_project = Project.objects.get(id=request.POST.get('project_id_for_modify'))
+        modify_project = Project.objects.get(id=request.POST.get('project_modify_id'))
         # 이미지 유효성 검사
         project_img = ""
         if request.FILES.get('project_image') is not None:
@@ -216,10 +216,26 @@ def modify(request):
 # 프로젝트 복제
 def clone(request):
     if request.method == 'POST':
-        clone_project = Project.objects.get(id=request.POST.get('project_id'))
-        clone_project.id = None
-        clone_project.project_name = clone_project.project_name + "_복제본"
-        clone_project.save()
+        # 새 프로젝트 생성
+        old_project = Project.objects.get(id=request.POST.get('project_id'))
+        new_project = Project.objects.create(
+            project_type=old_project.project_type,
+            project_sub_type=old_project.project_sub_type,
+            project_name=old_project.project_name + "_복제본",
+            registrant=old_project.registrant,
+            project_explanation=old_project.project_explanation,
+            project_image=old_project.project_image
+        )
+        # 새 파일 생성
+        old_files = ProjectFile.objects.filter(project_id=old_project)
+        if old_files is not None:
+            for old_file in old_files:
+                new_file = ProjectFile.objects.create(
+                    project_id=new_project,
+                    project_file=old_file.project_file,
+                    project_file_name=old_file.project_file_name,
+                    project_file_size=old_file.project_file_size
+                )
 
         return list(request)
 
@@ -233,7 +249,7 @@ def remove(request):
 # 프로젝트 상세조회
 def detail(request):
     if request.method == 'POST':
-        project_obj = Project.objects.get(id=request.POST.get('project_id_for_modify'))
+        project_obj = Project.objects.get(id=int(request.POST.get('project_modify_id')))
     else:
         project_obj = Project.objects.get(id=request.GET.get('project_id'))
 

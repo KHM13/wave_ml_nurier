@@ -194,7 +194,7 @@
                     </div><!-- /.modal-content -->
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
-            <input type="hidden" id="project_id_for_modify" name="project_id_for_modify" value="">
+            <input type="hidden" id="project_modify_id" name="project_modify_id" value="">
             <input type="hidden" id="project_modify_position_check" name="project_modify_position_check" value="">
             <input type="hidden" id="project_modify_img_check" name="project_modify_img_check" value="">
             <input type="hidden" id="project_file_size" name="project_file_size" value="">
@@ -253,10 +253,7 @@
             $("#img-spot").src = "";
             $("#img-exists").hide();
 
-            <!-- 편집으로 모달 접근 -->
-            if(sessionStorage.getItem('modify')) {
-                sessionStorage.removeItem('modify');
-            }
+            $("#project_modify_position_check").val("");
         });
 
         <!-- 모달 시작 시 이벤트 -->
@@ -461,9 +458,11 @@
 <!--            })-->
 <!--            return false;-->
 <!--        }-->
+
         <!-- 등록, 편집 url 판단 -->
         var url = "";
-        if(sessionStorage.getItem('modify')) {
+        var modifyCheck = $("#project_modify_position_check").val();
+        if(typeof modifyCheck != "undefined" && modifyCheck != null && modifyCheck != "") {
             url = '/project/modify/';
             if(typeof $("#img-spot").attr('src') == "undefined" || $("#img-spot").attr('src') == null || $("#img-spot").attr('src') == "") {
                 $("#project_modify_img_check").val("");
@@ -493,7 +492,12 @@
                 dataFileName.length = 0;
             },
             error: function(data) {
-                console.log("project_registration error");
+                var modifyCheck = $("#project_modify_position_check").val();
+                if(typeof modifyCheck != "undefined" && modifyCheck != null && modifyCheck != "") {
+                    console.log("project_modify error");
+                } else {
+                    console.log("project_registration error");
+                }
             }
         });
     }

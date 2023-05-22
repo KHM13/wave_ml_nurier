@@ -625,8 +625,6 @@ $(function() {
 
 <!-- 프로젝트 편집 초기값 지정 -->
 function project_get_detail() {
-    sessionStorage.setItem('modify', true);
-
     $('#myModal').modal('show');
     $("#select_for_project_type").val('{{project_type}}');
     $("#select_for_project_sub_type").val('{{project_sub_type}}');
@@ -634,7 +632,7 @@ function project_get_detail() {
     $("#registrant_name").val('{{registrant}}');
     $("#registration_date").val('{{project_registration_date | date:"Y.m.d"}}');
     $("#project_explanation").val('{{project_explanation}}');
-    $("#project_id_for_modify").val({{project_id}});
+    $("#project_modify_id").val('{{project_id}}');
     $("#project_modify_position_check").val('detail');
 
     var project_img = '{{project_image.url}}';
