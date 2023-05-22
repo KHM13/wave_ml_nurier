@@ -273,6 +273,11 @@
             <!-- 등록자, 등록일시 수정 불가 지정 -->
             $("#registration_date").attr("disabled", true);
             $("#registrant_name").attr("disabled", true);
+
+            <!-- 파일 관련 값 초기화 -->
+            dataTransfer.clearData();
+            dataFileSize.length = 0;
+            dataFileName.length = 0;
         });
 
         <!-- 파일 등록 (열기 선택 시) -->
@@ -487,9 +492,6 @@
                     $("#project-list-row-container").html("");
                     $("#project-list-row-container").html(data);
                 }
-                dataTransfer.clearData();
-                dataFileSize.length = 0;
-                dataFileName.length = 0;
             },
             error: function(data) {
                 var modifyCheck = $("#project_modify_position_check").val();

@@ -1,7 +1,10 @@
 import json
+import os
 
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.http import HttpResponseRedirect, HttpResponse, HttpRequest, JsonResponse
 from django.shortcuts import render, redirect
 
@@ -136,7 +139,6 @@ def project_get_detail(request):
             for project_file in project_files:
                 file_name.append(project_file.project_file_name)
                 file_size.append(project_file.project_file_size)
-
         project_registration_date = str(project_obj.project_registration_date).split()[0]
 
         data = {
@@ -158,10 +160,12 @@ def project_get_detail(request):
 # 프로젝트 등록
 def registration(request):
     if request.method == 'POST':
+
         # 이미지
         project_img = ""
         if request.FILES.get('project_image') is not None:
             project_img = request.FILES.get('project_image');
+
         # 프로젝트 모델 생성
         new_project = Project.objects.create(
             project_type=request.POST.get('project_type'),
@@ -172,6 +176,7 @@ def registration(request):
             project_explanation=request.POST.get('project_explanation'),
             project_image=project_img
         )
+
         # 파일
         if request.FILES.getlist('project-file-list') is not None:
             project_files = request.FILES.getlist('project-file-list')
@@ -242,16 +247,32 @@ def clone(request):
 # 프로젝트 삭제
 def remove(request):
     if request.method == 'POST':
-        Project.objects.get(id=request.POST.get('project_id')).delete()
+        project_obj = Project.objects.get(id=request.POST.get('project_id'))
+        project_files = project_obj.project.all()
+
+        # media 폴더 파일 삭제
+        if project_files:
+            for file in project_files:
+                if file.project_file:
+                    if os.path.isfile(file.project_file.path):
+                        os.remove(file.project_file.path)
+        # media 폴더 이미지 삭제
+        if project_obj.project_image:
+            if os.path.isfile(project_obj.project_image.path):
+                os.remove(project_obj.project_image.path)
+        # 프로젝트 삭제
+        project_obj.delete()
 
         return list(request)
 
 # 프로젝트 상세조회
 def detail(request):
     if request.method == 'POST':
-        project_obj = Project.objects.get(id=int(request.POST.get('project_modify_id')))
+        project_obj = Project.objects.get(id=request.POST.get('project_modify_id'))
+        request.session['project_id'] = request.POST.get('project_modify_id')
     else:
         project_obj = Project.objects.get(id=request.GET.get('project_id'))
+        request.session['project_id'] = request.GET.get('project_id')
 
     project_image = ""
     if project_obj.project_image:
