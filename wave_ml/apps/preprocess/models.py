@@ -1,9 +1,10 @@
 from django.db import models
+from wave_ml.apps.mlmodel.models import MlModel
 
 
 # Create your models here.
 class Process(models.Model):
-    project_id = models.CharField(blank=False, max_length=30)
+    mlmodel_id = models.ForeignKey(MlModel, related_name="mlmodel", on_delete=models.CASCADE, to_field="id", db_column="mlmodel_id")
     column_name = models.TextField(blank=False)
     process_type = models.TextField(blank=False)
     work_type = models.TextField(blank=False)
@@ -11,12 +12,12 @@ class Process(models.Model):
     replace_value = models.TextField()
     sort = models.IntegerField()
 
-    def get_process_list(self, project_id, column_name):
-        result = self.__class__.objects.filter(project_id=project_id, column_name=column_name).order_by('sort').values()
+    def get_process_list(self, mlmodel_id, column_name):
+        result = self.__class__.objects.filter(mlmodel_id=mlmodel_id, column_name=column_name).order_by('sort').values()
         return result
 
-    def get_process_name_list(self, project_id, column_name):
-        model = self.__class__.objects.filter(project_id=project_id, column_name=column_name).order_by('sort').values()
+    def get_process_name_list(self, mlmodel_id, column_name):
+        model = self.__class__.objects.filter(mlmodel_id=mlmodel_id, column_name=column_name).order_by('sort').values()
         for m in model:
             if m['process_type'] == "missing":
                 m['name'] = "결측치 처리"
@@ -34,7 +35,8 @@ class Process(models.Model):
 
 
 class MLSampling(models.Model):
-    project_id = models.CharField(blank=False, max_length=30)
+    mlmodel_id = models.ForeignKey(MlModel, related_name="mlmodel_info", on_delete=models.CASCADE, to_field="id", db_column="mlmodel_id")
+    dataset_name = models.TextField(blank=True, max_length=30)
     feature_algorithm = models.TextField()
     columns = models.TextField(blank=False)
     column_size = models.IntegerField(blank=False, default=0)
@@ -43,16 +45,16 @@ class MLSampling(models.Model):
     k_value = models.IntegerField(blank=False, default=0)
     sampling_algorithm = models.TextField()
 
-    def get_feature_columns(self, project_id):
-        model = self.__class__.objects.filter(project_id=project_id).values()
+    def get_feature_columns(self, mlmodel_id):
+        model = self.__class__.objects.filter(mlmodel_id=mlmodel_id).values()
         result = {}
         if model is not None:
             result['algorithm'] = model.last()['feature_algorithm']
             result['columns'] = model.last()['columns']
         return result
 
-    def get_split_info(self, project_id):
-        model = self.__class__.objects.filter(project_id=project_id).values()
+    def get_split_info(self, mlmodel_id):
+        model = self.__class__.objects.filter(mlmodel_id=mlmodel_id).values()
         result = {}
         if model is not None:
             result['split_algorithm'] = model.last()['split_algorithm']
@@ -60,8 +62,8 @@ class MLSampling(models.Model):
             result['k_value'] = model.last()['k_value']
         return result
 
-    def get_info(self, project_id):
-        model = self.__class__.objects.filter(project_id=project_id).values()
+    def get_info(self, mlmodel_id):
+        model = self.__class__.objects.filter(mlmodel_id=mlmodel_id).values()
         if model is not None:
             return model.last()
         else:

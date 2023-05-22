@@ -1,18 +1,39 @@
 from django.http import HttpResponse
 from django.shortcuts import render
-
-
-# 모델 학습 화면 첫진입
 from django.views.decorators.csrf import csrf_exempt
+from wave_ml.apps.learning.models import ModelLearning, MlParameter
+from wave_ml.apps.mlmodel.models import MlModel
+
+import json
 
 
+# 모델학습 메인이동
 def main(request):
+    mlmodel_id = request.session['mlmodel_id']
+    model_list = []
+    if ModelLearning.objects.filter(mlmodel_id=mlmodel_id).exists():
+        mlmodel = ModelLearning.objects.filter(mlmodel_id=mlmodel_id).values()
+
+        for model in mlmodel:
+            learning_id = model['id']
+            algorithm = model['algorithm']
+            parameter = MlParameter.objects.filter(model_learning_id=learning_id, algorithm=algorithm).values()
+            hyper_parameters = []
+            for param in parameter:
+                temp = {'name': param['parameter_name'], 'value': param['parameter_value']}
+                hyper_parameters.append(temp)
+            model_list.append({'learning_id': learning_id, 'algorithm': algorithm, 'hyper_parameters': hyper_parameters})
+
     return render(
         request,
-        'learning/model-learning.html'
+        'learning/model-learning.html',
+        {
+            'model_list': model_list
+        }
     )
 
 
+# 하이퍼 파라미터 설정
 @csrf_exempt
 def detail(request):
     algorithm = request.POST.get("algorithm", "")
@@ -48,7 +69,40 @@ def detail(request):
         }
     )
 
+
+# 모델 저장
 @csrf_exempt
 def save_model_list(request):
+    try:
+        model_list = json.loads(request.POST.get("model_list"))
+        mlmodel_id = request.session['mlmodel_id']
+        project_id = request.session.get("project_id", None)
 
-    return HttpResponse("success", content_type='application/json')
+        # 기존에 등록되어있던 파라미터 정보 삭제
+        if ModelLearning.objects.filter(mlmodel_id=mlmodel_id).exists():
+            ModelLearning.objects.filter(mlmodel_id=mlmodel_id).delete()
+
+        for model in model_list:
+            # 등록
+            ml_model = MlModel.objects.get(id=mlmodel_id, project_id=project_id)
+            learning_model = ModelLearning(
+                mlmodel_id=ml_model,
+                algorithm=model['algorithm']
+            )
+            learning_model.save()
+
+            for key, value in model['parameter'].items():
+                parameter_model = MlParameter(
+                    model_learning_id=learning_model,
+                    algorithm=model['algorithm'],
+                    parameter_name=key,
+                    parameter_value=value
+                )
+                parameter_model.save()
+
+        result = json.dumps({"result": "success"})
+        return HttpResponse(result, content_type='application/json')
+    except Exception as e:
+        print(f"exception : {e}")
+        result = json.dumps({"result": "error"})
+        return HttpResponse(result, content_type='application/json')

@@ -494,6 +494,10 @@ function model_list_add(title) {
     list_content += '</span></p></div></div></div>';
 
     $("#div_for_model_list").append(list_content);
+    <!-- 스크롤 하단 고정-->
+    if ( $("div.simplebar-content-wrapper").length > 1 ) {
+        $("div.simplebar-content-wrapper").scrollTop($("div.simplebar-content-wrapper")[0].scrollHeight);
+    }
 }
 
 function model_list_remove(title) {

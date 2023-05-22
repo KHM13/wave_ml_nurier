@@ -13,6 +13,15 @@ def file_to_df(file):
     return df
 
 
+def files_to_df(files):
+    data = []
+    for file in files:
+        df = pd.read_csv(f"wave_ml/media/{file['project_file']}", encoding="euc-kr", index_col=None, header=0)
+        data.append(df)
+
+    return pd.concat(data, axis=0, ignore_index=True)
+
+
 # json 데이터를 Dataframe 으로 변환
 def json_to_df(df_json):
     df = pd.read_json(df_json)
@@ -44,19 +53,19 @@ def get_column_list(df):
 
 
 # DataFrame 기본정보
-def get_data_info(df):
+def get_data_info(df, target):
     df_shape = df.shape
     columns = get_column_list(df)
-    result = {'count': df_shape[0], 'size': len(columns), 'columns': columns, 'target': "output"}
+    result = {'count': df_shape[0], 'size': len(columns), 'columns': columns, 'target': target}
     return result
 
 
-def get_train_test_info(train_data, test_data):
+def get_train_test_info(train_data, test_data, target):
     train_shape = train_data.shape
     test_shape = test_data.shape
     columns = get_column_list(train_data)
     print(columns)
-    result = {'train_count': train_shape[0], 'size': len(columns), 'test_count': test_shape[0], 'columns': columns, 'target': "output"}
+    result = {'train_count': train_shape[0], 'size': len(columns), 'test_count': test_shape[0], 'columns': columns, 'target': target}
     return result
 
 
@@ -136,12 +145,12 @@ def data_freq(df, column):
 
 
 # 전처리 적용 전 미리보기
-def data_preview(df, column):
+def data_preview(df, column, target):
     result: dict = {'value_list': data_detail(df, column), 'desc': data_desc(df, column),
-                    'main_graph': dataChart.main_graph(df, column),
+                    'main_graph': dataChart.main_graph(df, column, target),
                     'outlier': dataPreprocessing.detect_outlier(df, column),
                     'box_graph': dataChart.box_plot_graph(df, column, 750, 500),
-                    'corr_graph': dataChart.scatter_graph(df, column),
+                    'corr_graph': dataChart.scatter_graph(df, column, target),
                     'freq': data_freq(df, column)}
     return result
 

@@ -81,12 +81,12 @@
                                     {% for model in model_list %}
                                     <div class="card mb-3">
                                         <div class="card-body border border-dashed shadow-none">
-                                            <button type="button" class="btn-close float-end fs-11" aria-label="Close"></button>
+                                            <button type="button" class="btn-close float-end fs-11" aria-label="Close" onclick="javascript:model_remove(this)"></button>
 
                                             <div class="d-flex align-items-center">
                                                 <div class="avatar-sm flex-shrink-0">
                                                     <div class="avatar-title bg-soft-primary text-primary rounded fs-20">
-                                                        <i class="ri-file-zip-fill"></i>
+                                                        <i class="ri-apps-2-fill fs-25"></i>
                                                     </div>
                                                 </div>
 
@@ -150,15 +150,31 @@ $(function() {
                 var hyper_parameter = $(this).text().trim().split(" : ");
                 parameter[hyper_parameter[0]] = hyper_parameter[1];
             });
+            model_list.push({'algorithm': algorithm, 'parameter': parameter});
         });
 
         $.ajax({
             type: 'POST',
             url: '/learning/model_save',
             data: {
-
+                'model_list': JSON.stringify(model_list)
             },
             success: function(data) {
+                if( data.result == "success" ) {
+                    Swal.fire({
+                        title:'저장되었습니다',
+                        icon: 'success',
+                        confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                        buttonsStyling: false
+                    })
+                } else {
+                    Swal.fire({
+                        title:'문제가 발생하여 저장되지 않았습니다.\n다시 시도해주세요.',
+                        icon: 'error',
+                        confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                        buttonsStyling: false
+                    })
+                }
             }
         });
     });

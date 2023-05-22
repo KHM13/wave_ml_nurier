@@ -302,8 +302,7 @@ def stepwise_model(x, y):
 
 
 # 데이터 분할
-def train_test_data_division(df, columns, split_rate):
-    target = "output"
+def train_test_data_division(df, target, columns, split_rate):
     x_data = df[columns]
     y_data = df[[target]]
     rate: float = split_rate / 100.0
@@ -317,8 +316,7 @@ def train_test_data_division(df, columns, split_rate):
 
 
 # 데이터 분할
-def k_fold_cross_validation(df, columns, k_value):
-    target = "output"
+def k_fold_cross_validation(df, columns, k_value, target):
     k_fold = StratifiedKFold(n_splits=k_value, shuffle=True, random_state=42)
     x_data = df[columns]
     y_data = df[[target]]
@@ -336,8 +334,7 @@ def k_fold_cross_validation(df, columns, k_value):
 
 
 # 데이터 분할
-def shuffle_split(df, columns, split_rate, k_value):
-    target = "output"
+def shuffle_split(df, columns, split_rate, k_value, target):
     x_data = df[columns]
     y_data = df[[target]]
     rate: float = split_rate / 100.0
@@ -356,8 +353,7 @@ def shuffle_split(df, columns, split_rate, k_value):
 
 
 # 불균형 데이터 보정
-def set_imbalanced_data(algorithm, train_data):
-    target = "output"
+def set_imbalanced_data(algorithm, train_data, target):
     train_X = train_data.drop([target], axis=1)
     train_y = train_data[target]
 

@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('', views.main, name="preprocess"),
     path('process', views.process, name="process"),
+    path('target_save', views.save_target, name="save-target"),
     path('process/detail', views.detail, name="preprocess-detail"),
     path('process/data_type_change', views.type_change, name="preprocess-type-change"),
     path('process/process_missing_value', views.process_missing_value, name="process-missing-value"),
