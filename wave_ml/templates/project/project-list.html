@@ -220,6 +220,8 @@ function project_get_detail(project_id) {
             $("#project_explanation").val(data.project_explanation);
             $("#project_modify_id").val(data.project_id);
             $("#project_modify_position_check").val('list');
+            $("#myModalLabel").html("프로젝트 편집");
+            $("#btn_for_project_registration").html("편집");
 
             <!-- file html 생성 -->
             for(var i=0; i<data.project_file_name.length; i++) {
