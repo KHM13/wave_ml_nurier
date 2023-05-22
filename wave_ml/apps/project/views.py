@@ -1,17 +1,20 @@
 import json
 import os
+import shutil
+import uuid
 
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.db.models.signals import pre_delete
-from django.dispatch import receiver
-from django.http import HttpResponseRedirect, HttpResponse, HttpRequest, JsonResponse
-from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from django.shortcuts import render
 
 from .models import Project, ProjectFile
 
 
 # 프로젝트 메인 첫페이지
+from ...config import settings
+
+
 def main(request):
     sort = request.session.get('sort', 'update')
     page = request.session.get('page', 1)
@@ -196,7 +199,7 @@ def registration(request):
 def modify(request):
     if request.method == 'POST':
         modify_project = Project.objects.get(id=request.POST.get('project_modify_id'))
-        # 이미지 유효성 검사
+
         project_img = ""
         if request.FILES.get('project_image') is not None:
             project_img = request.FILES.get('project_image')
@@ -221,7 +224,7 @@ def modify(request):
 # 프로젝트 복제
 def clone(request):
     if request.method == 'POST':
-        # 새 프로젝트 생성
+        # 프로젝트 복제
         old_project = Project.objects.get(id=request.POST.get('project_id'))
         new_project = Project.objects.create(
             project_type=old_project.project_type,
@@ -231,8 +234,10 @@ def clone(request):
             project_explanation=old_project.project_explanation,
             project_image=old_project.project_image
         )
-        # 새 파일 생성
-        old_files = ProjectFile.objects.filter(project_id=old_project)
+
+        # 파일 복제
+        old_files = old_project.project.all()
+        new_files = []
         if old_files is not None:
             for old_file in old_files:
                 new_file = ProjectFile.objects.create(
@@ -241,6 +246,21 @@ def clone(request):
                     project_file_name=old_file.project_file_name,
                     project_file_size=old_file.project_file_size
                 )
+                new_files.append(new_file)
+
+        # 파일시스템 데이터 복제
+        for old_file, new_file in zip(old_files, new_files):
+            old_file_path = old_file.project_file.path
+            file_dir, file_name = os.path.split(old_file_path)
+            file_name, file_ext = os.path.splitext(file_name)
+            unique_id = uuid.uuid4().hex
+
+            file_path_prefix = file_dir.split("\\")[-2] + "/" + file_dir.split("\\")[-1]
+            new_file_name = f"{file_name}_복제본_{unique_id}{file_ext}"
+            new_file_path = os.path.abspath(f"{file_dir}/{new_file_name}")
+            shutil.copy2(old_file_path, new_file_path)
+            new_file.project_file = f"{file_path_prefix}/{new_file_name}"
+            new_file.save()
 
         return list(request)
 
@@ -256,10 +276,12 @@ def remove(request):
                 if file.project_file:
                     if os.path.isfile(file.project_file.path):
                         os.remove(file.project_file.path)
+
         # media 폴더 이미지 삭제
         if project_obj.project_image:
             if os.path.isfile(project_obj.project_image.path):
                 os.remove(project_obj.project_image.path)
+
         # 프로젝트 삭제
         project_obj.delete()
 

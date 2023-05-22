@@ -661,6 +661,8 @@ function project_get_detail() {
     $("#project_explanation").val('{{project_explanation}}');
     $("#project_modify_id").val('{{project_id}}');
     $("#project_modify_position_check").val('detail');
+    $("#myModalLabel").html("프로젝트 편집");
+    $("#btn_for_project_registration").html("편집");
 
     var project_img = '{{project_image.url}}';
     if(project_img == "undefined" || project_img == null || project_img == "") {
