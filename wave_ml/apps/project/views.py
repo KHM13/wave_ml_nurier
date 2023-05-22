@@ -39,9 +39,8 @@ def list(request):
         
         # 기존 조건 확인
         sort = request.POST.get('sort', request.session.get('sort'))
-        page = request.POST.get('page', request.session.get('page'))
+        page = validate_page(request.POST.get('page', request.session.get('page')))
         keyword = request.POST.get('keyword', request.session.get('keyword'))
-        page = validate_page(page)
 
         # 리스트 정렬 조회
         project_list = list_sort(sort, user_id, keyword)
@@ -69,7 +68,7 @@ def list(request):
 
 # 프로젝트 리스트 정렬 조회
 def list_sort(sort, user_id, keyword):
-    if keyword == "" or keyword == None:
+    if keyword == "" or keyword is None:
         if sort == 'name':
             project_list = Project.objects.filter(registrant=user_id).order_by('project_name')
         elif sort == 'registration':
@@ -88,13 +87,8 @@ def list_sort(sort, user_id, keyword):
 
 # 페이징 validation
 def validate_page(page):
-    if page is None:
+    if page == "" or page is None or int(page) <= 0:
         page = 1
-    elif page == "":
-        page = 1
-    elif int(page) <= 0:
-        page = 1
-
     return page
 
 # 페이징 처리
@@ -138,8 +132,10 @@ def project_get_detail(request):
 
         file_name = []
         file_size = []
+        file_id = []
         if project_files:
             for project_file in project_files:
+                file_id.append(project_file.id)
                 file_name.append(project_file.project_file_name)
                 file_size.append(project_file.project_file_size)
         project_registration_date = str(project_obj.project_registration_date).split()[0]
@@ -153,6 +149,7 @@ def project_get_detail(request):
             'project_registration_date': project_registration_date,
             'project_explanation': project_obj.project_explanation,
             'project_image': project_image,
+            'project_file_id': file_id,
             'project_file_name': file_name,
             'project_file_size': file_size
         }
@@ -166,7 +163,7 @@ def registration(request):
 
         # 이미지
         project_img = ""
-        if request.FILES.get('project_image') is not None:
+        if request.FILES.get('project_image'):
             project_img = request.FILES.get('project_image');
 
         # 프로젝트 모델 생성
@@ -181,7 +178,7 @@ def registration(request):
         )
 
         # 파일
-        if request.FILES.getlist('project-file-list') is not None:
+        if request.FILES.getlist('project-file-list'):
             project_files = request.FILES.getlist('project-file-list')
             project_files_size = request.POST.get('project_file_size').split(',')
             project_files_name = request.POST.get('project_file_name').split(',')
@@ -200,12 +197,23 @@ def modify(request):
     if request.method == 'POST':
         modify_project = Project.objects.get(id=request.POST.get('project_modify_id'))
 
+        # 이미지 확인
         project_img = ""
-        if request.FILES.get('project_image') is not None:
+        if request.FILES.get('project_image'):
             project_img = request.FILES.get('project_image')
         else:
             if request.POST.get('project_modify_img_check') != "":
                 project_img = modify_project.project_image
+
+        # 파일 확인
+        if request.POST.get("project_file_id"):
+            remove_file_id_list = request.POST.get("project_file_id").split(",")
+            if remove_file_id_list:
+                for remove_file_id in remove_file_id_list:
+                    remove_file = ProjectFile.objects.get(id=remove_file_id)
+                    if os.path.isfile(remove_file.project_file.path):
+                        os.remove(remove_file.project_file.path)
+                        remove_file.delete()
 
         modify_project.project_type = request.POST.get('project_type')
         modify_project.project_sub_type = request.POST.get('project_sub_type')
@@ -238,7 +246,7 @@ def clone(request):
         # 파일 복제
         old_files = old_project.project.all()
         new_files = []
-        if old_files is not None:
+        if old_files:
             for old_file in old_files:
                 new_file = ProjectFile.objects.create(
                     project_id=new_project,

@@ -199,6 +199,7 @@
             <input type="hidden" id="project_modify_position_check" name="project_modify_position_check" value="">
             <input type="hidden" id="project_modify_img_check" name="project_modify_img_check" value="">
             <!-- 파일용 -->
+            <input type="hidden" id="project_file_id" name="project_file_id" value="">
             <input type="hidden" id="project_file_size" name="project_file_size" value="">
             <input type="hidden" id="project_file_name" name="project_file_name" value="">
         </form>
@@ -228,6 +229,7 @@
     var dataTransfer = new DataTransfer();
     var dataFileSize = [];
     var dataFileName = [];
+    var dataFileId = [];
 
     $(function() {
         <!-- 유저 정보 등록 -->
@@ -244,20 +246,32 @@
             <!-- 작성된 기존 폼 데이터 초기화 -->
             $("#project_registration_form")[0].reset();
 
+            <!-- 등록한 이미지 초기화 -->
+            $("#img-none").show();
+            $("#img-spot").src = "";
+            $("#img-exists").hide();
+
+            <!-- 수정관련 설정값 초기화 -->
+            $("#project_modify_position_check").val("");
+
+            <!-- Title, Button 명칭 지정 -->
+            $("#myModalLabel").html("프로젝트 등록");
+            $("#btn_for_project_registration").html("등록");
+
             <!-- 등록한 파일 초기화 -->
             var file_size = $("#project-selected-file-list li").length;
             if(file_size > 0) {
                 $("#project-selected-file-list").html("");
             }
 
-            <!-- 등록한 이미지 초기화 -->
-            $("#img-none").show();
-            $("#img-spot").src = "";
-            $("#img-exists").hide();
-
-            $("#project_modify_position_check").val("");
-            $("#myModalLabel").html("프로젝트 등록");
-            $("#btn_for_project_registration").html("등록");
+            <!-- 파일 관련 설정값 초기화 -->
+            dataTransfer.clearData();
+            dataFileSize.length = 0;
+            dataFileName.length = 0;
+            dataFileId.length = 0;
+            $("#project_file_id").val("");
+            $("#project_file_size").val("");
+            $("#project_file_name").val("");
         });
 
         <!-- 모달 시작 시 이벤트 -->
@@ -277,11 +291,6 @@
             <!-- 등록자, 등록일시 수정 불가 지정 -->
             $("#registration_date").attr("disabled", true);
             $("#registrant_name").attr("disabled", true);
-
-            <!-- 파일 관련 값 초기화 -->
-            dataTransfer.clearData();
-            dataFileSize.length = 0;
-            dataFileName.length = 0;
         });
 
         <!-- 파일 등록 (열기 선택 시) -->
@@ -294,7 +303,7 @@
                         dataTransfer.items.add(files[i]);
                         document.getElementById("project-file-list").files = dataTransfer.files;
                         <!-- 파일 미리보기 태그 생성 -->
-                        file_preview_tag_create(files[i].name, files[i].size, false);
+                        file_preview_tag_create(files[i].name, files[i].size, "");
                     }
                 }
             }
@@ -315,7 +324,7 @@
                         if(validate_file_extension(files[i])) {
                             dataTransfer.items.add(files[i]);
                             document.getElementById("project-file-list").files = dataTransfer.files;
-                            file_preview_tag_create(files[i].name, files[i].size, false);
+                            file_preview_tag_create(files[i].name, files[i].size, "");
                         }
                     }
                 }
@@ -324,10 +333,10 @@
     });
 
     <!-- 파일 미리보기 태그 생성 -->
-    function file_preview_tag_create(fileName, fileSize, status) {
+    function file_preview_tag_create(fileName, fileSize, fileId) {
         var fileSizeConversion = "";
         var fileUnit = "";
-        if(!status) {
+        if(fileId == "") {
             var fileInfo = getByteSize(fileSize);
             fileSizeConversion = fileInfo[0];
             fileUnit = fileInfo[1];
@@ -361,7 +370,7 @@
         htmlCode += '</div>';
         htmlCode += '</div>';
         htmlCode += '<div class="flex-shrink-0 ms-3" id="file-remove-btn-wrapper">';
-        htmlCode += '<button type="button" class="btn btn-sm btn-light text-muted lh-1 p-1" onclick="file_remove(this);"><i class="bx bx-x fs-4"></i></button>';
+        htmlCode += '<button type="button" class="btn btn-sm btn-light text-muted lh-1 p-1" onclick="file_remove(this,' + fileId + ');"><i class="bx bx-x fs-4"></i></button>';
         htmlCode += '</div>';
         htmlCode += '</div>';
         htmlCode += '</div>';
@@ -371,7 +380,7 @@
     }
 
     <!-- 파일등록 미리보기 X 버튼 클릭 시 삭제 -->
-    function file_remove(input) {
+    function file_remove(input, fileId) {
         var li = input.closest('li');
         var files = document.getElementById("project-file-list").files;
         var ul = li.parentNode;
@@ -379,6 +388,8 @@
 
         dataTransfer.items.remove(index);
         document.getElementById("project-file-list").files = dataTransfer.files;
+        dataFileId.push(fileId);
+        $("#project_file_id").val(dataFileId);
 
         li.remove();
     }

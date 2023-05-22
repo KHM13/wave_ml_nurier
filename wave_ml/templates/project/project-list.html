@@ -221,11 +221,11 @@ function project_get_detail(project_id) {
             $("#project_modify_id").val(data.project_id);
             $("#project_modify_position_check").val('list');
             $("#myModalLabel").html("프로젝트 편집");
-            $("#btn_for_project_registration").html("편집");
+            $("#btn_for_project_registration").html("저장");
 
             <!-- file html 생성 -->
             for(var i=0; i<data.project_file_name.length; i++) {
-                file_preview_tag_create(data.project_file_name[i], data.project_file_size[i], true);
+                file_preview_tag_create(data.project_file_name[i], data.project_file_size[i], data.project_file_id[i]);
             }
 
             <!-- 이미지 파일 유무 판단 -->
@@ -233,6 +233,7 @@ function project_get_detail(project_id) {
                 $("#img-spot").attr('src', "");
                 $("#img-exists").hide();
                 $("#img-none").show();
+                $("#project_modify_img_check").val("");
             } else {
                 $("#img-none").hide();
                 $("#img-exists").show();
