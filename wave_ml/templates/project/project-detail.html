@@ -100,7 +100,7 @@
                                 </li>
                             </ul>
                             <div class="flex-shrink-0">
-                                <button class="btn btn-datablue btn_for_model_create" id="btn_for_model_create"><i class="ri-add-line align-bottom me-1"></i> 등록</button>
+                                <button class="btn btn-datablue" data-bs-toggle="modal" data-bs-target="#dataCreateModal"><i class="ri-add-line align-bottom me-1"></i> 등록</button>
                                 <button class="btn btn-transparent-datablue" id="btn_for_return_project"><i class="ri-file-list-line"></i> 목록</button>
                             </div>
                         </div>
@@ -287,7 +287,7 @@
                                             <div class="card-body">
                                                 <h5 class="card-title fw-semibold">모델</h5>
                                                 <div class="text-center mt-3 pt-3">
-                                                    <a href="javascript:void(0)" class="btn btn-soft-dark btn_for_model_create">
+                                                    <a href="javascript:void(0)" class="btn btn-soft-dark" data-bs-toggle="modal" data-bs-target="#dataCreateModal">
                                                         <i class="bx bx-layer-plus display-6 text-white"></i>
                                                     </a>
                                                     <p class="mt-3">버튼을 선택해서 새로운 작업을 시작해보세요.</p>
@@ -574,13 +574,33 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!--end card-->
-                            </div>
-                            <!--end tab-pane-->
-                        </div>
+                            </div><!--end card-->
+                        </div><!--end tab-pane-->
                     </div><!--end tab-content-->
                 </div><!--end col-->
             </div><!--end row-->
+            <div id="dataCreateModal" class="modal fade" tabindex="-1" aria-labelledby="dataCreateModalLabel" aria-hidden="true" style="display: none;">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-white" id="modalTitle">학습 데이터 생성</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row g-3">
+                                <div class="col-lg-12">
+                                    <label for="project_id" class="form-label">프로젝트명</label>
+                                    <input type="text" id="project_id" class="form-control"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal" id="btn_for_modal_data_cancel">취소</button>
+                            <button type="button" class="btn btn-primary" id="btn_for_modal_data_create">생성</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
         </div><!-- container-fluid -->
     </div><!-- End Page-content -->
 
@@ -593,12 +613,19 @@
 $(function() {
     <!-- 목록 클릭 시 프로젝트 메인으로 이동 -->
     $("#btn_for_return_project").bind("click", function() {
-        location.href="/project"
+        location.href='/project'
+    });
+
+    <!-- 모달 시작 시 이벤트 -->
+    $("#dataCreateModal").on("show.bs.modal", function(e){
+        $("#project_id").val("");
     });
 
     <!-- 등록 클릭 시 데이터전처리 페이지로 이동 -->
-    $(".btn_for_model_create").on("click", function(e) {
-        location.href="/preprocess"
+    $("#btn_for_modal_data_create").on("click", function(e) {
+        var project_name = $("#project_id").val();
+        $("#btn_for_modal_data_cancel").trigger("click");
+        location.href='/preprocess?model_name='+project_name;
     });
 
     <!-- 문서탭 체크박스 일괄선택 기능 -->
