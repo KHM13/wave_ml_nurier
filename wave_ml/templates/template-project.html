@@ -263,15 +263,6 @@
             if(file_size > 0) {
                 $("#project-selected-file-list").html("");
             }
-
-            <!-- 파일 관련 설정값 초기화 -->
-            dataTransfer.clearData();
-            dataFileSize.length = 0;
-            dataFileName.length = 0;
-            dataFileId.length = 0;
-            $("#project_file_id").val("");
-            $("#project_file_size").val("");
-            $("#project_file_name").val("");
         });
 
         <!-- 모달 시작 시 이벤트 -->
@@ -291,9 +282,18 @@
             <!-- 등록자, 등록일시 수정 불가 지정 -->
             $("#registration_date").attr("disabled", true);
             $("#registrant_name").attr("disabled", true);
+
+            <!-- 파일 관련 설정값 초기화 -->
+            dataTransfer.clearData();
+            dataFileSize.length = 0;
+            dataFileName.length = 0;
+            dataFileId.length = 0;
+            $("#project_file_id").val("");
+            $("#project_file_size").val("");
+            $("#project_file_name").val("");
         });
 
-        <!-- 파일 등록 (열기 선택 시) -->
+        <!-- 파일 등록 (선택 후 열기) -->
         $("input[name=project-file]").on("change", function(e){
             var files = e.target.files;
             if(files != null && files.length > 0) {
@@ -435,7 +435,7 @@
         var project_sub_type = form_data.get('project_sub_type');
         var project_name = form_data.get('project_name');
         var registrant_name = form_data.get('registrant_name');
-        var project_file = form_data.get('project_file');
+        var project_file_list = form_data.get('project-file-list');
 
 <!--        if(typeof project_type == "undefined" || project_type == null || project_type == "") {-->
 <!--            Swal.fire({-->
@@ -469,7 +469,7 @@
 <!--                buttonsStyling: false-->
 <!--            })-->
 <!--            return false;-->
-<!--        } else if(typeof project_file == "undefined" || project_file == null || project_file == "") {-->
+<!--        } else if(typeof project_file_list == "undefined" || project_file_list == null || project_file_list == "") {-->
 <!--            Swal.fire({-->
 <!--                title:'파일등록을 확인해주세요',-->
 <!--                icon: 'warning',-->

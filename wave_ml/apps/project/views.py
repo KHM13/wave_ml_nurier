@@ -120,7 +120,7 @@ def paginator(page, project_list):
 
     return project_obj, links
 
-# 아이디로 특정 프로젝트 세부정보 가져오기
+# 아이디로 프로젝트 세부정보 가져오기
 def project_get_detail(request):
     if request.method == 'POST':
         project_obj = Project.objects.get(id=request.POST.get('project_id'))
@@ -205,7 +205,20 @@ def modify(request):
             if request.POST.get('project_modify_img_check') != "":
                 project_img = modify_project.project_image
 
-        # 파일 확인
+        # 파일 등록
+        if request.FILES.getlist('project-file-list'):
+            project_files = request.FILES.getlist('project-file-list')
+            project_files_size = request.POST.get('project_file_size').split(',')
+            project_files_name = request.POST.get('project_file_name').split(',')
+            for i in range(len(project_files)):
+                ProjectFile.objects.create(
+                    project_id=modify_project,
+                    project_file=project_files[i],
+                    project_file_name=project_files_name[i],
+                    project_file_size=project_files_size[i]
+                )
+
+        # 파일 삭제
         if request.POST.get("project_file_id"):
             remove_file_id_list = request.POST.get("project_file_id").split(",")
             if remove_file_id_list:
