@@ -337,16 +337,11 @@
         var fileSizeConversion = "";
         var fileUnit = "";
         if(fileId == "") {
-            var fileInfo = getByteSize(fileSize);
-            fileSizeConversion = fileInfo[0];
-            fileUnit = fileInfo[1];
-        } else {
-            fileSizeConversion = fileSize.split('/')[0];
-            fileUnit = fileSize.split('/')[1];
+            fileSize = getByteSize(fileSize);
         }
 
         <!-- 파일 사이즈, 실제 파일명 세팅 -->
-        dataFileSize.push(fileSizeConversion + '/' + fileUnit);
+        dataFileSize.push(fileSizeConversion + ' ' + fileUnit);
         dataFileName.push(fileName);
         $("#project_file_size").val(dataFileSize);
         $("#project_file_name").val(dataFileName);
@@ -366,7 +361,7 @@
         htmlCode += '<div class="flex-grow-1">';
         htmlCode += '<div class="pt-1">';
         htmlCode += '<h5 class="fs-14 mb-1">' + fileName + '</h5>';
-        htmlCode += '<p class="fs-13 text-muted mb-0"><strong>' + fileSizeConversion + '</strong> ' + fileUnit + '</p>';
+        htmlCode += '<p class="fs-13 text-muted mb-0">' + fileSize + '</p>';
         htmlCode += '</div>';
         htmlCode += '</div>';
         htmlCode += '<div class="flex-shrink-0 ms-3" id="file-remove-btn-wrapper">';
@@ -422,7 +417,7 @@
             var arr = [];
             arr[0] = size.toFixed(1);
             arr[1] = byteUnits[i];
-            return arr;
+            return arr[0] + " " +arr[1];
         }
     }
 

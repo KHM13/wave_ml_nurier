@@ -160,7 +160,6 @@ def project_get_detail(request):
 # 프로젝트 등록
 def registration(request):
     if request.method == 'POST':
-
         # 이미지
         project_img = ""
         if request.FILES.get('project_image'):
@@ -196,7 +195,6 @@ def registration(request):
 def modify(request):
     if request.method == 'POST':
         modify_project = Project.objects.get(id=request.POST.get('project_modify_id'))
-
         # 이미지 확인
         project_img = ""
         if request.FILES.get('project_image'):
@@ -321,6 +319,18 @@ def detail(request):
     if project_obj.project_image:
         project_image = project_obj.project_image
 
+    project_files = project_obj.project.all()
+    file_name = []
+    file_size = []
+    file_id = []
+    if project_files:
+        for project_file in project_files:
+            file_id.append(project_file.id)
+            file_name.append(project_file.project_file_name)
+            file_size.append(project_file.project_file_size)
+
+    file_data = zip(file_name, file_size)
+
     return render(
         request,
         'project/project-detail.html',
@@ -333,6 +343,11 @@ def detail(request):
             'project_registration_date': project_obj.project_registration_date,
             'project_update_date': project_obj.project_update_date,
             'project_explanation': project_obj.project_explanation,
-            'project_image': project_image
+            'project_image': project_image,
+            'project_file_id': file_id,
+            'project_file_name': file_name,
+            'project_file_size': file_size,
+            'project_file_cnt': len(file_id),
+            'file_data': file_data
         }
     )

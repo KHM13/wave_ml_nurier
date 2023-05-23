@@ -129,7 +129,7 @@
                                                             </tr>
                                                             <tr>
                                                                 <th class="ps-0" scope="row">첨부파일 :</th>
-                                                                <td class="text-muted">7개</td>
+                                                                <td class="text-muted">{{project_file_cnt}}</td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -142,71 +142,30 @@
                                         <div class="card card-height-100">
                                             <div class="card-body">
                                                 <h5 class="card-title fw-semibold mb-3">프로젝트 설명</h5>
-                                                <p>설명 내용글 설명 내용글</p>
+                                                <p>설명 내용글</p>
                                                 <p>설명 내용글</p>
                                                 <p>설명 내용글</p>
 
-                                                <div class="row g-3 mt-3">
-                                                    <h6 class="mb-0 fw-semibold">첨부파일</h6>
-                                                    <!-- file swiper -->
+                                                <div class="row g-3 mt-3 pt-5">
                                                     <div class="swiper file-swiper mt-n4">
-                                                        <div class="d-flex justify-content-end gap-2 mb-2">
-                                                            <div class="slider-button-prev-02">
-                                                                <div class="swiper-arrow fs-18 rounded px-1">
-                                                                    <i class="ri-arrow-left-s-line"></i>
+                                                        <div class="d-flex align-items-center justify-content-between gap-2 mb-2 w-100">
+                                                            <h6 class="mb-0 fw-semibold">첨부파일</h6>
+                                                            <div class="d-flex align-items-center justify-content-end w-50">
+                                                                <div class="slider-button-prev-02 ms-2">
+                                                                    <div class="swiper-arrow fs-18 rounded px-1">
+                                                                        <i class="ri-arrow-left-s-line"></i>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                            <div class="slider-button-next-02">
-                                                                <div class="swiper-arrow fs-18 rounded px-1">
-                                                                    <i class="ri-arrow-right-s-line"></i>
+                                                                <div class="slider-button-next-02 ms-2">
+                                                                    <div class="swiper-arrow fs-18 rounded px-1">
+                                                                        <i class="ri-arrow-right-s-line"></i>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                         <div class="swiper-wrapper">
-                                                            <div class="swiper-slide">
-                                                                <div class="border rounded border-dashed p-2">
-                                                                    <div class="d-flex align-items-center">
-                                                                        <div class="flex-shrink-0 me-3">
-                                                                            <div class="avatar-sm">
-                                                                                <div class="avatar-title bg-light text-datablue rounded fs-24">
-                                                                                    <i class="ri-folder-zip-line"></i>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="flex-grow-1 overflow-hidden">
-                                                                            <h5 class="fs-13 mb-1"><a href="#" class="text-body text-truncate d-block">App pages.zip</a></h5>
-                                                                            <div>2.2MB</div>
-                                                                        </div>
-                                                                        <div class="flex-shrink-0 ms-2">
-                                                                            <div class="d-flex gap-1">
-                                                                                <button type="button" class="btn btn-icon text-muted btn-sm fs-18"><i data-feather="download"></i></button>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="swiper-slide">
-                                                                <div class="border rounded border-dashed p-2">
-                                                                    <div class="d-flex align-items-center">
-                                                                        <div class="flex-shrink-0 me-3">
-                                                                            <div class="avatar-sm">
-                                                                                <div class="avatar-title bg-light text-datablue rounded fs-24">
-                                                                                    <i class="ri-file-ppt-2-line"></i>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="flex-grow-1 overflow-hidden">
-                                                                            <h5 class="fs-13 mb-1"><a href="#" class="text-body text-truncate d-block">App pages.zip</a></h5>
-                                                                            <div>2.4MB</div>
-                                                                        </div>
-                                                                        <div class="flex-shrink-0 ms-2">
-                                                                            <div class="d-flex gap-1">
-                                                                                <button type="button" class="btn btn-icon text-muted btn-sm fs-18"><i data-feather="download"></i></button>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
+                                                            {% if project_file_cnt > 0 %}
+                                                            {% for file in file_data %}
                                                             <div class="swiper-slide">
                                                                 <div class="border rounded border-dashed p-2">
                                                                     <div class="d-flex align-items-center">
@@ -218,8 +177,8 @@
                                                                             </div>
                                                                         </div>
                                                                         <div class="flex-grow-1 overflow-hidden">
-                                                                            <h5 class="fs-13 mb-1"><a href="#" class="text-body text-truncate d-block">App pages.zip</a></h5>
-                                                                            <div>2.4MB</div>
+                                                                            <h5 class="fs-13 mb-1"><a href="#" class="text-body text-truncate d-block">{{file.0}}</a></h5>
+                                                                            <div>{{file.1}}</div>
                                                                         </div>
                                                                         <div class="flex-shrink-0 ms-2">
                                                                             <div class="d-flex gap-1">
@@ -229,50 +188,8 @@
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div class="swiper-slide">
-                                                                <div class="border rounded border-dashed p-2">
-                                                                    <div class="d-flex align-items-center">
-                                                                        <div class="flex-shrink-0 me-3">
-                                                                            <div class="avatar-sm">
-                                                                                <div class="avatar-title bg-light text-secondary rounded fs-24">
-                                                                                    <i class="ri-file-ppt-2-line"></i>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="flex-grow-1 overflow-hidden">
-                                                                            <h5 class="fs-13 mb-1"><a href="#" class="text-body text-truncate d-block">App pages.zip</a></h5>
-                                                                            <div>2.4MB</div>
-                                                                        </div>
-                                                                        <div class="flex-shrink-0 ms-2">
-                                                                            <div class="d-flex gap-1">
-                                                                                <button type="button" class="btn btn-icon text-muted btn-sm fs-18"><i data-feather="download"></i></button>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="swiper-slide">
-                                                                <div class="border rounded border-dashed p-2">
-                                                                    <div class="d-flex align-items-center">
-                                                                        <div class="flex-shrink-0 me-3">
-                                                                            <div class="avatar-sm">
-                                                                                <div class="avatar-title bg-light text-secondary rounded fs-24">
-                                                                                    <i class="ri-file-ppt-2-line"></i>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="flex-grow-1 overflow-hidden">
-                                                                            <h5 class="fs-13 mb-1"><a href="#" class="text-body text-truncate d-block">App pages.zip</a></h5>
-                                                                            <div>2.4MB</div>
-                                                                        </div>
-                                                                        <div class="flex-shrink-0 ms-2">
-                                                                            <div class="d-flex gap-1">
-                                                                                <button type="button" class="btn btn-icon text-muted btn-sm fs-18"><i data-feather="download"></i></button>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
+                                                            {% endfor %}
+                                                            {% endif %}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -664,6 +581,23 @@ function project_get_detail() {
     $("#myModalLabel").html("프로젝트 편집");
     $("#btn_for_project_registration").html("저장");
 
+    <!-- 엔티티 코드 변환 -->
+    var parser = new DOMParser();
+    var project_file_name = parser.parseFromString('{{project_file_name}}', 'text/html').body.textContent;
+    var project_file_size = parser.parseFromString('{{project_file_size}}', 'text/html').body.textContent;
+    var project_file_id = parser.parseFromString('{{project_file_id}}', 'text/html').body.textContent;
+
+    <!-- replace로 필요없는 문자 제거 -->
+    var project_file_name_arr = project_file_name.replaceAll("[", "").replaceAll("]", "").replaceAll("\'", "").split(" ");
+    var project_file_size_arr = project_file_size.replaceAll("[", "").replaceAll("]", "").replaceAll("\'", "").split(" ");
+    var project_file_id_arr = project_file_id.replaceAll("[", "").replaceAll("]", "").replaceAll("\'", "").split(" ");
+
+    <!-- file html 생성 -->
+    for(var i=0; i<project_file_name_arr.length; i++) {
+        file_preview_tag_create(project_file_name_arr[i], project_file_size_arr[i], project_file_id_arr[i]);
+    }
+
+    <!-- 이미지 확인 -->
     var project_img = '{{project_image.url}}';
     if(project_img == "undefined" || project_img == null || project_img == "") {
         $("#img-spot").attr('src', "");
