@@ -3,6 +3,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse, HttpResponse
 from wave_ml.ml import dataChecking, dataPreprocessing, dataChart
+from wave_ml.apps.mlmodel.models import MlModel
+from wave_ml.apps.project.models import Project, ProjectFile
 from .models import Process, MLSampling
 import json
 
@@ -10,29 +12,37 @@ import json
 # 데이터 전처리 화면 첫진입
 # step 1. 데이터 확인 화면
 def main(request):
-    # 세션에 기존 작업 데이터가 없는 경우 파일 read ( 임시 하드코딩 )
-    if request.session.get('df') is None:
-        file = open('wave_ml/data/heart.csv', 'r', encoding='EUC-KR')
-        df = dataChecking.file_to_df(file)
-        df_apply = df.copy()
+    project_id = request.session.get("project_id", None)
+    if project_id is None:
+        print("[ERROR] project id 가 없습니다")
+        result = json.dumps({"result": "프로젝트를 선택해주세요"})
+        return HttpResponse(result, content_type='application/json')
 
-        project_id = "test_project_1"
-        json_df = dataChecking.df_to_json(df)
-        request.session['df'] = json_df
+    if request.GET.get("model_name") is not None:
+        project_model = Project.objects.get(id=project_id)
+        mlmodel = MlModel(model_name=request.GET.get("model_name"), project_id=project_model)
+        mlmodel.save()
+        request.session['mlmodel_id'] = mlmodel.id
 
-        for column in df_apply.columns:
-            process_list = Process().get_process_list(project_id, column)
-            for p in process_list:
-                df_apply = dataPreprocessing.process_apply(df_apply, column, p['process_type'], p['work_type'],
-                                                           p['input_value'], p['replace_value'])
+    # file = open('wave_ml/data/heart.csv', 'r', encoding='EUC-KR')
+    project_file_model = ProjectFile.objects.filter(project_id=project_id).values()
 
-        json_df_apply = dataChecking.df_to_json(df_apply)
-        request.session['df_apply'] = json_df_apply
-        request.session['project_id'] = project_id
-    else:   # 세션에 기존 작업 데이터가 있는 경우 load
-        df_json = request.session['df_apply']
-        request.session['df_apply'] = request.session['df_apply']
-        df_apply = dataChecking.json_to_df(df_json)
+    df = dataChecking.files_to_df(project_file_model)
+    df_apply = df.copy()
+
+    json_df = dataChecking.df_to_json(df)
+    request.session['df'] = json_df
+    mlmodel_id = request.session.get("mlmodel_id")
+    target = request.session.get("target", '')
+
+    for column in df_apply.columns:
+        process_list = Process().get_process_list(mlmodel_id, column)
+        for p in process_list:
+            df_apply = dataPreprocessing.process_apply(df_apply, column, p['process_type'], p['work_type'],
+                                                       p['input_value'], p['replace_value'])
+
+    json_df_apply = dataChecking.df_to_json(df_apply)
+    request.session['df_apply'] = json_df_apply
 
     # 데이터 탐색 통계지표
     df_info = dataChecking.data_statistics(df_apply)
@@ -43,10 +53,21 @@ def main(request):
         request,
         'preprocess/data-statistics.html',
         {
+            'target': target,
             'df_info': df_info,
             'graph': corr_graph
         }
     )
+
+
+@csrf_exempt
+def save_target(request):
+    target_id = request.POST.get("target_id", '')
+    request.session['target'] = target_id
+
+    result = json.dumps({"result": "success"})
+    return HttpResponse(result, content_type='application/json')
+
 
 ################################## 데이터 확인 END ##################################
 ################################## 변수 전처리 START ##################################
@@ -55,7 +76,7 @@ def main(request):
 @csrf_exempt
 def process(request):
     df_apply = request.session['df_apply']
-    project_id = request.session['project_id']
+    mlmodel_id = request.session['mlmodel_id']
     df = dataChecking.json_to_df(df_apply)
 
     if request.POST.get('select_column'):   # 세션에 선택된 컬럼이 있는 경우
@@ -68,7 +89,7 @@ def process(request):
     # 변수별 기존 전처리 작업 불러오기
     process_dict = {}
     for col in columns:
-        process_dict[col] = len(Process().get_process_list(project_id, col))
+        process_dict[col] = len(Process().get_process_list(mlmodel_id, col))
 
     df_json = dataChecking.df_to_json(df)
     request.session['df_apply'] = df_json
@@ -90,7 +111,8 @@ def process(request):
 def detail(request):
     column = request.POST.get('column')
     df_apply = request.session['df_apply']
-    project_id = request.session['project_id']
+    mlmodel_id = request.session['mlmodel_id']
+    target = request.session['target']
 
     df = dataChecking.json_to_df(df_apply)
     # 해당 컬럼의 데이터 목록 조회
@@ -101,13 +123,16 @@ def detail(request):
     data_type = dataChecking.get_data_type(df, column) if not dataChecking.is_data_category(df, column) else "category"
 
     # 해당 컬럼에 적용된 전처리 유형 목록 불러오기 ( 화면에 처리작업 뱃지 표기 )
-    badge = Process().get_process_name_list(project_id, column)
+    badge = Process().get_process_name_list(mlmodel_id, column)
 
     df_apply = dataChecking.df_to_json(df)
     request.session['df_preprocess'] = df_apply
 
-    # 데이터분포 - 데이터 통계 그래프
-    main_graph = dataChart.main_graph(df, column)
+    try:
+        # 데이터분포 - 데이터 통계 그래프
+        main_graph = dataChart.main_graph(df, column, target)
+    except Exception as e:
+        print(e)
 
     return render(
         request,
@@ -127,6 +152,7 @@ def detail(request):
 @csrf_exempt
 def type_change(request):
     df_apply = request.session['df_apply']
+    target = request.session['target']
     column = request.POST.get('column')
     data_type = request.POST.get('type')
     select_tab = request.POST.get('select_tab')
@@ -136,7 +162,7 @@ def type_change(request):
     df_data = dataPreprocessing.data_type_control(df, column, data_type)
 
     # 변경 후 미리보기 화면을 위한 데이터 정보 재조회
-    preview = dataChecking.data_preview(df_data, column)
+    preview = dataChecking.data_preview(df_data, column, target)
     df_preprocess = dataChecking.df_to_json(df_data)
     request.session['df_preprocess'] = df_preprocess
 
@@ -161,6 +187,7 @@ def type_change(request):
 @csrf_exempt
 def process_missing_value(request):
     df_apply = request.session['df_apply']
+    target = request.session['target']
     column = request.POST.get('column')
     process = request.POST.get("process")
     input_value = request.POST.get("input_value", '')
@@ -171,7 +198,7 @@ def process_missing_value(request):
     df_data = dataPreprocessing.process_missing(df, column, process, input_value)
 
     # 적용 후 미리보기 화면을 위한 데이터 정보 재조회
-    preview = dataChecking.data_preview(df_data, column)
+    preview = dataChecking.data_preview(df_data, column, target)
     df_preprocess = dataChecking.df_to_json(df_data)
     request.session['df_preprocess'] = df_preprocess
 
@@ -196,6 +223,7 @@ def process_missing_value(request):
 @csrf_exempt
 def process_outlier(request):
     df_apply = request.session['df_apply']
+    target = request.session['target']
     column = request.POST.get('column')
     process = request.POST.get("process")
     input_value = request.POST.get("input_value", '')
@@ -206,7 +234,7 @@ def process_outlier(request):
     df_data = dataPreprocessing.process_outlier(df, column, process, input_value)
 
     # 적용 후 미리보기 화면을 위한 데이터 정보 재조회
-    preview = dataChecking.data_preview(df_data, column)
+    preview = dataChecking.data_preview(df_data, column, target)
     df_preprocess = dataChecking.df_to_json(df_data)
     request.session['df_preprocess'] = df_preprocess
 
@@ -261,9 +289,10 @@ def graph_corr(request):
         df = request.session["df_apply"]
     column = request.POST.get("column")
 
+    target = request.session['target']
     df_data = dataChecking.json_to_df(df)
     # 해당 컬럼의 값 별 목표 변수 값 분포 그래프
-    result = dataChart.scatter_graph(df_data, column)
+    result = dataChart.scatter_graph(df_data, column, target)
     # 해당 컬럼의 최빈값 조회
     freq = dataChecking.data_freq(df_data, column)
 
@@ -282,6 +311,7 @@ def graph_corr(request):
 @csrf_exempt
 def process_replacing_value(request):
     df_apply = request.session['df_apply']
+    target = request.session['target']
     column = request.POST.get('column')
     work_input = request.POST.get("work_input")
     replace_input = request.POST.get("replace_input")
@@ -291,7 +321,7 @@ def process_replacing_value(request):
     # 문자열 통합 처리 작업 적용
     df_data = dataPreprocessing.replace_value(df, column, work_input, replace_input)
     # 적용 후 미리보기 화면을 위한 데이터 정보 재조회
-    preview = dataChecking.data_preview(df_data, column)
+    preview = dataChecking.data_preview(df_data, column, target)
     df_preprocess = dataChecking.df_to_json(df_data)
     request.session['df_preprocess'] = df_preprocess
 
@@ -316,6 +346,7 @@ def process_replacing_value(request):
 @csrf_exempt
 def process_dummy(request):
     df_apply = request.session['df_apply']
+    target = request.session['target']
     column = request.POST.get('column')
     select_tab = request.POST.get('select_tab')
 
@@ -324,7 +355,7 @@ def process_dummy(request):
     df_data = dataPreprocessing.process_dummy_data(df, column)
 
     # 적용 후 미리보기 화면을 위한 데이터 정보 재조회
-    preview = dataChecking.data_preview(df_data, column)
+    preview = dataChecking.data_preview(df_data, column, target)
     df_preprocess = dataChecking.df_to_json(df_data)
     request.session['df_preprocess'] = df_preprocess
 
@@ -349,6 +380,7 @@ def process_dummy(request):
 @csrf_exempt
 def process_scaler(request):
     df_apply = request.session['df_apply']
+    target = request.session['target']
     column = request.POST.get('column')
     process = request.POST.get("process")
     select_tab = request.POST.get("select_tab")
@@ -357,7 +389,7 @@ def process_scaler(request):
     # 데이터 정규화 처리 작업 적용
     df_data = dataPreprocessing.process_scaler(df, column, process)
     # 적용 후 미리보기 화면을 위한 데이터 정보 재조회
-    preview = dataChecking.data_preview(df_data, column)
+    preview = dataChecking.data_preview(df_data, column, target)
     df_preprocess = dataChecking.df_to_json(df_data)
     request.session['df_preprocess'] = df_preprocess
 
@@ -388,7 +420,7 @@ def process_apply(request):
     replace_input = request.POST.get('replaceInput', '')
     reprocess = request.POST.get('reprocess')
 
-    project_id = request.session['project_id']
+    mlmodel_id = request.session['mlmodel_id']
 
     # 기존 동일 처리 작업이 있는 경우
     if reprocess == "true":
@@ -401,18 +433,18 @@ def process_apply(request):
 
         # 기존 동일 처리 작업 삭제
         if process == "replace":
-            Process.objects.filter(project_id=project_id, column_name=column, process_type=process, work_type=prev, replace_value=replace_input).delete()
+            Process.objects.filter(mlmodel_id=mlmodel_id, column_name=column, process_type=process, work_type=prev, replace_value=replace_input).delete()
         elif process == "dummy":
-            Process.objects.filter(project_id=project_id, column_name=column, process_type=process).delete()
+            Process.objects.filter(mlmodel_id=mlmodel_id, column_name=column, process_type=process).delete()
         else:
-            Process.objects.filter(project_id=project_id, column_name=column, process_type=process, work_type=prev).delete()
+            Process.objects.filter(mlmodel_id=mlmodel_id, column_name=column, process_type=process, work_type=prev).delete()
 
     else:
         df = request.session['df_preprocess']
         request.session['df_apply'] = df
 
     # 해당 컬럼의 마지막 SORT 값 조회
-    sort_list = Process().get_process_list(project_id, column)
+    sort_list = Process().get_process_list(mlmodel_id, column)
     if sort_list is not None and len(sort_list) > 0:
         sort_index = int(sort_list.latest('sort')['sort']) + 1
     elif len(sort_list) == 1:
@@ -421,18 +453,19 @@ def process_apply(request):
         sort_index = 1
 
     # 새 작업 저장
-    process_model = Process(project_id=project_id, column_name=column, process_type=process, work_type=work,
+    process_model = Process(mlmodel_id=mlmodel_id, column_name=column, process_type=process, work_type=work,
                             input_value=work_input, replace_value=replace_input, sort=sort_index)
     process_model.save()
 
     # 기존 동일 처리 작업이 있는 경우 - 해당 컬럼에 적용되어있던 작업 내용 적용하여 미리보기 화면 출력
     if reprocess == "true":
-        process_list = Process().get_process_list(project_id, column)
+        process_list = Process().get_process_list(mlmodel_id, column)
+        target = request.session['target']
         for p in process_list:
             # 해당 컬럼에 적용되어있던 처리 작업 적용
             df_apply = dataPreprocessing.process_apply(df_apply, column, p['process_type'], p['work_type'], p['input_value'], p['replace_value'])
         # 적용 후 미리보기 화면을 위한 데이터 정보 재조회
-        preview = dataChecking.data_preview(df_apply, column)
+        preview = dataChecking.data_preview(df_apply, column, target)
         df = dataChecking.df_to_json(df_apply)
         request.session['df_apply'] = df
 
@@ -464,7 +497,8 @@ def process_apply(request):
 @csrf_exempt
 def process_remove(request):
     df = request.session['df']
-    project_id = request.session['project_id']
+    mlmodel_id = request.session['mlmodel_id']
+    target = request.session['target']
 
     select_column = request.POST.get('column')
     process = request.POST.get('process')
@@ -476,20 +510,20 @@ def process_remove(request):
 
     # 적용되었던 작업 삭제
     if process == "replace":
-        Process.objects.filter(project_id=project_id, column_name=select_column, process_type=process, work_type=work, replace_value=replace_input).delete()
+        Process.objects.filter(mlmodel_id=mlmodel_id, column_name=select_column, process_type=process, work_type=work, replace_value=replace_input).delete()
     elif process == "dummy":
-        Process.objects.filter(project_id=project_id, column_name=select_column, process_type=process).delete()
+        Process.objects.filter(mlmodel_id=mlmodel_id, column_name=select_column, process_type=process).delete()
     else:
-        Process.objects.filter(project_id=project_id, column_name=select_column, process_type=process, work_type=work).delete()
+        Process.objects.filter(mlmodel_id=mlmodel_id, column_name=select_column, process_type=process, work_type=work).delete()
 
     # 삭제 후 남은 작업 처리 재적용
     for column in df_apply.columns:
-        process_list = Process().get_process_list(project_id, column)
+        process_list = Process().get_process_list(mlmodel_id, column)
         for p in process_list:
             df_apply = dataPreprocessing.process_apply(df_apply, column, p['process_type'], p['work_type'], p['input_value'], p['replace_value'])
 
     # 적용 후 미리보기 화면을 위한 데이터 정보 재조회
-    preview = dataChecking.data_preview(df_apply, select_column)
+    preview = dataChecking.data_preview(df_apply, select_column, target)
     df_json = dataChecking.df_to_json(df_apply)
     request.session['df_apply'] = df_json
 
@@ -515,14 +549,15 @@ def process_remove(request):
 @csrf_exempt
 def feature_select(request):
     df_apply = request.session['df_apply']
+    target = request.session['target']
     df = dataChecking.json_to_df(df_apply)
-    info = dataChecking.get_data_info(df)
+    info = dataChecking.get_data_info(df, target)
 
-    project_id = request.session['project_id']
+    mlmodel_id = request.session['mlmodel_id']
 
     # 데이터셋 전처리 작업 불러오기
-    if MLSampling.objects.filter(project_id=project_id).exists():   # 기존 작업 존재할경우
-        sampling = MLSampling().get_feature_columns(project_id)     # 변수 선택법 적용 내용 불러오기
+    if MLSampling.objects.filter(mlmodel_id=mlmodel_id).exists():   # 기존 작업 존재할경우
+        sampling = MLSampling().get_feature_columns(mlmodel_id)     # 변수 선택법 적용 내용 불러오기
         select_column = sampling['columns']
         feature_algorithm = sampling['algorithm']
     else:
@@ -545,6 +580,7 @@ def feature_select(request):
 def execute_feature_select(request):
     df_apply = request.session['df_apply']
     df = dataChecking.json_to_df(df_apply)
+    target = request.session['target']
 
     # 전체 컬럼 목록 및 사이즈
     columns = dataChecking.get_column_list(df)
@@ -558,7 +594,7 @@ def execute_feature_select(request):
     result = []
     for fs in feature_select:
         # 변수선택법 적용
-        fs_result = dataPreprocessing.execute_fs(df, "output", fs)
+        fs_result = dataPreprocessing.execute_fs(df, target, fs)
         result.append(fs_result)
 
     return render(
@@ -576,10 +612,11 @@ def execute_feature_select(request):
 @csrf_exempt
 def data_split(request):
     df_apply = request.session['df_apply']
+    target = request.session['target']
     df = dataChecking.json_to_df(df_apply)
-    info = dataChecking.get_data_info(df)
+    info = dataChecking.get_data_info(df, target)
 
-    project_id = request.session['project_id']
+    mlmodel_id = request.session['mlmodel_id']
 
     # 변수선택법 화면에서 넘어올때 적용될 값
     if request.POST.get("select_column") is not None:
@@ -588,14 +625,16 @@ def data_split(request):
         select_column = json.dumps(select_column_list)
 
         # 기존 데이터셋 전처리 작업이 저장되어 있는 경우 수정
-        if MLSampling.objects.filter(project_id=project_id).exists():
-            MLSampling.objects.filter(project_id=project_id).update(feature_algorithm=fs_name, columns=select_column, column_size=len(select_column_list))
+        if MLSampling.objects.filter(mlmodel_id=mlmodel_id).exists():
+            MLSampling.objects.filter(mlmodel_id=mlmodel_id).update(feature_algorithm=fs_name, columns=select_column, column_size=len(select_column_list))
         else:   # 기존 작업이 저장되어 있지 않은 경우 새로 등록
-            model = MLSampling(project_id=project_id, feature_algorithm=fs_name, columns=select_column, column_size=len(select_column_list),
+
+            mlmodel = MlModel.objects.get(id=mlmodel_id)
+            model = MLSampling(mlmodel_id=mlmodel, feature_algorithm=fs_name, columns=select_column, column_size=len(select_column_list),
                                split_algorithm="Random Split", split_rate=70, k_value=0, sampling_algorithm="")
             model.save()
 
-    sampling_model = MLSampling().get_info(project_id)
+    sampling_model = MLSampling().get_info(mlmodel_id)
     columns = json.loads(sampling_model['columns'])
     info['size'] = sampling_model['column_size']
     info['columns'] = columns
@@ -615,13 +654,14 @@ def data_split(request):
 # 데이터 분할 알고리즘 적용
 @csrf_exempt
 def data_sampling(request):
-    project_id = request.session['project_id']
+    mlmodel_id = request.session['mlmodel_id']
     df_apply = request.session['df_apply']
+    target = request.session['target']
     df = dataChecking.json_to_df(df_apply)
 
-    models = MLSampling().get_info(project_id)
+    models = MLSampling().get_info(mlmodel_id)
     columns = json.loads(models['columns'])
-    columns.remove("output")
+    columns.remove(target)
     select_sampling_algorithm = models['sampling_algorithm']
 
     # 데이터 분할 화면에서 넘어올때 적용될 값
@@ -630,14 +670,14 @@ def data_sampling(request):
         split_value = request.POST.get("split_value").replace('%', '') if request.POST.get("split_value") != '' else 0
         k_value = request.POST.get("k_value") if request.POST.get("k_value") != '' else 0
         # 데이터 분할 알고리즘 적용 저장
-        MLSampling.objects.filter(project_id=project_id).update(split_algorithm=algorithm, split_rate=int(split_value), k_value=int(k_value))
+        MLSampling.objects.filter(mlmodel_id=mlmodel_id).update(split_algorithm=algorithm, split_rate=int(split_value), k_value=int(k_value))
 
         if algorithm == "Random Split":
-            train_data, test_data = dataPreprocessing.train_test_data_division(df, columns, int(split_value))
+            train_data, test_data = dataPreprocessing.train_test_data_division(df, target, columns, int(split_value))
             request.session['train_data'] = dataChecking.df_to_json(train_data)
             request.session['test_data'] = dataChecking.df_to_json(test_data)
         elif algorithm == "K-fold Cross Validation":
-            train_list, test_list = dataPreprocessing.k_fold_cross_validation(df, columns, int(k_value))
+            train_list, test_list = dataPreprocessing.k_fold_cross_validation(df, columns, int(k_value), target)
             for idx, train_data in enumerate(train_list):
                 if idx == 0:
                     request.session['train_data'] = dataChecking.df_to_json(train_data)
@@ -649,7 +689,7 @@ def data_sampling(request):
                 else:
                     request.session[f'test_data{idx}'] = dataChecking.df_to_json(test_data)
         else:
-            train_list, test_list = dataPreprocessing.shuffle_split(df, columns, int(split_value), int(k_value))
+            train_list, test_list = dataPreprocessing.shuffle_split(df, columns, int(split_value), int(k_value), target)
             for idx, train_data in enumerate(train_list):
                 if idx == 0:
                     request.session['train_data'] = dataChecking.df_to_json(train_data)
@@ -663,7 +703,7 @@ def data_sampling(request):
 
     train_data = dataChecking.json_to_df(request.session['train_data'])
     test_data = dataChecking.json_to_df(request.session['test_data'])
-    info = dataChecking.get_train_test_info(train_data, test_data)
+    info = dataChecking.get_train_test_info(train_data, test_data, target)
 
     return render(
         request,
@@ -681,7 +721,7 @@ def execute_data_sampling(request):
     data_sampling = json.loads(request.POST.get("data_sampling"))
     train_data = request.session['train_data']
     df_train = dataChecking.json_to_df(train_data)
-    target = "output"   # 임시 하드코딩
+    target = request.session['target']
 
     sampling_algorithm = request.POST.get("sampling_algorithm")
     if sampling_algorithm == "":
@@ -692,7 +732,7 @@ def execute_data_sampling(request):
 
     # 알고리즘별 불균형 데이터 보정 실행 적용
     for algorithm in data_sampling:
-        balanced_data = dataPreprocessing.set_imbalanced_data(algorithm, df_train)
+        balanced_data = dataPreprocessing.set_imbalanced_data(algorithm, df_train, target)
         balanced_info = dataChecking.get_target_info(balanced_data, target)
         balanced_info['algorithm'] = algorithm
 
@@ -727,13 +767,14 @@ def data_sampling_apply(request):
         train_df = dataChecking.json_to_df(train_data)
         test_data = request.session['test_data']
         test_df = dataChecking.json_to_df(test_data)
-        project_id = request.session['project_id']
+        mlmodel_id = request.session['mlmodel_id']
+        target = request.session['target']
 
         # 선택된 불균형 데이터 보정 알고리즘 저장
-        MLSampling.objects.filter(project_id=project_id).update(sampling_algorithm=select_algorithm)
+        MLSampling.objects.filter(mlmodel_id=mlmodel_id).update(sampling_algorithm=select_algorithm)
 
         if select_algorithm != "OriginalData":
-            balanced_data = dataPreprocessing.set_imbalanced_data(select_algorithm, train_df)
+            balanced_data = dataPreprocessing.set_imbalanced_data(select_algorithm, train_df, target)
             df_apply = dataChecking.dataframe_concat(balanced_data, test_df)
         else:
             df_apply = dataChecking.dataframe_concat(train_df, test_df)
@@ -754,21 +795,23 @@ def data_sampling_apply(request):
 @csrf_exempt
 def data_create(request):
     df_apply = request.session['df_apply']
+    target = request.session['target']
     df = dataChecking.json_to_df(df_apply)
-    data_info = dataChecking.get_data_info(df)
+    data_info = dataChecking.get_data_info(df, target)
 
-    project_id = request.session['project_id']
-    # 현재 프로젝트에 적용된 전처리 작업 리스트
-    process_models = Process.objects.filter(project_id=project_id).values()
+    mlmodel_id = request.session['mlmodel_id']
+
+    # 현재 모델에 적용된 전처리 작업 리스트
+    process_models = Process.objects.filter(mlmodel_id=mlmodel_id).values()
     process_size = len(process_models)
 
-    # 현재 프로젝트에 적용된 데이터셋 처리 작업 리스트
-    sampling_models = MLSampling().get_info(project_id)
+    # 현재 모델에 적용된 데이터셋 처리 작업 리스트
+    sampling_models = MLSampling().get_info(mlmodel_id)
 
     # 화면에 표시될 데이터셋 최대 갯수
     per_page = 9
-    # 현재 프로젝트에 적용된 데이터셋을 제외한 데이터셋 리스트
-    list_models = MLSampling.objects.exclude(project_id=project_id)
+    # 현재 모델에 적용된 데이터셋을 제외한 프로젝트 내 데이터셋 리스트
+    list_models = MLSampling.objects.exclude(mlmodel_id=mlmodel_id, dataset_name='')
     dataset_size = len(list_models.values())
 
     # 페이징처리
@@ -801,7 +844,7 @@ def data_create(request):
         request,
         'preprocess/data-create.html',
         {
-            'project_id': project_id,
+            'mlmodel_id': mlmodel_id,
             'data_info': data_info,
             'process_size': process_size,
             'sampling_models': sampling_models,
@@ -815,9 +858,9 @@ def data_create(request):
 # 페이징처리
 @csrf_exempt
 def load_dataset_list(request, page):
-    project_id = request.session['project_id']
+    mlmodel_id = request.session['mlmodel_id']
     per_page = 9
-    list_models = MLSampling.objects.exclude(project_id=project_id)
+    list_models = MLSampling.objects.exclude(mlmodel_id=mlmodel_id, dataset_name='')
     dataset_size = len(list_models.values())
 
     paginator = Paginator(list_models, per_page)
@@ -861,7 +904,7 @@ def load_dataset_list(request, page):
 # 데이터셋 저장
 @csrf_exempt
 def dataset_save(request):
-    project_id = request.POST.get("project_id")
+    mlmodel_id = request.POST.get("mlmodel_id")
     dataset_name = request.POST.get("dataset_name")
     create_date = request.POST.get("create_date")
 

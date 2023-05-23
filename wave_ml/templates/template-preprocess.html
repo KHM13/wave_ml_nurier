@@ -110,14 +110,14 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title text-white" id="modalTitle">학습 데이터 생성</h5>
+                        <h5 class="modal-title text-white" id="modalTitle">학습 데이터 저장</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row g-3">
                             <div class="col-lg-12">
-                                <label for="project_id" class="form-label">프로젝트명</label>
-                                <input type="text" id="project_id" class="form-control" readonly />
+                                <label for="mlmodel_id" class="form-label">모델명</label>
+                                <input type="text" id="mlmodel_id" class="form-control" readonly />
                             </div>
 
                             <div class="col-lg-6">
@@ -137,6 +137,33 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">취소</button>
                         <button type="button" class="btn btn-primary" id="btn_for_modal_data_create">생성</button>
+                    </div>
+
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <!-- Modals -->
+        <div id="targetModal" class="modal fade" tabindex="-1" aria-labelledby="targetModalLabel" aria-hidden="true" style="display: none;">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-white">목표변수 지정</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-lg-12">
+                                <label for="select_for_target_id" class="form-label">목표 변수</label>
+                                <select id="select_for_target_id" class="form-select mb-3">
+                                    <option value="NONE">목표 변수를 지정하세요</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" id="btn_for_target_save" onclick="javascript:save_target();">지정</button>
                     </div>
 
                 </div><!-- /.modal-content -->

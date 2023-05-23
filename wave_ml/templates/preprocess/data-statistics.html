@@ -8,12 +8,18 @@
 <div class="page-content">
     <div class="container-fluid">
         <div class="tab-content">
+            <input type="hidden" id="target" name="target" value="{{ target }}" />
             <div class="tab-pane fade" id="preprocess-01" role="tabpanel" aria-labelledby="preprocess-01">
                 <div class="row">
                     <div class="col">
                         <div class="card card-height-100">
                             <div class="card-header align-items-center">
-                                <h4 class="card-title fw-semibold mb-0">데이터 확인</h4>
+                                <h4 class="card-title fw-semibold mb-0 float-start">데이터 확인</h4>
+                                <div class="float-end">
+                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#targetModal">
+                                        <i class="ri-add-line align-bottom me-1"></i> 목표변수 지정
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="card-body">
@@ -110,9 +116,22 @@
 <script type="text/javascript">
 $(function() {
     data_reload();
+    init();
+
 });
 
 function tab_progress(tabs) {
+    if ( $("#target").val() == "" ) {
+        Swal.fire({
+            title:'먼저 목표변수를 지정해주세요',
+            icon: 'warning',
+            confirmButtonClass: 'btn btn-primary w-xs mt-2',
+            buttonsStyling: false
+        })
+
+        return false;
+    }
+
    if ( tabs == '변수 전처리' ) {
         var select_column = "";
         if( $("#select_column") != "undefined" ) {
@@ -177,6 +196,35 @@ function data_reload() {
     } else {
         $("#preprocess-tab-01").click();
     }
+}
+
+function save_target() {
+    var target_id = $("#select_for_target_id option:selected").val();
+    $.ajax({
+        type: 'POST',
+        url: '/preprocess/target_save',
+        data: {
+            'target_id': target_id
+        },
+        success: function(data) {
+            if( data.result == "success" ) {
+                $("#target").val(target_id);
+                $("#targetModal").modal("hide");
+            }
+        }
+    });
+}
+
+function init() {
+    var select_element = $("#select_for_target_id");
+    select_element.children('option:not(:first)').remove();
+    {% for val in df_info.index %}
+        {% if target == val %}
+        select_element.append("<option value='{{ val }}' selected>{{ val }}</option>");
+        {% else %}
+        select_element.append("<option value='{{ val }}'>{{ val }}</option>");
+        {% endif %}
+    {% endfor %}
 }
 </script>
 {% endblock %}

@@ -20,9 +20,9 @@ def box_plot_graph(df, column, width, height):
 
 
 # 목표변수와 상관관계 분포 파악 그래프
-def scatter_graph(df, column):
-    df_temp = df.loc[:, [column, "output"]] if column != "output" else df.loc[:, "output"]
-    fig = px.parallel_categories(df_temp, color="output", color_continuous_scale=px.colors.sequential.RdBu)
+def scatter_graph(df, column, target):
+    df_temp = df.loc[:, [column, target]] if column != target else df.loc[:, target]
+    fig = px.parallel_categories(df_temp, color=target, color_continuous_scale=px.colors.sequential.RdBu)
     result = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
     return result
 
@@ -39,15 +39,15 @@ def correlation_graph(df):
     return result
 
 
-def main_graph(df, column):
-    if column != "output":
+def main_graph(df, column, target):
+    if column != target:
         x = df[column].value_counts().sort_index().keys().tolist()
         y1 = df[column].value_counts().sort_index().tolist()
-        df_temp = df[[column, 'output']]
-        y2_temp = df_temp[(df_temp['output'] == 1)].value_counts().sort_index().tolist()
+        df_temp = df[[column, target]]
+        y2_temp = df_temp[(df_temp[target] == 1)].value_counts().sort_index().tolist()
         y2 = []
 
-        x_temp = df_temp[(df_temp['output'] == 1)].value_counts().keys().sort_values()
+        x_temp = df_temp[(df_temp[target] == 1)].value_counts().keys().sort_values()
         x_copy = x.copy()
         for idx in x_temp:
             x_copy.remove(idx[0])
@@ -67,7 +67,7 @@ def main_graph(df, column):
         layout = go.Layout(template='plotly_white', width=750, height=500)
         fig = go.Figure(layout=layout)
         fig.add_trace(go.Bar(x=x, y=y1, name=column, marker_color="#5380b2"))
-        fig.add_trace(go.Scatter(x=x, y=y2, name='output', marker_color="#f06548"))
+        fig.add_trace(go.Scatter(x=x, y=y2, name=target, marker_color="#f06548"))
 
         result = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         return result
