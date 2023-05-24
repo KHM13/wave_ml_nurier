@@ -224,7 +224,7 @@ function project_get_detail(project_id) {
             $("#btn_for_project_registration").html("저장");
 
             <!-- file html 생성 -->
-            for(var i=0; i<data.project_file_name.length; i++) {
+            for(var i=0; i<data.project_file_cnt; i++) {
                 file_preview_tag_create(data.project_file_name[i], data.project_file_size[i], data.project_file_id[i]);
             }
 

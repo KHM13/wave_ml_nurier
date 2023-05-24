@@ -39,14 +39,14 @@
                         <div class="row text text-white-50 text-center">
                             <div class="col-3">
                                 <div class="p-2">
-                                    <h4 class="text-white mb-1">94.24</h4>
-                                    <p class="fs-14 mb-0">Best Accuracy</p>
+                                    <h4 class="text-white mb-1">89.23</h4>
+                                    <p class="fs-14 mb-0">Best Recall</p>
                                 </div>
                             </div>
                             <div class="col-3">
                                 <div class="p-2">
-                                    <h4 class="text-white mb-1">89.23</h4>
-                                    <p class="fs-14 mb-0">Best Recall</p>
+                                    <h4 class="text-white mb-1">94.24</h4>
+                                    <p class="fs-14 mb-0">Best Accuracy</p>
                                 </div>
                             </div>
                             <div class="col-3">
@@ -142,9 +142,7 @@
                                         <div class="card card-height-100">
                                             <div class="card-body">
                                                 <h5 class="card-title fw-semibold mb-3">프로젝트 설명</h5>
-                                                <p>설명 내용글</p>
-                                                <p>설명 내용글</p>
-                                                <p>설명 내용글</p>
+                                                <p>{{project_explanation}}</p>
 
                                                 <div class="row g-3 mt-3 pt-5">
                                                     <div class="swiper file-swiper mt-n4">
@@ -166,23 +164,23 @@
                                                         <div class="swiper-wrapper">
                                                             {% if project_file_cnt > 0 %}
                                                             {% for file in file_data %}
-                                                            <div class="swiper-slide">
+                                                            <div class="swiper-slide" id="swiper-slide">
                                                                 <div class="border rounded border-dashed p-2">
                                                                     <div class="d-flex align-items-center">
                                                                         <div class="flex-shrink-0 me-3">
                                                                             <div class="avatar-sm">
-                                                                                <div class="avatar-title bg-light text-secondary rounded fs-24">
-                                                                                    <i class="ri-file-ppt-2-line"></i>
+                                                                                <div class="avatar-title bg-soft-success text-success rounded fs-20">
+                                                                                    <i class="ri-file-excel-fill"></i>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
                                                                         <div class="flex-grow-1 overflow-hidden">
-                                                                            <h5 class="fs-13 mb-1"><a href="#" class="text-body text-truncate d-block">{{file.0}}</a></h5>
+                                                                            <h5 class="fs-13 mb-1">{{file.0}}</h5>
                                                                             <div>{{file.1}}</div>
                                                                         </div>
                                                                         <div class="flex-shrink-0 ms-2">
                                                                             <div class="d-flex gap-1">
-                                                                                <button type="button" class="btn btn-icon text-muted btn-sm fs-18"><i data-feather="download"></i></button>
+                                                                                <button type="button" class="btn btn-icon text-muted btn-sm fs-18" onclick="download_excel_file({{file.2}});"><i data-feather="download"></i></button>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -541,8 +539,21 @@ $(function() {
     <!-- 등록 클릭 시 데이터전처리 페이지로 이동 -->
     $("#btn_for_modal_data_create").on("click", function(e) {
         var project_name = $("#project_id").val();
-        $("#btn_for_modal_data_cancel").trigger("click");
-        location.href='/preprocess?model_name='+project_name;
+
+        <!-- 프로젝트 파일개수 유효성검사 -->
+        if('{{project_file_cnt}}' <= 0) {
+            Swal.fire({
+                title:'첨부파일을 등록해주세요',
+                icon: 'warning',
+                confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                buttonsStyling: false
+            })
+            $("#btn_for_modal_data_cancel").trigger("click");
+            return false;
+        } else {
+            $("#btn_for_modal_data_cancel").trigger("click");
+            location.href='/preprocess?model_name='+project_name;
+        }
     });
 
     <!-- 문서탭 체크박스 일괄선택 기능 -->
@@ -564,7 +575,6 @@ $(function() {
             $("#cardtableCheck").prop("checked", false);
         }
     });
-
 });
 
 <!-- 프로젝트 편집 초기값 지정 -->
@@ -588,16 +598,16 @@ function project_get_detail() {
     var project_file_id = parser.parseFromString('{{project_file_id}}', 'text/html').body.textContent;
 
     <!-- replace로 필요없는 문자 제거 -->
-    var project_file_name_arr = project_file_name.replaceAll("[", "").replaceAll("]", "").replaceAll("\'", "").split(" ");
-    var project_file_size_arr = project_file_size.replaceAll("[", "").replaceAll("]", "").replaceAll("\'", "").split(" ");
-    var project_file_id_arr = project_file_id.replaceAll("[", "").replaceAll("]", "").replaceAll("\'", "").split(" ");
+    var project_file_name_arr = project_file_name.replaceAll("[", "").replaceAll("]", "").replaceAll("\'", "").split(",");
+    var project_file_size_arr = project_file_size.replaceAll("[", "").replaceAll("]", "").replaceAll("\'", "").split(",");
+    var project_file_id_arr = project_file_id.replaceAll("[", "").replaceAll("]", "").replaceAll("\'", "").split(",");
 
     <!-- file html 생성 -->
-    for(var i=0; i<project_file_name_arr.length; i++) {
+    for(var i=0; i<'{{project_file_cnt}}'; i++) {
         file_preview_tag_create(project_file_name_arr[i], project_file_size_arr[i], project_file_id_arr[i]);
     }
 
-    <!-- 이미지 확인 -->
+    <!-- 이미지 파일 지정 -->
     var project_img = '{{project_image.url}}';
     if(project_img == "undefined" || project_img == null || project_img == "") {
         $("#img-spot").attr('src', "");
@@ -643,6 +653,11 @@ function project_remove() {
             });
         }
     });
+}
+
+<!-- 엑셀 파일 다운로드 -->
+function download_excel_file(file_id) {
+    location.href = '/project/excel_download?file_id=' + file_id;
 }
 
 </script>

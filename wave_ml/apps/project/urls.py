@@ -18,4 +18,6 @@ urlpatterns = [
     path('remove/', views.remove, name="project-remove"),
     # 프로젝트 상세
     path('detail/', views.detail, name="project-detail"),
+    # 프로젝트 상세 엑셀 다운로드
+    path('excel_download/', views.excel_download, name="excel-download"),
 ]

@@ -1,20 +1,18 @@
 import json
 import os
 import shutil
+import urllib
 import uuid
+import pandas as pd
 
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from django.shortcuts import render
 
 from .models import Project, ProjectFile
 
-
 # 프로젝트 메인 첫페이지
-from ...config import settings
-
-
 def main(request):
     sort = request.session.get('sort', 'update')
     page = request.session.get('page', 1)
@@ -151,7 +149,8 @@ def project_get_detail(request):
             'project_image': project_image,
             'project_file_id': file_id,
             'project_file_name': file_name,
-            'project_file_size': file_size
+            'project_file_size': file_size,
+            'project_file_cnt': len(file_id)
         }
         data_json = json.dumps(data)
 
@@ -322,14 +321,16 @@ def detail(request):
     project_files = project_obj.project.all()
     file_name = []
     file_size = []
+    file_size_conversion = []
     file_id = []
     if project_files:
         for project_file in project_files:
             file_id.append(project_file.id)
             file_name.append(project_file.project_file_name)
             file_size.append(project_file.project_file_size)
+            file_size_conversion.append(project_file.project_file_size.replace("/", " "))
 
-    file_data = zip(file_name, file_size)
+    file_data = zip(file_name, file_size_conversion, file_id)
 
     return render(
         request,
@@ -351,3 +352,25 @@ def detail(request):
             'file_data': file_data
         }
     )
+
+# 프로젝트 상세 엑셀파일 다운로드
+def excel_download(request):
+    if request.GET.get("file_id"):
+        file_id = request.GET.get("file_id")
+        file_obj = ProjectFile.objects.get(id=file_id)
+        # 파일 절대 경로 반환
+        file_path = file_obj.project_file.path
+
+        # 파일 다운로드 응답 생성
+        response = FileResponse(open(file_path, 'rb'))
+
+        # 다운로드할 파일의 MIME 타입을 설정
+        response['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+        # 한글, 특수문자 인코딩
+        encoded_file_name = urllib.parse.quote(file_obj.project_file_name)
+
+        # 다운로드할 파일의 이름 설정
+        response['Content-Disposition'] = f'attachment; filename={encoded_file_name}'
+
+        return response
