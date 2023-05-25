@@ -13,7 +13,7 @@
                                     <p class="text-muted text-truncate mb-0">Recall : <span class="fw-semibold text-dark">{{model.best_recall}}</span></p>
                                     <p class="text-muted text-truncate mb-0">Accuracy : <span class="fw-semibold text-dark">{{model.best_accuracy}}</span></p>
                                 </div>
-                                {% if forloop.first %}
+                                {% if forloop.first and mlmodel_pagination.number == 1%}
                                 <div class="flex-shrink-0 ms-2">
                                     <div class="badge badge-soft-warning fs-10"> Best</div>
                                 </div>
@@ -63,6 +63,76 @@
     <!--end card-->
 </div>
 
+<script>
+$(function() {
+    project_detail_model_init();
+});
+
+<!-- pagination 숫자선택 이동 -->
+function go_page(page_num) {
+    var url = '/project/detail/model/';
+    var render_html = 'project/project-detail-model.html';
+    get_project_list(url, render_html, page_num);
+}
+
+<!-- pagination 이전페이지 이동 -->
+function go_prev() {
+    if ({{mlmodel_pagination.number}} > 1) {
+        var page_num = {{mlmodel_pagination.number}} - 1;
+        var url = '/project/detail/model/';
+        var render_html = 'project/project-detail-model.html';
+        get_project_list(url, render_html, page_num);
+    }
+}
+
+<!-- pagination 다음페이지 이동 -->
+function go_next() {
+    if ({{mlmodel_pagination.number}} < {{mlmodel_pagination.paginator.num_pages}}) {
+        var page_num = {{mlmodel_pagination.number}} + 1;
+        var url = '/project/detail/model/';
+        var render_html = 'project/project-detail-model.html';
+        get_project_list(url, render_html, page_num);
+    }
+}
+
+<!-- 페이지 진입 초기화 설정 -->
+function project_detail_model_init() {
+    $('#registrant_name').val('{{ user_name }}');
+    var current_page = '{{mlmodel_pagination.number}}';
+    var last_page = {{mlmodel_pagination.paginator.num_pages}};
+    if(current_page <= 1) {
+        $("li.page-item").first().addClass("disabled");
+        $("li.page-item").last().removeClass("disabled");
+    } else if(current_page >= last_page) {
+        $("li.page-item").last().addClass("disabled");
+        $("li.page-item").first().removeClass("disabled");
+    } else {
+        $("li.page-item").last().removeClass("disabled");
+        $("li.page-item").first().removeClass("disabled");
+    }
+}
+
+<!-- 페이지 render ajax -->
+function get_project_list(url, render_html, page) {
+    $.ajax({
+        type: 'POST',
+        url: url,
+        data: {
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val(),
+            'project_id': '{{project_id}}',
+            'render_html': render_html,
+            'page': page
+        },
+        success: function(data) {
+            $("#project-detail-menu").html("");
+            $("#project-detail-menu").html(data);
+        },
+        error: function(data) {
+            console.log("detail ajax fail");
+        }
+    });
+}
+</script>
 <!-- swiper js -->
 <script src="{% static 'libs/swiper/swiper-bundle.min.js' %}"></script>
 <!-- profile init js -->

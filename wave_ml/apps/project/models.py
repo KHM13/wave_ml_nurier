@@ -17,3 +17,4 @@ class ProjectFile(models.Model):
     project_file = models.FileField(upload_to='file/%Y%m%d', default="")
     project_file_name = models.TextField(blank=False)
     project_file_size = models.TextField(blank=False)
+    project_file_registration_date = models.DateTimeField(auto_now_add=True)

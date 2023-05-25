@@ -170,26 +170,6 @@ $(function() {
             location.href='/preprocess?model_name='+project_name;
         }
     });
-
-    <!-- 문서탭 체크박스 일괄선택 기능 -->
-    $("#cardtableCheck").on("click", function(e) {
-        if($("#cardtableCheck").is(":checked")) {
-            $("input[name=form-check-input]").prop("checked", true);
-        } else {
-            $("input[name=form-check-input]").prop("checked", false);
-        }
-    });
-
-    <!-- 문서탭 체크박스 단일선택으로 전체 항목체크 시 일괄선택 체크박스 이벤트 지정 -->
-    $("input[name=form-check-input]").on("click", function(e) {
-        var max_checkbox_len = $("input[name=form-check-input]").length;
-        var checkced_checkbox_len = $("input[name=form-check-input]:checked").length;
-        if(max_checkbox_len == checkced_checkbox_len) {
-            $("#cardtableCheck").prop("checked", true);
-        } else {
-            $("#cardtableCheck").prop("checked", false);
-        }
-    });
 });
 
 <!-- 페이지 render ajax -->

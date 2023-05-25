@@ -29,76 +29,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>
-                                        <div class="form-check">
-                                            <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck01">
-                                            <label class="form-check-label" for="cardtableCheck01"></label>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-sm">
-                                                <div class="avatar-title bg-soft-primary text-primary rounded fs-20">
-                                                    <i class="ri-file-zip-fill"></i>
-                                                </div>
-                                            </div>
-                                            <div class="ms-3 flex-grow-1">
-                                                <h6 class="fs-15 mb-0"><a href="javascript:void(0)">Artboard-documents.zip</a>
-                                                </h6>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>Zip File</td>
-                                    <td>4.57 MB</td>
-                                    <td>2023.01.11</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="form-check">
-                                            <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck02">
-                                            <label class="form-check-label" for="cardtableCheck02"></label>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-sm">
-                                                <div class="avatar-title bg-soft-danger text-danger rounded fs-20">
-                                                    <i class="ri-file-pdf-fill"></i>
-                                                </div>
-                                            </div>
-                                            <div class="ms-3 flex-grow-1">
-                                                <h6 class="fs-15 mb-0"><a href="javascript:void(0);">Bank Management System</a></h6>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>PDF File</td>
-                                    <td>8.89 MB</td>
-                                    <td>2023.01.11</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="form-check">
-                                            <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck03">
-                                            <label class="form-check-label" for="cardtableCheck03"></label>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-sm">
-                                                <div class="avatar-title bg-soft-secondary text-secondary rounded fs-20">
-                                                    <i class="ri-video-line"></i>
-                                                </div>
-                                            </div>
-                                            <div class="ms-3 flex-grow-1">
-                                                <h6 class="fs-15 mb-0"><a href="javascript:void(0);">Tour-video.mp4</a></h6>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>MP4 File</td>
-                                    <td>14.62 MB</td>
-                                    <td>2023.01.11</td>
-                                </tr>
+                                {% if project_file_cnt > 0 %}
+                                {% for file in file_data %}
                                 <tr>
                                     <td>
                                         <div class="form-check">
@@ -114,62 +46,16 @@
                                                 </div>
                                             </div>
                                             <div class="ms-3 flex-grow-1">
-                                                <h6 class="fs-15 mb-0"><a href="javascript:void(0);">Account-statement.xsl</a></h6>
+                                                <h6 class="fs-15 mb-0"><a href="javascript:void(0);">{{file.0}}</a></h6>
                                             </div>
                                         </div>
                                     </td>
                                     <td>XSL File</td>
-                                    <td>2.38 KB</td>
-                                    <td>2023.01.11</td>
+                                    <td>{{file.1}}</td>
+                                    <td>{{file.3 | date:'Y.m.d'}}</td>
                                 </tr>
-                                <tr>
-                                    <td>
-                                        <div class="form-check">
-                                            <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck05">
-                                            <label class="form-check-label" for="cardtableCheck05"></label>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-sm">
-                                                <div class="avatar-title bg-soft-info text-info rounded fs-20">
-                                                    <i class="ri-folder-line"></i>
-                                                </div>
-                                            </div>
-                                            <div class="ms-3 flex-grow-1">
-                                                <h6 class="fs-15 mb-0"><a href="javascript:void(0);">Project Screenshots Collection</a></h6>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>Floder File</td>
-                                    <td>87.24 MB</td>
-                                    <td>2023.01.11</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="form-check">
-                                            <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck06">
-                                            <label class="form-check-label" for="cardtableCheck06"></label>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-sm">
-                                                <div class="avatar-title bg-soft-danger text-danger rounded fs-20">
-                                                    <i class="ri-image-2-fill"></i>
-                                                </div>
-                                            </div>
-                                            <div class="ms-3 flex-grow-1">
-                                                <h6 class="fs-15 mb-0">
-                                                    <a href="javascript:void(0);">Velzon-logo.png</a>
-                                                </h6>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>PNG File</td>
-                                    <td>879 KB</td>
-                                    <td>2023.01.11</td>
-                                </tr>
+                                {% endfor %}
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>
@@ -179,25 +65,13 @@
                     <div class="mt-4">
                         <ul class="pagination pagination-separated justify-content-center mb-0">
                             <li class="page-item disabled">
-                                <a href="javascript:void(0);" class="page-link"><i class="mdi mdi-chevron-left"></i></a>
+                                <a href="javascript:go_prev();" class="page-link"><i class="mdi mdi-chevron-left"></i></a>
                             </li>
-                            <li class="page-item active">
-                                <a href="javascript:void(0);" class="page-link">1</a>
-                            </li>
+                            {% for plinks in page_links %}
+                                {{ plinks | safe }}
+                            {% endfor %}
                             <li class="page-item">
-                                <a href="javascript:void(0);" class="page-link">2</a>
-                            </li>
-                            <li class="page-item">
-                                <a href="javascript:void(0);" class="page-link">3</a>
-                            </li>
-                            <li class="page-item">
-                                <a href="javascript:void(0);" class="page-link">4</a>
-                            </li>
-                            <li class="page-item">
-                                <a href="javascript:void(0);" class="page-link">5</a>
-                            </li>
-                            <li class="page-item">
-                                <a href="javascript:void(0);" class="page-link"><i class="mdi mdi-chevron-right"></i></a>
+                                <a href="javascript:go_next();" class="page-link"><i class="mdi mdi-chevron-right"></i></a>
                             </li>
                         </ul>
                     </div>
@@ -206,6 +80,97 @@
         </div>
     </div>
 </div><!--end card-->
+
+<script>
+$(function() {
+    project_detail_model_init();
+
+    <!-- 문서탭 체크박스 일괄선택 기능 -->
+    $("#cardtableCheck").on("click", function(e) {
+        if($("#cardtableCheck").is(":checked")) {
+            $("input[name=form-check-input]").prop("checked", true);
+        } else {
+            $("input[name=form-check-input]").prop("checked", false);
+        }
+    });
+
+    <!-- 문서탭 체크박스 단일선택으로 전체 항목체크 시 일괄선택 체크박스 이벤트 지정 -->
+    $("input[name=form-check-input]").on("click", function(e) {
+        var max_checkbox_len = $("input[name=form-check-input]").length;
+        var checkced_checkbox_len = $("input[name=form-check-input]:checked").length;
+        if(max_checkbox_len == checkced_checkbox_len) {
+            $("#cardtableCheck").prop("checked", true);
+        } else {
+            $("#cardtableCheck").prop("checked", false);
+        }
+    });
+});
+
+<!-- pagination 숫자선택 이동 -->
+function go_page(page_num) {
+    var url = '/project/detail/documents/';
+    var render_html = 'project/project-detail-documents.html';
+    get_project_list(url, render_html, page_num);
+}
+
+<!-- pagination 이전페이지 이동 -->
+function go_prev() {
+    if ({{mlmodel_pagination.number}} > 1) {
+        var page_num = {{mlmodel_pagination.number}} - 1;
+        var url = '/project/detail/documents/';
+        var render_html = 'project/project-detail-documents.html';
+        get_project_list(url, render_html, page_num);
+    }
+}
+
+<!-- pagination 다음페이지 이동 -->
+function go_next() {
+    if ({{mlmodel_pagination.number}} < {{mlmodel_pagination.paginator.num_pages}}) {
+        var page_num = {{mlmodel_pagination.number}} + 1;
+        var url = '/project/detail/documents/';
+        var render_html = 'project/project-detail-documents.html';
+        get_project_list(url, render_html, page_num);
+    }
+}
+
+<!-- 페이지 진입 초기화 설정 -->
+function project_detail_model_init() {
+    $('#registrant_name').val('{{ user_name }}');
+    var current_page = '{{mlmodel_pagination.number}}';
+    var last_page = {{mlmodel_pagination.paginator.num_pages}};
+    if(current_page <= 1) {
+        $("li.page-item").first().addClass("disabled");
+        $("li.page-item").last().removeClass("disabled");
+    } else if(current_page >= last_page) {
+        $("li.page-item").last().addClass("disabled");
+        $("li.page-item").first().removeClass("disabled");
+    } else {
+        $("li.page-item").last().removeClass("disabled");
+        $("li.page-item").first().removeClass("disabled");
+    }
+}
+
+<!-- 페이지 render ajax -->
+function get_project_list(url, render_html, page) {
+    $.ajax({
+        type: 'POST',
+        url: url,
+        data: {
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val(),
+            'project_id': '{{project_id}}',
+            'render_html': render_html,
+            'page': page
+        },
+        success: function(data) {
+            $("#project-detail-menu").html("");
+            $("#project-detail-menu").html(data);
+        },
+        error: function(data) {
+            console.log("detail ajax fail");
+        }
+    });
+}
+</script>
 
 <!-- swiper js -->
 <script src="{% static 'libs/swiper/swiper-bundle.min.js' %}"></script>

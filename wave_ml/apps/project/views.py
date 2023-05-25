@@ -3,10 +3,9 @@ import os
 import shutil
 import urllib
 import uuid
-import pandas as pd
 
 from django.core.paginator import Paginator
-from django.db.models import Q, Max
+from django.db.models import Q
 from django.http import HttpResponse, FileResponse
 from django.shortcuts import render
 
@@ -15,9 +14,8 @@ from .models import Project, ProjectFile
 # 프로젝트 메인 첫페이지
 def main(request):
     sort = request.session.get('sort', 'update')
-    page = request.session.get('page', 1)
+    page = validate_page(request.session.get('page', 1))
     keyword = request.session.get('keyword', "")
-    page = validate_page(page)
 
     return render(
         request,
@@ -34,23 +32,42 @@ def list(request):
     if request.method == 'POST':
         # 추후 수정 필요
         user_id = 'TEST_USER'
-        
-        # 기존 조건 확인
-        sort = request.POST.get('sort', request.session.get('sort'))
-        page = validate_page(request.POST.get('page', request.session.get('page')))
-        keyword = request.POST.get('keyword', request.session.get('keyword'))
 
-        # 리스트 정렬 조회
-        project_list = list_sort(sort, user_id, keyword)
-        
-        # 페이징 처리
-        project_obj, links = paginator(page, project_list, 8)
-        
+        # 정렬값
+        sort = "update"
+        if request.POST.get('sort'):
+            sort = request.POST.get('sort')
+        else:
+            if request.session.get('sort'):
+                sort = request.session.get('sort')
+
+        # 페이지
+        page = 1
+        if request.POST.get('page'):
+            page = int(request.POST.get('page'))
+        else:
+            if request.session.get('page'):
+                page = int(request.session.get('page'))
+
+        # 검색 키워드
+        keyword = None
+        if request.POST.get('keyword'):
+            keyword = request.POST.get('keyword')
+        else:
+            if request.session.get('keyword'):
+                keyword = request.session.get('keyword')
+
         # 세션 처리
         request.session['sort'] = sort
         request.session['page'] = page
         request.session['keyword'] = keyword
-        
+
+        # 리스트 정렬 조회
+        project_list = list_sort(sort, user_id, keyword)
+
+        # 페이징 처리
+        project_obj, links = paginator(page, project_list, 8)
+
         # 페이지 이동
         return render(
             request,
@@ -66,20 +83,20 @@ def list(request):
 
 # 프로젝트 리스트 정렬 조회
 def list_sort(sort, user_id, keyword):
-    if keyword == "" or keyword is None:
-        if sort == 'name':
-            project_list = Project.objects.filter(registrant=user_id).order_by('project_name')
-        elif sort == 'registration':
-            project_list = Project.objects.filter(registrant=user_id).order_by('-project_registration_date')
-        else:
-            project_list = Project.objects.filter(registrant=user_id).order_by('-project_update_date')
-    else:
+    if keyword:
         if sort == 'name':
             project_list = Project.objects.filter(Q(registrant=user_id) & Q(project_name__contains=keyword)).order_by('project_name')
         elif sort == 'registration':
             project_list = Project.objects.filter(Q(registrant=user_id) & Q(project_name__contains=keyword)).order_by('-project_registration_date')
         else:
             project_list = Project.objects.filter(Q(registrant=user_id) & Q(project_name__contains=keyword)).order_by('-project_update_date')
+    else:
+        if sort == 'name':
+            project_list = Project.objects.filter(registrant=user_id).order_by('project_name')
+        elif sort == 'registration':
+            project_list = Project.objects.filter(registrant=user_id).order_by('-project_registration_date')
+        else:
+            project_list = Project.objects.filter(registrant=user_id).order_by('-project_update_date')
 
     return project_list
 
@@ -305,7 +322,7 @@ def remove(request):
         return list(request)
 
 # 프로젝트 탭 관련 공통 함수
-def detail_func(request, project_obj, html_position, page):
+def detail_func(request, project_obj, html_position, page, projects_per_page):
     # 이미지
     project_image = ""
     if project_obj.project_image:
@@ -315,15 +332,20 @@ def detail_func(request, project_obj, html_position, page):
     project_files = project_obj.project.all()
     file_name = []
     file_size = []
-    file_size_conversion = []
     file_id = []
+    file_registration_date = []
+    file_extension = []
     if project_files:
         for project_file in project_files:
             file_id.append(project_file.id)
             file_name.append(project_file.project_file_name)
             file_size.append(project_file.project_file_size)
-            file_size_conversion.append(project_file.project_file_size)
-    file_data = zip(file_name, file_size_conversion, file_id)
+            file_registration_date.append(project_file.project_file_registration_date)
+            file_path = project_file.project_file.path
+            # file_dir, file_name = os.path.split(file_path)
+            # file_name, file_ext = os.path.splitext(file_name)
+            # file_extension.append(file_ext)
+    file_data = zip(file_name, file_size, file_id, file_registration_date)
 
     # recall값이 가장 높은 mlmodel (recall값이 동일할 경우 accuracy가 높은 순으로 반환)
     best_mlmodel = project_obj.project_id.order_by("-best_recall", "-best_accuracy").first()
@@ -334,8 +356,8 @@ def detail_func(request, project_obj, html_position, page):
     # 페이징 처리
     mlmodel_pagination = ""
     links = ""
-    if page is not None:
-        mlmodel_pagination, links = paginator(page, mlmodel, 12)
+    if page is not None and projects_per_page is not None:
+        mlmodel_pagination, links = paginator(page, mlmodel, projects_per_page)
 
     return render(
         request,
@@ -373,7 +395,7 @@ def detail(request):
             project_obj = Project.objects.get(id=request.GET.get('project_id'))
             request.session['project_id'] = request.GET.get('project_id')
 
-    return detail_func(request, project_obj, 'project/project-detail.html', None)
+    return detail_func(request, project_obj, 'project/project-detail.html', None, None)
 
 # 프로젝트 상세 -> 상세
 def detail_main(request):
@@ -381,7 +403,7 @@ def detail_main(request):
         user_id = request.session.get('project_id', request.POST.get('project_id'))
         project_obj = Project.objects.get(id=user_id)
 
-        return detail_func(request, project_obj, request.POST.get('render_html'), request.POST.get("page", 1))
+        return detail_func(request, project_obj, request.POST.get('render_html'), request.POST.get("page", 1), None)
 
 # 프로젝트 상세 -> 모델
 def detail_model(request):
@@ -389,7 +411,7 @@ def detail_model(request):
         user_id = request.session.get('project_id', request.POST.get('project_id'))
         project_obj = Project.objects.get(id=user_id)
 
-        return detail_func(request, project_obj, request.POST.get('render_html'), request.POST.get("page", 1))
+        return detail_func(request, project_obj, request.POST.get('render_html'), request.POST.get("page", 1), 12)
 
 # 프로젝트 상세 -> 문서
 def detail_documents(request):
@@ -397,7 +419,7 @@ def detail_documents(request):
         user_id = request.session.get('project_id', request.POST.get('project_id'))
         project_obj = Project.objects.get(id=user_id)
 
-        return detail_func(request, project_obj, request.POST.get('render_html'), request.POST.get("page", 1))
+        return detail_func(request, project_obj, request.POST.get('render_html'), request.POST.get("page", 1), 10)
 
 # 프로젝트 상세 엑셀파일 다운로드
 def excel_download(request):
