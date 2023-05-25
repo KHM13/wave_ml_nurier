@@ -195,7 +195,6 @@
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
             <!-- 수정용 -->
-            <input type="hidden" id="project_modify_id" name="project_modify_id" value="">
             <input type="hidden" id="project_modify_position_check" name="project_modify_position_check" value="">
             <input type="hidden" id="project_modify_img_check" name="project_modify_img_check" value="">
             <!-- 파일용 -->
@@ -203,6 +202,8 @@
             <input type="hidden" id="project_file_size" name="project_file_size" value="">
             <input type="hidden" id="project_file_name" name="project_file_name" value="">
         </form>
+        <!-- 프로젝트 아이디 -->
+        <input type="hidden" id="project_id" name="project_id" value="">
     </div>
     <!-- END layout-wrapper -->
 
@@ -429,6 +430,7 @@
     <!-- 프로젝트 등록, 편집 함수 -->
     function project_registration() {
         var form_data = new FormData($("#project_registration_form")[0]);
+        form_data.append('project_id', $("#project_id").val());
 
         <!--대분류, 소분류, 프로젝트명, 등록자, 파일등록 유효성 검사-->
         var project_type = form_data.get('project_type');

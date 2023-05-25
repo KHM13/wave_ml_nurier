@@ -39,7 +39,7 @@
                             </div>
                         </div>
                         <div class="flex-grow-1">
-                            <h6 class="card-subtitle mb-2">금융&middot;은행</h6>
+                            <h6 class="card-subtitle mb-2">{{project.project_type}} &middot; {{project.project_sub_type}}</h6>
                             <h5 class="card-title mb-3 fw-semibold project_title_for_search_keyword"><a href="/project/detail?project_id={{project.id}}" class="text-dark">{{project.project_name}}</a>
                             </h5>
                             <div class="row align-items-center mt-3">
@@ -218,7 +218,7 @@ function project_get_detail(project_id) {
             $("#registrant_name").val(data.registrant);
             $("#registration_date").val(data.project_registration_date);
             $("#project_explanation").val(data.project_explanation);
-            $("#project_modify_id").val(data.project_id);
+            $("#project_id").val(data.project_id);
             $("#project_modify_position_check").val('list');
             $("#myModalLabel").html("프로젝트 편집");
             $("#btn_for_project_registration").html("저장");

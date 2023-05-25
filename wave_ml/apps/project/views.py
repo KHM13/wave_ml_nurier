@@ -6,7 +6,7 @@ import uuid
 import pandas as pd
 
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.http import HttpResponse, FileResponse
 from django.shortcuts import render
 
@@ -44,7 +44,7 @@ def list(request):
         project_list = list_sort(sort, user_id, keyword)
         
         # 페이징 처리
-        project_obj, links = paginator(page, project_list)
+        project_obj, links = paginator(page, project_list, 8)
         
         # 세션 처리
         request.session['sort'] = sort
@@ -90,10 +90,8 @@ def validate_page(page):
     return page
 
 # 페이징 처리
-def paginator(page, project_list):
+def paginator(page, project_list, projects_per_page):
     page = validate_page(page)
-    # 한 페이지에 보여줄 항목 수 지정
-    projects_per_page = 8
     # 페이징 처리를 위한 Paginator 객체 생성
     paginator = Paginator(project_list, projects_per_page)
     # 현재 페이지에 해당하는 프로젝트 리스트 반환
@@ -193,7 +191,7 @@ def registration(request):
 # 프로젝트 편집
 def modify(request):
     if request.method == 'POST':
-        modify_project = Project.objects.get(id=request.POST.get('project_modify_id'))
+        modify_project = Project.objects.get(id=request.POST.get('project_id'))
         # 이미지 확인
         project_img = ""
         if request.FILES.get('project_image'):
@@ -207,12 +205,13 @@ def modify(request):
             project_files = request.FILES.getlist('project-file-list')
             project_files_size = request.POST.get('project_file_size').split(',')
             project_files_name = request.POST.get('project_file_name').split(',')
+            project_file_size_before = len(modify_project.project.all())
             for i in range(len(project_files)):
                 ProjectFile.objects.create(
                     project_id=modify_project,
                     project_file=project_files[i],
-                    project_file_name=project_files_name[i],
-                    project_file_size=project_files_size[i]
+                    project_file_name=project_files_name[project_file_size_before + i],
+                    project_file_size=project_files_size[project_file_size_before + i]
                 )
 
         # 파일 삭제
@@ -305,19 +304,14 @@ def remove(request):
 
         return list(request)
 
-# 프로젝트 상세조회
-def detail(request):
-    if request.method == 'POST':
-        project_obj = Project.objects.get(id=request.POST.get('project_modify_id'))
-        request.session['project_id'] = request.POST.get('project_modify_id')
-    else:
-        project_obj = Project.objects.get(id=request.GET.get('project_id'))
-        request.session['project_id'] = request.GET.get('project_id')
-
+# 프로젝트 탭 관련 공통 함수
+def detail_func(request, project_obj, html_position, page):
+    # 이미지
     project_image = ""
     if project_obj.project_image:
         project_image = project_obj.project_image
 
+    # 파일
     project_files = project_obj.project.all()
     file_name = []
     file_size = []
@@ -328,13 +322,24 @@ def detail(request):
             file_id.append(project_file.id)
             file_name.append(project_file.project_file_name)
             file_size.append(project_file.project_file_size)
-            file_size_conversion.append(project_file.project_file_size.replace("/", " "))
-
+            file_size_conversion.append(project_file.project_file_size)
     file_data = zip(file_name, file_size_conversion, file_id)
+
+    # recall값이 가장 높은 mlmodel (recall값이 동일할 경우 accuracy가 높은 순으로 반환)
+    best_mlmodel = project_obj.project_id.order_by("-best_recall", "-best_accuracy").first()
+
+    # mlmodel 전체
+    mlmodel = project_obj.project_id.order_by("-best_recall", "-best_accuracy").all()
+
+    # 페이징 처리
+    mlmodel_pagination = ""
+    links = ""
+    if page is not None:
+        mlmodel_pagination, links = paginator(page, mlmodel, 12)
 
     return render(
         request,
-        'project/project-detail.html',
+        html_position,
         {
             'project_id': request.GET.get('project_id'),
             'project_type': project_obj.project_type,
@@ -349,9 +354,50 @@ def detail(request):
             'project_file_name': file_name,
             'project_file_size': file_size,
             'project_file_cnt': len(file_id),
-            'file_data': file_data
+            'file_data': file_data,
+            'best_mlmodel': best_mlmodel,
+            'mlmodel': mlmodel,
+            'mlmodel_pagination': mlmodel_pagination,
+            'page_links': links
         }
     )
+
+# 프로젝트 상세조회
+def detail(request):
+    if request.method == 'POST':
+        if request.POST.get('project_id'):
+            project_obj = Project.objects.get(id=request.POST.get('project_id'))
+            request.session['project_id'] = request.POST.get('project_id')
+    else:
+        if request.GET.get('project_id'):
+            project_obj = Project.objects.get(id=request.GET.get('project_id'))
+            request.session['project_id'] = request.GET.get('project_id')
+
+    return detail_func(request, project_obj, 'project/project-detail.html', None)
+
+# 프로젝트 상세 -> 상세
+def detail_main(request):
+    if request.method == 'POST':
+        user_id = request.session.get('project_id', request.POST.get('project_id'))
+        project_obj = Project.objects.get(id=user_id)
+
+        return detail_func(request, project_obj, request.POST.get('render_html'), request.POST.get("page", 1))
+
+# 프로젝트 상세 -> 모델
+def detail_model(request):
+    if request.method == 'POST':
+        user_id = request.session.get('project_id', request.POST.get('project_id'))
+        project_obj = Project.objects.get(id=user_id)
+
+        return detail_func(request, project_obj, request.POST.get('render_html'), request.POST.get("page", 1))
+
+# 프로젝트 상세 -> 문서
+def detail_documents(request):
+    if request.method == 'POST':
+        user_id = request.session.get('project_id', request.POST.get('project_id'))
+        project_obj = Project.objects.get(id=user_id)
+
+        return detail_func(request, project_obj, request.POST.get('render_html'), request.POST.get("page", 1))
 
 # 프로젝트 상세 엑셀파일 다운로드
 def excel_download(request):
@@ -360,16 +406,12 @@ def excel_download(request):
         file_obj = ProjectFile.objects.get(id=file_id)
         # 파일 절대 경로 반환
         file_path = file_obj.project_file.path
-
         # 파일 다운로드 응답 생성
         response = FileResponse(open(file_path, 'rb'))
-
         # 다운로드할 파일의 MIME 타입을 설정
         response['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-
         # 한글, 특수문자 인코딩
         encoded_file_name = urllib.parse.quote(file_obj.project_file_name)
-
         # 다운로드할 파일의 이름 설정
         response['Content-Disposition'] = f'attachment; filename={encoded_file_name}'
 

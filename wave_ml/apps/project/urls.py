@@ -18,6 +18,12 @@ urlpatterns = [
     path('remove/', views.remove, name="project-remove"),
     # 프로젝트 상세
     path('detail/', views.detail, name="project-detail"),
-    # 프로젝트 상세 엑셀 다운로드
+    # 프로젝트 상세 -> 상세
+    path('detail/main/', views.detail_main, name="project-detail-main"),
+    # 프로젝트 상세 -> 모델
+    path('detail/model/', views.detail_model, name="project-detail-model"),
+    # 프로젝트 상세 -> 문서
+    path('detail/documents/', views.detail_documents, name="project-detail-documents"),
+    # 프로젝트 상세 첨부파일(xls, xlsx, csv) 다운로드
     path('excel_download/', views.excel_download, name="excel-download"),
 ]

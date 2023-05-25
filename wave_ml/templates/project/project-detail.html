@@ -5,7 +5,7 @@
 {% block middle-title %}프로젝트 상세{% endblock %}
 
 {% block content %}
-
+{% csrf_token %}
     <div class="page-content">
         <div class="container-fluid">
             <div class="profile-foreground position-relative mx-n4 mt-n4">
@@ -28,7 +28,7 @@
                     <div class="col">
                         <div class="p-2">
                             <h3 class="text-white mb-1">{{project_name}}</h3>
-                            <p class="text-white-75">금융&middot;은행</p>
+                            <p class="text-white-75">{{project_type}} &middot; {{project_sub_type}}</p>
                             <div class="hstack text-white-50 gap-1">
                                 <div class="me-2"><i class="bx bx-user me-1 text-white-75 fs-16 align-middle"></i>{{registrant}}</div>
                             </div>
@@ -39,19 +39,19 @@
                         <div class="row text text-white-50 text-center">
                             <div class="col-3">
                                 <div class="p-2">
-                                    <h4 class="text-white mb-1">89.23</h4>
+                                    <h4 class="text-white mb-1">{{best_mlmodel.best_recall}}</h4>
                                     <p class="fs-14 mb-0">Best Recall</p>
                                 </div>
                             </div>
                             <div class="col-3">
                                 <div class="p-2">
-                                    <h4 class="text-white mb-1">94.24</h4>
+                                    <h4 class="text-white mb-1">{{best_mlmodel.best_accuracy}}</h4>
                                     <p class="fs-14 mb-0">Best Accuracy</p>
                                 </div>
                             </div>
                             <div class="col-3">
                                 <div class="p-2">
-                                    <h4 class="text-white mb-1">13</h4>
+                                    <h4 class="text-white mb-1">{{mlmodel.count}}</h4>
                                     <p class="fs-14 mb-0">생성된 모델수</p>
                                 </div>
                             </div>
@@ -61,7 +61,6 @@
                                         <a href="#" role="button" id="dropdownMenuLink2" data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="ri-more-2-fill fs-14 text-white"></i>
                                         </a>
-
                                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuLink2">
                                             <li><a class="dropdown-item" href="javascript:project_get_detail()"><i class="ri-pencil-fill align-bottom me-2 text-muted"></i> 편집</a></li>
                                             <li><a class="dropdown-item" href="javascript:project_remove()"><i class="ri-delete-bin-6-fill align-bottom me-2 text-muted"></i> 삭제</a></li>
@@ -71,10 +70,7 @@
                             </div>
                         </div>
                     </div>
-                    <!--end col-->
-
                 </div>
-                <!--end row-->
             </div>
 
             <div class="row">
@@ -84,17 +80,17 @@
                             <!-- Nav tabs -->
                             <ul class="nav nav-pills animation-nav profile-nav gap-2 gap-lg-3 flex-grow-1" role="tablist">
                                 <li class="nav-item">
-                                    <a class="nav-link fs-14 active" data-bs-toggle="tab" href="#overview-tab" role="tab">
+                                    <a class="nav-link fs-14 active" onclick="project_detail_init('/project/detail/main/', 'project/project-detail-main.html')" data-bs-toggle="tab" role="tab" style="cursor:pointer;">
                                         <i class="ri-airplay-fill d-inline-block d-md-none"></i> <span class="d-none d-md-inline-block">상세</span>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link fs-14" data-bs-toggle="tab" href="#activities" role="tab">
+                                    <a class="nav-link fs-14" onclick="project_detail_init('/project/detail/model/', 'project/project-detail-model.html')" data-bs-toggle="tab" role="tab" style="cursor:pointer;">
                                         <i class="ri-list-unordered d-inline-block d-md-none"></i> <span class="d-none d-md-inline-block">모델</span>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link fs-14" data-bs-toggle="tab" href="#projects" role="tab">
+                                    <a class="nav-link fs-14" onclick="project_detail_init('/project/detail/documents/', 'project/project-detail-documents.html')" data-bs-toggle="tab" role="tab" style="cursor:pointer;">
                                         <i class="ri-price-tag-line d-inline-block d-md-none"></i> <span class="d-none d-md-inline-block">문서</span>
                                     </a>
                                 </li>
@@ -104,393 +100,10 @@
                                 <button class="btn btn-transparent-datablue" id="btn_for_return_project"><i class="ri-file-list-line"></i> 목록</button>
                             </div>
                         </div>
-                        <!-- Tab panes -->
-                        <div class="tab-content pt-4 text-muted" id="project-detail-menu">
-                            <div class="tab-pane active" id="overview-tab" role="tabpanel">
-                                <div class="row">
-                                    <div class="col-xxl-4">
-                                        <div class="card card-height-100">
-                                            <div class="card-body">
-                                                <h5 class="card-title fw-semibold mb-3">정보</h5>
-                                                <div class="table-responsive">
-                                                    <table class="table table-borderless mb-0">
-                                                        <tbody>
-                                                            <tr>
-                                                                <th class="ps-0" scope="row">등록자 :</th>
-                                                                <td class="text-muted">{{registrant}}</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <th class="ps-0" scope="row">프로젝트 생성일시 :</th>
-                                                                <td class="text-muted">{{project_registration_date | date:'Y.m.d (H:i:s)'}}</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <th class="ps-0" scope="row">최종 업데이트 :</th>
-                                                                <td class="text-muted">{{project_update_date | date:'Y.m.d (H:i:s)'}}</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <th class="ps-0" scope="row">첨부파일 :</th>
-                                                                <td class="text-muted">{{project_file_cnt}}</td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
 
-                                    <div class="col-xxl-8">
-                                        <div class="card card-height-100">
-                                            <div class="card-body">
-                                                <h5 class="card-title fw-semibold mb-3">프로젝트 설명</h5>
-                                                <p>{{project_explanation}}</p>
+                        <!-- 상세, 모델, 문서 -->
+                        <div class="tab-content pt-4 text-muted" id="project-detail-menu"></div>
 
-                                                <div class="row g-3 mt-3 pt-5">
-                                                    <div class="swiper file-swiper mt-n4">
-                                                        <div class="d-flex align-items-center justify-content-between gap-2 mb-2 w-100">
-                                                            <h6 class="mb-0 fw-semibold">첨부파일</h6>
-                                                            <div class="d-flex align-items-center justify-content-end w-50">
-                                                                <div class="slider-button-prev-02 ms-2">
-                                                                    <div class="swiper-arrow fs-18 rounded px-1">
-                                                                        <i class="ri-arrow-left-s-line"></i>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="slider-button-next-02 ms-2">
-                                                                    <div class="swiper-arrow fs-18 rounded px-1">
-                                                                        <i class="ri-arrow-right-s-line"></i>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="swiper-wrapper">
-                                                            {% if project_file_cnt > 0 %}
-                                                            {% for file in file_data %}
-                                                            <div class="swiper-slide" id="swiper-slide">
-                                                                <div class="border rounded border-dashed p-2">
-                                                                    <div class="d-flex align-items-center">
-                                                                        <div class="flex-shrink-0 me-3">
-                                                                            <div class="avatar-sm">
-                                                                                <div class="avatar-title bg-soft-success text-success rounded fs-20">
-                                                                                    <i class="ri-file-excel-fill"></i>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="flex-grow-1 overflow-hidden">
-                                                                            <h5 class="fs-13 mb-1">{{file.0}}</h5>
-                                                                            <div>{{file.1}}</div>
-                                                                        </div>
-                                                                        <div class="flex-shrink-0 ms-2">
-                                                                            <div class="d-flex gap-1">
-                                                                                <button type="button" class="btn btn-icon text-muted btn-sm fs-18" onclick="download_excel_file({{file.2}});"><i data-feather="download"></i></button>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            {% endfor %}
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!--end card-body-->
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-xxl-12">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <h5 class="card-title fw-semibold">모델</h5>
-                                                <div class="text-center mt-3 pt-3">
-                                                    <a href="javascript:void(0)" class="btn btn-soft-dark" data-bs-toggle="modal" data-bs-target="#dataCreateModal">
-                                                        <i class="bx bx-layer-plus display-6 text-white"></i>
-                                                    </a>
-                                                    <p class="mt-3">버튼을 선택해서 새로운 작업을 시작해보세요.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="tab-pane fade" id="activities" role="tabpanel">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-xxl-3 col-sm-6">
-                                                <div class="card profile-project-card shadow-none mb-0  profile-project-primary">
-                                                    <div class="card-body p-4">
-                                                        <div class="d-flex">
-                                                            <div class="flex-grow-1 text-muted overflow-hidden">
-                                                                <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">모델학습 Case 1</a></h5>
-                                                                <p class="text-muted text-truncate mb-0">Accuracy : <span class="fw-semibold text-dark">89.56</span></p>
-                                                                <p class="text-muted text-truncate mb-0">Recall : <span class="fw-semibold text-dark">79.46</span></p>
-                                                            </div>
-                                                            <div class="flex-shrink-0 ms-2">
-                                                                <div class="badge badge-soft-warning fs-10"> Best</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="d-flex mt-4">
-                                                            <div class="flex-grow-1">
-                                                                <div class="d-flex align-items-center">
-                                                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                                                        <img src="{% static 'images/users/avatar-3.jpg' %}" alt="" class="img-fluid rounded-circle">
-                                                                    </div>
-                                                                    <div class="flex-grow-1">
-                                                                        <div>
-                                                                            <p class="fs-13 fw-semibold mb-1">2023.01.01 12:01:01</p>
-                                                                            <h5 class="fs-14 text-muted mb-0">하동훈</h5>
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div><!-- end card body -->
-                                                </div><!-- end card -->
-                                            </div>
-                                            <!--end col-->
-                                            <div class="col-lg-12">
-                                                <div class="mt-4">
-                                                    <ul class="pagination pagination-separated justify-content-center mb-0">
-                                                        <li class="page-item disabled">
-                                                            <a href="javascript:void(0);" class="page-link"><i class="mdi mdi-chevron-left"></i></a>
-                                                        </li>
-                                                        <li class="page-item active">
-                                                            <a href="javascript:void(0);" class="page-link">1</a>
-                                                        </li>
-                                                        <li class="page-item">
-                                                            <a href="javascript:void(0);" class="page-link">2</a>
-                                                        </li>
-                                                        <li class="page-item">
-                                                            <a href="javascript:void(0);" class="page-link">3</a>
-                                                        </li>
-                                                        <li class="page-item">
-                                                            <a href="javascript:void(0);" class="page-link">4</a>
-                                                        </li>
-                                                        <li class="page-item">
-                                                            <a href="javascript:void(0);" class="page-link">5</a>
-                                                        </li>
-                                                        <li class="page-item">
-                                                            <a href="javascript:void(0);" class="page-link"><i class="mdi mdi-chevron-right"></i></a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!--end row-->
-                                    </div>
-                                    <!--end card-body-->
-                                </div>
-                                <!--end card-->
-                            </div>
-                            <div class="tab-pane fade" id="projects" role="tabpanel">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center mb-4">
-                                            <h5 class="card-title flex-grow-1 fw-semibold mb-0">문서</h5>
-                                            <div class="flex-shrink-0">
-                                                <button class="btn btn-danger"><i class="ri-upload-2-fill me-1 align-bottom"></i> 업로드</button>
-                                                <button class="btn btn-soft-success">다운로드</button>
-                                                <button class="btn btn-soft-info"><i class=" bx bx-trash"></i></button>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="table-responsive">
-                                                    <table class="table align-middle mb-0">
-                                                        <thead class="table-light">
-                                                            <tr>
-                                                                <th scope="col">
-                                                                    <div class="form-check">
-                                                                        <input class="form-check-input" type="checkbox" value="" id="cardtableCheck">
-                                                                        <label class="form-check-label fw-semibold" for="cardtableCheck"> 선택</label>
-                                                                    </div>
-                                                                </th>
-                                                                <th scope="col">파일명</th>
-                                                                <th scope="col">종류</th>
-                                                                <th scope="col">용량</th>
-                                                                <th scope="col">등록일</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>
-                                                                    <div class="form-check">
-                                                                        <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck01">
-                                                                        <label class="form-check-label" for="cardtableCheck01"></label>
-                                                                    </div>
-                                                                </td>
-                                                                <td>
-                                                                    <div class="d-flex align-items-center">
-                                                                        <div class="avatar-sm">
-                                                                            <div class="avatar-title bg-soft-primary text-primary rounded fs-20">
-                                                                                <i class="ri-file-zip-fill"></i>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="ms-3 flex-grow-1">
-                                                                            <h6 class="fs-15 mb-0"><a href="javascript:void(0)">Artboard-documents.zip</a>
-                                                                            </h6>
-                                                                        </div>
-                                                                    </div>
-                                                                </td>
-                                                                <td>Zip File</td>
-                                                                <td>4.57 MB</td>
-                                                                <td>2023.01.11</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>
-                                                                    <div class="form-check">
-                                                                        <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck02">
-                                                                        <label class="form-check-label" for="cardtableCheck02"></label>
-                                                                    </div>
-                                                                </td>
-                                                                <td>
-                                                                    <div class="d-flex align-items-center">
-                                                                        <div class="avatar-sm">
-                                                                            <div class="avatar-title bg-soft-danger text-danger rounded fs-20">
-                                                                                <i class="ri-file-pdf-fill"></i>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="ms-3 flex-grow-1">
-                                                                            <h6 class="fs-15 mb-0"><a href="javascript:void(0);">Bank Management System</a></h6>
-                                                                        </div>
-                                                                    </div>
-                                                                </td>
-                                                                <td>PDF File</td>
-                                                                <td>8.89 MB</td>
-                                                                <td>2023.01.11</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>
-                                                                    <div class="form-check">
-                                                                        <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck03">
-                                                                        <label class="form-check-label" for="cardtableCheck03"></label>
-                                                                    </div>
-                                                                </td>
-                                                                <td>
-                                                                    <div class="d-flex align-items-center">
-                                                                        <div class="avatar-sm">
-                                                                            <div class="avatar-title bg-soft-secondary text-secondary rounded fs-20">
-                                                                                <i class="ri-video-line"></i>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="ms-3 flex-grow-1">
-                                                                            <h6 class="fs-15 mb-0"><a href="javascript:void(0);">Tour-video.mp4</a></h6>
-                                                                        </div>
-                                                                    </div>
-                                                                </td>
-                                                                <td>MP4 File</td>
-                                                                <td>14.62 MB</td>
-                                                                <td>2023.01.11</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>
-                                                                    <div class="form-check">
-                                                                        <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck04">
-                                                                        <label class="form-check-label" for="cardtableCheck04"></label>
-                                                                    </div>
-                                                                </td>
-                                                                <td>
-                                                                    <div class="d-flex align-items-center">
-                                                                        <div class="avatar-sm">
-                                                                            <div class="avatar-title bg-soft-success text-success rounded fs-20">
-                                                                                <i class="ri-file-excel-fill"></i>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="ms-3 flex-grow-1">
-                                                                            <h6 class="fs-15 mb-0"><a href="javascript:void(0);">Account-statement.xsl</a></h6>
-                                                                        </div>
-                                                                    </div>
-                                                                </td>
-                                                                <td>XSL File</td>
-                                                                <td>2.38 KB</td>
-                                                                <td>2023.01.11</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>
-                                                                    <div class="form-check">
-                                                                        <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck05">
-                                                                        <label class="form-check-label" for="cardtableCheck05"></label>
-                                                                    </div>
-                                                                </td>
-                                                                <td>
-                                                                    <div class="d-flex align-items-center">
-                                                                        <div class="avatar-sm">
-                                                                            <div class="avatar-title bg-soft-info text-info rounded fs-20">
-                                                                                <i class="ri-folder-line"></i>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="ms-3 flex-grow-1">
-                                                                            <h6 class="fs-15 mb-0"><a href="javascript:void(0);">Project Screenshots Collection</a></h6>
-                                                                        </div>
-                                                                    </div>
-                                                                </td>
-                                                                <td>Floder File</td>
-                                                                <td>87.24 MB</td>
-                                                                <td>2023.01.11</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>
-                                                                    <div class="form-check">
-                                                                        <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck06">
-                                                                        <label class="form-check-label" for="cardtableCheck06"></label>
-                                                                    </div>
-                                                                </td>
-                                                                <td>
-                                                                    <div class="d-flex align-items-center">
-                                                                        <div class="avatar-sm">
-                                                                            <div class="avatar-title bg-soft-danger text-danger rounded fs-20">
-                                                                                <i class="ri-image-2-fill"></i>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="ms-3 flex-grow-1">
-                                                                            <h6 class="fs-15 mb-0">
-                                                                                <a href="javascript:void(0);">Velzon-logo.png</a>
-                                                                            </h6>
-                                                                        </div>
-                                                                    </div>
-                                                                </td>
-                                                                <td>PNG File</td>
-                                                                <td>879 KB</td>
-                                                                <td>2023.01.11</td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-lg-12">
-                                                <div class="mt-4">
-                                                    <ul class="pagination pagination-separated justify-content-center mb-0">
-                                                        <li class="page-item disabled">
-                                                            <a href="javascript:void(0);" class="page-link"><i class="mdi mdi-chevron-left"></i></a>
-                                                        </li>
-                                                        <li class="page-item active">
-                                                            <a href="javascript:void(0);" class="page-link">1</a>
-                                                        </li>
-                                                        <li class="page-item">
-                                                            <a href="javascript:void(0);" class="page-link">2</a>
-                                                        </li>
-                                                        <li class="page-item">
-                                                            <a href="javascript:void(0);" class="page-link">3</a>
-                                                        </li>
-                                                        <li class="page-item">
-                                                            <a href="javascript:void(0);" class="page-link">4</a>
-                                                        </li>
-                                                        <li class="page-item">
-                                                            <a href="javascript:void(0);" class="page-link">5</a>
-                                                        </li>
-                                                        <li class="page-item">
-                                                            <a href="javascript:void(0);" class="page-link"><i class="mdi mdi-chevron-right"></i></a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div><!--end card-->
-                        </div><!--end tab-pane-->
                     </div><!--end tab-content-->
                 </div><!--end col-->
             </div><!--end row-->
@@ -526,6 +139,8 @@
 
 <script type="text/javascript">
 $(function() {
+    project_detail_init('/project/detail/main/', 'project/project-detail-main.html');
+
     <!-- 목록 클릭 시 프로젝트 메인으로 이동 -->
     $("#btn_for_return_project").bind("click", function() {
         location.href='/project'
@@ -577,6 +192,26 @@ $(function() {
     });
 });
 
+<!-- 페이지 render ajax -->
+function project_detail_init(url, render_html) {
+    $.ajax({
+        type: 'POST',
+        url: url,
+        data: {
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val(),
+            'project_id': '{{project_id}}',
+            'render_html': render_html
+        },
+        success: function(data) {
+            $("#project-detail-menu").html("");
+            $("#project-detail-menu").html(data);
+        },
+        error: function(data) {
+            console.log("detail ajax fail");
+        }
+    });
+}
+
 <!-- 프로젝트 편집 초기값 지정 -->
 function project_get_detail() {
     $('#myModal').modal('show');
@@ -586,7 +221,7 @@ function project_get_detail() {
     $("#registrant_name").val('{{registrant}}');
     $("#registration_date").val('{{project_registration_date | date:"Y.m.d"}}');
     $("#project_explanation").val('{{project_explanation}}');
-    $("#project_modify_id").val('{{project_id}}');
+    $("#project_id").val('{{project_id}}');
     $("#project_modify_position_check").val('detail');
     $("#myModalLabel").html("프로젝트 편집");
     $("#btn_for_project_registration").html("저장");
