@@ -328,23 +328,25 @@ def detail_func(request, project_obj, html_position, page, projects_per_page):
     if project_obj.project_image:
         project_image = project_obj.project_image
 
+    mlmodel_pagination = ""
+    links = ""
+    documents_links = ""
+
     # 파일
     project_files = project_obj.project.all()
+    if html_position == 'project/project-detail-documents.html':
+        project_files, documents_links = paginator(page, project_files, projects_per_page)
+
     file_name = []
     file_size = []
     file_id = []
     file_registration_date = []
-    file_extension = []
     if project_files:
         for project_file in project_files:
             file_id.append(project_file.id)
             file_name.append(project_file.project_file_name)
             file_size.append(project_file.project_file_size)
             file_registration_date.append(project_file.project_file_registration_date)
-            file_path = project_file.project_file.path
-            # file_dir, file_name = os.path.split(file_path)
-            # file_name, file_ext = os.path.splitext(file_name)
-            # file_extension.append(file_ext)
     file_data = zip(file_name, file_size, file_id, file_registration_date)
 
     # recall값이 가장 높은 mlmodel (recall값이 동일할 경우 accuracy가 높은 순으로 반환)
@@ -353,9 +355,7 @@ def detail_func(request, project_obj, html_position, page, projects_per_page):
     # mlmodel 전체
     mlmodel = project_obj.project_id.order_by("-best_recall", "-best_accuracy").all()
 
-    # 페이징 처리
-    mlmodel_pagination = ""
-    links = ""
+    # mlmodel 페이징 처리
     if page is not None and projects_per_page is not None:
         mlmodel_pagination, links = paginator(page, mlmodel, projects_per_page)
 
@@ -380,7 +380,8 @@ def detail_func(request, project_obj, html_position, page, projects_per_page):
             'best_mlmodel': best_mlmodel,
             'mlmodel': mlmodel,
             'mlmodel_pagination': mlmodel_pagination,
-            'page_links': links
+            'page_links': links,
+            'documents_links': documents_links
         }
     )
 
