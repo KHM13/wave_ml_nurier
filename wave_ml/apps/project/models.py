@@ -18,3 +18,4 @@ class ProjectFile(models.Model):
     project_file_name = models.TextField(blank=False)
     project_file_size = models.TextField(blank=False)
     project_file_registration_date = models.DateTimeField(auto_now_add=True)
+    project_file_extension = models.TextField(blank=False)

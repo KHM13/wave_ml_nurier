@@ -144,17 +144,7 @@
                                         <input type="text" id="registrant_name" name="registrant_name" class="form-control" required readonly />
                                     </div>
                                 </div>
-                                <!--<div class="col-lg-4">
-                                    <div>
-                                        <label for="" class="form-label">권한</label>
-                                        <select class="form-select" id="" required>
-                                            <option selected="">총괄</option>
-                                            <option value="">Part Time</option>
-                                            <option value="">Freelance</option>
-                                            <option value="">Intership</option>
-                                        </select>
-                                    </div>
-                                </div>-->
+
                                 <div class="col-lg-6">
                                     <div>
                                         <label for="registration_date" class="form-label">등록일시</label>
@@ -231,6 +221,7 @@
     var dataFileSize = [];
     var dataFileName = [];
     var dataFileId = [];
+    var dataFileCnt = 0;
 
     $(function() {
         <!-- 유저 정보 등록 -->
@@ -289,6 +280,7 @@
             dataFileSize.length = 0;
             dataFileName.length = 0;
             dataFileId.length = 0;
+            dataFileCnt = 0;
             $("#project_file_id").val("");
             $("#project_file_size").val("");
             $("#project_file_name").val("");
@@ -304,7 +296,7 @@
                         dataTransfer.items.add(files[i]);
                         document.getElementById("project-file-list").files = dataTransfer.files;
                         <!-- 파일 미리보기 태그 생성 -->
-                        file_preview_tag_create(files[i].name, files[i].size, "");
+                        file_preview_tag_create(files[i].name, files[i].size, "", dataFileCnt);
                     }
                 }
             }
@@ -325,7 +317,7 @@
                         if(validate_file_extension(files[i])) {
                             dataTransfer.items.add(files[i]);
                             document.getElementById("project-file-list").files = dataTransfer.files;
-                            file_preview_tag_create(files[i].name, files[i].size, "");
+                            file_preview_tag_create(files[i].name, files[i].size, "", dataFileCnt);
                         }
                     }
                 }
@@ -334,27 +326,18 @@
     });
 
     <!-- 파일 미리보기 태그 생성 -->
-    function file_preview_tag_create(fileName, fileSize, fileId) {
-        var fileSizeConversion = "";
-        var fileUnit = "";
+    function file_preview_tag_create(fileName, fileSize, fileId, fileCnt) {
+        dataFileCnt = fileCnt;
         if(fileId == "") {
-            var fileInfo = getByteSize(fileSize);
-            fileSizeConversion = fileInfo[0];
-            fileUnit = fileInfo[1];
-        } else {
-            fileSizeConversion = fileSize.split('/')[0];
-            fileUnit = fileSize.split('/')[1];
+            fileSize = getByteSize(fileSize);
+            dataFileSize.push(fileSize);
+            dataFileName.push(fileName);
+            $("#project_file_size").val(dataFileSize);
+            $("#project_file_name").val(dataFileName);
         }
 
-        <!-- 파일 사이즈, 실제 파일명 세팅 -->
-        dataFileSize.push(fileSizeConversion + '/' + fileUnit);
-        dataFileName.push(fileName);
-        $("#project_file_size").val(dataFileSize);
-        $("#project_file_name").val(dataFileName);
-
         var li = document.createElement("li");
-        li.classList.add("mt-2", "rounded");
-        li.id = "project-selected-file";
+        li.classList.add("mt-2", "rounded", "project-selected-file");
 
         var htmlCode = '';
         htmlCode += '<div class="border rounded">';
@@ -367,11 +350,11 @@
         htmlCode += '<div class="flex-grow-1">';
         htmlCode += '<div class="pt-1">';
         htmlCode += '<h5 class="fs-14 mb-1">' + fileName + '</h5>';
-        htmlCode += '<p class="fs-13 text-muted mb-0">' + fileSizeConversion + ' ' + fileUnit + '</p>';
+        htmlCode += '<p class="fs-13 text-muted mb-0">' + fileSize + '</p>';
         htmlCode += '</div>';
         htmlCode += '</div>';
         htmlCode += '<div class="flex-shrink-0 ms-3" id="file-remove-btn-wrapper">';
-        htmlCode += '<button type="button" class="btn btn-sm btn-light text-muted lh-1 p-1" onclick="file_remove(this,' + fileId + ');"><i class="bx bx-x fs-4"></i></button>';
+        htmlCode += '<button type="button" class="btn btn-sm btn-light text-muted lh-1 p-1" onclick="file_remove(this, ' + dataFileCnt + ',' + fileId + ');"><i class="bx bx-x fs-4"></i></button>';
         htmlCode += '</div>';
         htmlCode += '</div>';
         htmlCode += '</div>';
@@ -381,17 +364,25 @@
     }
 
     <!-- 파일등록 미리보기 X 버튼 클릭 시 삭제 -->
-    function file_remove(input, fileId) {
+    function file_remove(input, fileCnt ,fileId) {
         var li = input.closest('li');
-        var files = document.getElementById("project-file-list").files;
-        var ul = li.parentNode;
-        var index = Array.from(ul.children).indexOf(li);
+        if(typeof fileId == "undefined" || fileId == null || fileId == "") {
+            var files = document.getElementById("project-file-list").files;
+            var ul = li.parentNode;
+            var index = Array.from(ul.children).indexOf(li);
+            var deleteIndex = index - fileCnt;
 
-        dataTransfer.items.remove(index);
-        document.getElementById("project-file-list").files = dataTransfer.files;
-        dataFileId.push(fileId);
-        $("#project_file_id").val(dataFileId);
+            dataTransfer.items.remove(deleteIndex);
+            dataFileSize.splice(deleteIndex, 1);
+            dataFileName.splice(deleteIndex, 1);
 
+            $("#project_file_size").val(dataFileSize);
+            $("#project_file_name").val(dataFileName);
+            files = dataTransfer.files;
+        } else {
+            dataFileId.push(fileId);
+            $("#project_file_id").val(dataFileId);
+        }
         li.remove();
     }
 
@@ -420,10 +411,8 @@
         for (let i = 0; i < byteUnits.length; i++) {
             size = size / 1024;
             if (size < 1024)
-            var arr = [];
-            arr[0] = size.toFixed(1);
-            arr[1] = byteUnits[i];
-            return arr;
+            var fileSize = size.toFixed(1) + "/" + byteUnits[i];
+            return fileSize;
         }
     }
 
@@ -437,43 +426,45 @@
         var project_sub_type = form_data.get('project_sub_type');
         var project_name = form_data.get('project_name');
         var registrant_name = form_data.get('registrant_name');
-        var project_file_list = form_data.get('project-file-list');
+        var project_file_list = $(".project-selected-file").length;
 
-<!--        if(typeof project_type == "undefined" || project_type == null || project_type == "") {-->
-<!--            Swal.fire({-->
-<!--                title:'대분류를 확인해주세요',-->
-<!--                icon: 'warning',-->
-<!--                confirmButtonClass: 'btn btn-primary w-xs mt-2',-->
-<!--                buttonsStyling: false-->
-<!--            })-->
-<!--            return false;-->
-<!--        } else if(typeof project_sub_type == "undefined" || project_sub_type == null || project_sub_type == "") {-->
-<!--            Swal.fire({-->
-<!--                title:'소분류를 확인해주세요',-->
-<!--                icon: 'warning',-->
-<!--                confirmButtonClass: 'btn btn-primary w-xs mt-2',-->
-<!--                buttonsStyling: false-->
-<!--            })-->
-<!--            return false;-->
-<!--        } else if(typeof project_name == "undefined" || project_name == null || project_name == "") {-->
-<!--            Swal.fire({-->
-<!--                title:'프로젝트명을 확인해주세요',-->
-<!--                icon: 'warning',-->
-<!--                confirmButtonClass: 'btn btn-primary w-xs mt-2',-->
-<!--                buttonsStyling: false-->
-<!--            })-->
-<!--            return false;-->
-<!--        } else if(typeof registrant_name == "undefined" || registrant_name == null || registrant_name == "") {-->
+        if(typeof project_type == "undefined" || project_type == null || project_type == "") {
+            Swal.fire({
+                title:'대분류를 확인해주세요',
+                icon: 'warning',
+                confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                buttonsStyling: false
+            })
+            return false;
+        } else if(typeof project_sub_type == "undefined" || project_sub_type == null || project_sub_type == "") {
+            Swal.fire({
+                title:'소분류를 확인해주세요',
+                icon: 'warning',
+                confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                buttonsStyling: false
+            })
+            return false;
+        } else if(typeof project_name == "undefined" || project_name == null || project_name == "") {
+            Swal.fire({
+                title:'프로젝트명을 확인해주세요',
+                icon: 'warning',
+                confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                buttonsStyling: false
+            })
+            return false;
+        } else if(project_file_list <= 0) {
+            Swal.fire({
+                title:'최소 1건 이상의 파일을 등록해주세요',
+                icon: 'warning',
+                confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                buttonsStyling: false
+            })
+            return false;
+        }
+<!--        &lt;!&ndash; 로그인 구현되면 주석 해제 &ndash;&gt;-->
+<!--        else if(typeof registrant_name == "undefined" || registrant_name == null || registrant_name == "") {-->
 <!--            Swal.fire({-->
 <!--                title:'등록자를 확인해주세요',-->
-<!--                icon: 'warning',-->
-<!--                confirmButtonClass: 'btn btn-primary w-xs mt-2',-->
-<!--                buttonsStyling: false-->
-<!--            })-->
-<!--            return false;-->
-<!--        } else if(typeof project_file_list == "undefined" || project_file_list == null || project_file_list == "") {-->
-<!--            Swal.fire({-->
-<!--                title:'파일등록을 확인해주세요',-->
 <!--                icon: 'warning',-->
 <!--                confirmButtonClass: 'btn btn-primary w-xs mt-2',-->
 <!--                buttonsStyling: false-->

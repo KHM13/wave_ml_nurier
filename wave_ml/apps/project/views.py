@@ -33,29 +33,10 @@ def list(request):
         # 추후 수정 필요
         user_id = 'TEST_USER'
 
-        # 정렬값
-        sort = "update"
-        if request.POST.get('sort'):
-            sort = request.POST.get('sort')
-        else:
-            if request.session.get('sort'):
-                sort = request.session.get('sort')
-
-        # 페이지
-        page = 1
-        if request.POST.get('page'):
-            page = int(request.POST.get('page'))
-        else:
-            if request.session.get('page'):
-                page = int(request.session.get('page'))
-
-        # 검색 키워드
-        keyword = None
-        if request.POST.get('keyword'):
-            keyword = request.POST.get('keyword')
-        else:
-            if request.session.get('keyword'):
-                keyword = request.session.get('keyword')
+        # 기존 조건 확인
+        sort = request.POST.get('sort', request.session.get('sort'))
+        page = validate_page(request.POST.get('page', request.session.get('page')))
+        keyword = request.POST.get('keyword', request.session.get('keyword'))
 
         # 세션 처리
         request.session['sort'] = sort
@@ -179,7 +160,7 @@ def registration(request):
         if request.FILES.get('project_image'):
             project_img = request.FILES.get('project_image');
 
-        # 프로젝트 모델 생성
+        # 프로젝트
         new_project = Project.objects.create(
             project_type=request.POST.get('project_type'),
             project_sub_type=request.POST.get('project_sub_type'),
@@ -190,7 +171,7 @@ def registration(request):
             project_image=project_img
         )
 
-        # 파일
+        # 파일 등록
         if request.FILES.getlist('project-file-list'):
             project_files = request.FILES.getlist('project-file-list')
             project_files_size = request.POST.get('project_file_size').split(',')
@@ -200,7 +181,8 @@ def registration(request):
                     project_id=new_project,
                     project_file=project_files[i],
                     project_file_name=project_files_name[i],
-                    project_file_size=project_files_size[i]
+                    project_file_size=project_files_size[i],
+                    project_file_extension=project_files_name[i].split('.')[1]
                 )
 
         return list(request)
@@ -222,13 +204,13 @@ def modify(request):
             project_files = request.FILES.getlist('project-file-list')
             project_files_size = request.POST.get('project_file_size').split(',')
             project_files_name = request.POST.get('project_file_name').split(',')
-            project_file_size_before = len(modify_project.project.all())
             for i in range(len(project_files)):
                 ProjectFile.objects.create(
                     project_id=modify_project,
                     project_file=project_files[i],
-                    project_file_name=project_files_name[project_file_size_before + i],
-                    project_file_size=project_files_size[project_file_size_before + i]
+                    project_file_name=project_files_name[i],
+                    project_file_size=project_files_size[i],
+                    project_file_extension=project_files_name[i].split('.')[1]
                 )
 
         # 파일 삭제
@@ -278,19 +260,33 @@ def clone(request):
                     project_id=new_project,
                     project_file=old_file.project_file,
                     project_file_name=old_file.project_file_name,
-                    project_file_size=old_file.project_file_size
+                    project_file_size=old_file.project_file_size,
+                    project_file_extension=old_file.project_file_name.split('.')[1]
                 )
                 new_files.append(new_file)
 
-        # 파일시스템 데이터 복제
+        # 파일시스템 데이터 복제(이미지)
+        old_img_path = old_project.project_image.path
+        file_dir_img, file_name_img = os.path.split(old_img_path)
+        file_name_img, file_ext_img = os.path.splitext(file_name_img)
+        unique_id_img = uuid.uuid4().hex
+
+        img_path_prefix = file_dir_img.split("\\")[-2] + "/" + file_dir_img.split("\\")[-1]
+        new_img_name = f"{file_name_img}_복제본_{unique_id_img}{file_ext_img}"
+        new_img_path = os.path.abspath(f"{file_dir_img}/{new_img_name}")
+        shutil.copy2(old_img_path, new_img_path)
+        new_project.project_image = f"{img_path_prefix}/{new_img_name}"
+        new_project.save()
+
+        # 파일시스템 데이터 복제(파일)
         for old_file, new_file in zip(old_files, new_files):
             old_file_path = old_file.project_file.path
             file_dir, file_name = os.path.split(old_file_path)
             file_name, file_ext = os.path.splitext(file_name)
-            unique_id = uuid.uuid4().hex
+            unique_id_file = uuid.uuid4().hex
 
             file_path_prefix = file_dir.split("\\")[-2] + "/" + file_dir.split("\\")[-1]
-            new_file_name = f"{file_name}_복제본_{unique_id}{file_ext}"
+            new_file_name = f"{file_name}_복제본_{unique_id_file}{file_ext}"
             new_file_path = os.path.abspath(f"{file_dir}/{new_file_name}")
             shutil.copy2(old_file_path, new_file_path)
             new_file.project_file = f"{file_path_prefix}/{new_file_name}"
@@ -321,107 +317,6 @@ def remove(request):
 
         return list(request)
 
-# 프로젝트 탭 관련 공통 함수
-def detail_func(request, project_obj, html_position, page, projects_per_page):
-    # 이미지
-    project_image = ""
-    if project_obj.project_image:
-        project_image = project_obj.project_image
-
-    mlmodel_pagination = ""
-    links = ""
-    documents_links = ""
-
-    # 파일
-    project_files = project_obj.project.all()
-    if html_position == 'project/project-detail-documents.html':
-        project_files, documents_links = paginator(page, project_files, projects_per_page)
-
-    file_name = []
-    file_size = []
-    file_id = []
-    file_registration_date = []
-    if project_files:
-        for project_file in project_files:
-            file_id.append(project_file.id)
-            file_name.append(project_file.project_file_name)
-            file_size.append(project_file.project_file_size)
-            file_registration_date.append(project_file.project_file_registration_date)
-    file_data = zip(file_name, file_size, file_id, file_registration_date)
-
-    # recall값이 가장 높은 mlmodel (recall값이 동일할 경우 accuracy가 높은 순으로 반환)
-    best_mlmodel = project_obj.project_id.order_by("-best_recall", "-best_accuracy").first()
-
-    # mlmodel 전체
-    mlmodel = project_obj.project_id.order_by("-best_recall", "-best_accuracy").all()
-
-    # mlmodel 페이징 처리
-    if page is not None and projects_per_page is not None:
-        mlmodel_pagination, links = paginator(page, mlmodel, projects_per_page)
-
-    return render(
-        request,
-        html_position,
-        {
-            'project_id': request.GET.get('project_id'),
-            'project_type': project_obj.project_type,
-            'project_sub_type': project_obj.project_sub_type,
-            'project_name': project_obj.project_name,
-            'registrant': project_obj.registrant,
-            'project_registration_date': project_obj.project_registration_date,
-            'project_update_date': project_obj.project_update_date,
-            'project_explanation': project_obj.project_explanation,
-            'project_image': project_image,
-            'project_file_id': file_id,
-            'project_file_name': file_name,
-            'project_file_size': file_size,
-            'project_file_cnt': len(file_id),
-            'file_data': file_data,
-            'best_mlmodel': best_mlmodel,
-            'mlmodel': mlmodel,
-            'mlmodel_pagination': mlmodel_pagination,
-            'page_links': links,
-            'documents_links': documents_links
-        }
-    )
-
-# 프로젝트 상세조회
-def detail(request):
-    if request.method == 'POST':
-        if request.POST.get('project_id'):
-            project_obj = Project.objects.get(id=request.POST.get('project_id'))
-            request.session['project_id'] = request.POST.get('project_id')
-    else:
-        if request.GET.get('project_id'):
-            project_obj = Project.objects.get(id=request.GET.get('project_id'))
-            request.session['project_id'] = request.GET.get('project_id')
-
-    return detail_func(request, project_obj, 'project/project-detail.html', None, None)
-
-# 프로젝트 상세 -> 상세
-def detail_main(request):
-    if request.method == 'POST':
-        user_id = request.session.get('project_id', request.POST.get('project_id'))
-        project_obj = Project.objects.get(id=user_id)
-
-        return detail_func(request, project_obj, request.POST.get('render_html'), request.POST.get("page", 1), None)
-
-# 프로젝트 상세 -> 모델
-def detail_model(request):
-    if request.method == 'POST':
-        user_id = request.session.get('project_id', request.POST.get('project_id'))
-        project_obj = Project.objects.get(id=user_id)
-
-        return detail_func(request, project_obj, request.POST.get('render_html'), request.POST.get("page", 1), 12)
-
-# 프로젝트 상세 -> 문서
-def detail_documents(request):
-    if request.method == 'POST':
-        user_id = request.session.get('project_id', request.POST.get('project_id'))
-        project_obj = Project.objects.get(id=user_id)
-
-        return detail_func(request, project_obj, request.POST.get('render_html'), request.POST.get("page", 1), 10)
-
 # 프로젝트 상세 엑셀파일 다운로드
 def excel_download(request):
     if request.GET.get("file_id"):
@@ -439,3 +334,142 @@ def excel_download(request):
         response['Content-Disposition'] = f'attachment; filename={encoded_file_name}'
 
         return response
+
+# 파일 데이터 반환
+def get_project_files(project_files):
+    file_name = []
+    file_size = []
+    file_id = []
+    file_registration_date = []
+    if project_files:
+        for project_file in project_files:
+            file_id.append(project_file.id)
+            file_name.append(project_file.project_file_name)
+            file_size.append(project_file.project_file_size)
+            file_registration_date.append(project_file.project_file_registration_date)
+    file_data = zip(file_name, file_size, file_id, file_registration_date)
+
+    return file_data, file_name, file_size, file_id, file_registration_date
+
+# 프로젝트 상세 -> 메인
+def detail(request):
+    if request.method == 'GET':
+        if request.GET.get('project_id'):
+            project_obj = Project.objects.get(id=request.GET.get('project_id'))
+            request.session['project_id'] = request.GET.get('project_id')
+    else:
+        if request.POST.get('project_id'):
+            project_obj = Project.objects.get(id=request.POST.get('project_id'))
+            request.session['project_id'] = request.POST.get('project_id')
+    # 이미지
+    project_image = ""
+    if project_obj.project_image:
+        project_image = project_obj.project_image
+
+    # 파일
+    project_files = project_obj.project.all()
+    file_data, file_name, file_size, file_id, file_registration_date = get_project_files(project_files)
+
+    # 모델
+    best_mlmodel = project_obj.project_id.order_by("-best_recall", "-best_accuracy").first()
+    mlmodel = project_obj.project_id.order_by("-best_recall", "-best_accuracy").all()
+
+    return render(
+        request,
+        'project/project-detail.html',
+        {
+            'project_id': request.GET.get('project_id'),
+            'project_type': project_obj.project_type,
+            'project_sub_type': project_obj.project_sub_type,
+            'project_name': project_obj.project_name,
+            'registrant': project_obj.registrant,
+            'project_registration_date': project_obj.project_registration_date,
+            'project_update_date': project_obj.project_update_date,
+            'project_explanation': project_obj.project_explanation,
+            'project_image': project_image,
+            'project_file_id': file_id,
+            'project_file_name': file_name,
+            'project_file_size': file_size,
+            'project_file_cnt': len(file_id),
+            'file_data': file_data,
+            'project_files': project_files,
+            'best_mlmodel': best_mlmodel,
+            'mlmodel': mlmodel,
+        }
+    )
+
+# 프로젝트 상세 -> 상세
+def detail_main(request):
+    if request.method == 'POST':
+        # 프로젝트
+        user_id = request.session.get('project_id', request.POST.get('project_id'))
+        project_obj = Project.objects.get(id=user_id)
+        # 파일
+        project_files = project_obj.project.all()
+        file_data, file_name, file_size, file_id, file_registration_date = get_project_files(project_files)
+        # 모델
+        best_mlmodel = project_obj.project_id.order_by("-best_recall", "-best_accuracy").first()
+        mlmodel = project_obj.project_id.order_by("-best_recall", "-best_accuracy").all()
+
+        return render(
+            request,
+            'project/project-detail-main.html',
+            {
+                'project_id': user_id,
+                'registrant': project_obj.registrant,
+                'project_registration_date': project_obj.project_registration_date,
+                'project_update_date': project_obj.project_update_date,
+                'project_explanation': project_obj.project_explanation,
+                'project_file_id': file_id,
+                'project_file_name': file_name,
+                'project_file_size': file_size,
+                'project_file_cnt': len(file_id),
+                'file_data': file_data,
+                'best_mlmodel': best_mlmodel,
+                'mlmodel': mlmodel,
+            }
+        )
+
+# 프로젝트 상세 -> 모델
+def detail_model(request):
+    if request.method == 'POST':
+        user_id = request.session.get('project_id', request.POST.get('project_id'))
+        project_obj = Project.objects.get(id=user_id)
+        mlmodel = project_obj.project_id.order_by("-best_recall", "-best_accuracy").all()
+        mlmodel_pagination, links = paginator(request.POST.get("page", 1), mlmodel, 12)
+
+        return render(
+            request,
+            request.POST.get('render_html', 'project/project-detail-main.html'),
+            {
+                'project_id': user_id,
+                'registrant': project_obj.registrant,
+                'project_registration_date': project_obj.project_registration_date,
+                'project_update_date': project_obj.project_update_date,
+                'project_explanation': project_obj.project_explanation,
+                'mlmodel_pagination': mlmodel_pagination,
+                'page_links': links
+            }
+        )
+
+# 프로젝트 상세 -> 문서
+def detail_documents(request):
+    if request.method == 'POST':
+        user_id = request.session.get('project_id', request.POST.get('project_id'))
+        project_obj = Project.objects.get(id=user_id)
+        project_files = project_obj.project.all()
+        file_pagination, links = paginator(request.POST.get("page", 1), project_files, 10)
+
+        return render(
+            request,
+            request.POST.get('render_html', 'project/project-detail-main.html'),
+            {
+                'project_id': user_id,
+                'registrant': project_obj.registrant,
+                'project_registration_date': project_obj.project_registration_date,
+                'project_update_date': project_obj.project_update_date,
+                'project_explanation': project_obj.project_explanation,
+                'file_pagination': file_pagination,
+                'page_links': links
+            }
+        )

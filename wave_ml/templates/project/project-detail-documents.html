@@ -29,13 +29,13 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% if project_file_cnt > 0 %}
-                                {% for file in file_data %}
+                                {% if file_pagination %}
+                                {% for file in file_pagination %}
                                 <tr>
                                     <td>
                                         <div class="form-check">
-                                            <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck04">
-                                            <label class="form-check-label" for="cardtableCheck04"></label>
+                                            <input class="form-check-input" name="form-check-input" type="checkbox" value="" id="cardtableCheck{{forloop.counter}}">
+                                            <label class="form-check-label" for="cardtableCheck{{forloop.counter}}"></label>
                                         </div>
                                     </td>
                                     <td>
@@ -46,13 +46,13 @@
                                                 </div>
                                             </div>
                                             <div class="ms-3 flex-grow-1">
-                                                <h6 class="fs-15 mb-0"><a href="javascript:void(0);">{{file.0}}</a></h6>
+                                                <h6 class="fs-15 mb-0"><a href="javascript:void(0);">{{file.project_file_name}}</a></h6>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>XSL File</td>
-                                    <td>{{file.1}}</td>
-                                    <td>{{file.3 | date:'Y.m.d'}}</td>
+                                    <td>{{file.project_file_extension}} File</td>
+                                    <td>{{file.project_file_size}}</td>
+                                    <td>{{file.project_file_registration_date | date:'Y.m.d'}}</td>
                                 </tr>
                                 {% endfor %}
                                 {% endif %}
@@ -83,7 +83,7 @@
 
 <script>
 $(function() {
-    project_detail_model_init();
+    project_detail_documents_init();
 
     <!-- 문서탭 체크박스 일괄선택 기능 -->
     $("#cardtableCheck").on("click", function(e) {
@@ -115,8 +115,8 @@ function go_page(page_num) {
 
 <!-- pagination 이전페이지 이동 -->
 function go_prev() {
-    if ({{mlmodel_pagination.number}} > 1) {
-        var page_num = {{mlmodel_pagination.number}} - 1;
+    if ({{file_pagination.number}} > 1) {
+        var page_num = {{file_pagination.number}} - 1;
         var url = '/project/detail/documents/';
         var render_html = 'project/project-detail-documents.html';
         get_project_list(url, render_html, page_num);
@@ -125,8 +125,8 @@ function go_prev() {
 
 <!-- pagination 다음페이지 이동 -->
 function go_next() {
-    if ({{mlmodel_pagination.number}} < {{mlmodel_pagination.paginator.num_pages}}) {
-        var page_num = {{mlmodel_pagination.number}} + 1;
+    if ({{file_pagination.number}} < {{file_pagination.paginator.num_pages}}) {
+        var page_num = {{file_pagination.number}} + 1;
         var url = '/project/detail/documents/';
         var render_html = 'project/project-detail-documents.html';
         get_project_list(url, render_html, page_num);
@@ -134,10 +134,11 @@ function go_next() {
 }
 
 <!-- 페이지 진입 초기화 설정 -->
-function project_detail_model_init() {
+function project_detail_documents_init() {
     $('#registrant_name').val('{{ user_name }}');
-    var current_page = '{{mlmodel_pagination.number}}';
-    var last_page = {{mlmodel_pagination.paginator.num_pages}};
+    var current_page = '{{file_pagination.number}}';
+    var last_page = {{file_pagination.paginator.num_pages}};
+
     if(current_page <= 1) {
         $("li.page-item").first().addClass("disabled");
         $("li.page-item").last().removeClass("disabled");

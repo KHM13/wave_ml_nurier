@@ -39,13 +39,21 @@
                         <div class="row text text-white-50 text-center">
                             <div class="col-3">
                                 <div class="p-2">
+                                    {% if mlmodel %}
                                     <h4 class="text-white mb-1">{{best_mlmodel.best_recall}}</h4>
+                                    {% else %}
+                                    <h4 class="text-white mb-1">0</h4>
+                                    {% endif %}
                                     <p class="fs-14 mb-0">Best Recall</p>
                                 </div>
                             </div>
                             <div class="col-3">
                                 <div class="p-2">
+                                    {% if mlmodel %}
                                     <h4 class="text-white mb-1">{{best_mlmodel.best_accuracy}}</h4>
+                                    {% else %}
+                                    <h4 class="text-white mb-1">0</h4>
+                                    {% endif %}
                                     <p class="fs-14 mb-0">Best Accuracy</p>
                                 </div>
                             </div>
@@ -218,8 +226,8 @@ function project_get_detail() {
     var project_file_id_arr = project_file_id.replaceAll("[", "").replaceAll("]", "").replaceAll("\'", "").split(",");
 
     <!-- file html 생성 -->
-    for(var i=0; i<'{{project_file_cnt}}'; i++) {
-        file_preview_tag_create(project_file_name_arr[i], project_file_size_arr[i], project_file_id_arr[i]);
+    for(var i=0; i<'{{project_files.count}}'; i++) {
+        file_preview_tag_create(project_file_name_arr[i], project_file_size_arr[i], project_file_id_arr[i], '{{project_files.count}}');
     }
 
     <!-- 이미지 파일 지정 -->
@@ -268,11 +276,6 @@ function project_remove() {
             });
         }
     });
-}
-
-<!-- 엑셀 파일 다운로드 -->
-function download_excel_file(file_id) {
-    location.href = '/project/excel_download?file_id=' + file_id;
 }
 
 </script>

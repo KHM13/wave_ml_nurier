@@ -225,7 +225,7 @@ function project_get_detail(project_id) {
 
             <!-- file html 생성 -->
             for(var i=0; i<data.project_file_cnt; i++) {
-                file_preview_tag_create(data.project_file_name[i], data.project_file_size[i], data.project_file_id[i]);
+                file_preview_tag_create(data.project_file_name[i], data.project_file_size[i], data.project_file_id[i], data.project_file_cnt);
             }
 
             <!-- 이미지 파일 유무 판단 -->

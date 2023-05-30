@@ -73,7 +73,13 @@
                                             </div>
                                             <div class="flex-shrink-0 ms-2">
                                                 <div class="d-flex gap-1">
-                                                    <button type="button" class="btn btn-icon text-muted btn-sm fs-18" onclick="download_excel_file({{file.2}});"><i data-feather="download"></i></button>
+                                                    <button type="button" class="btn btn-icon text-muted btn-sm fs-18" onclick="download_excel_file({{file.2}});">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download">
+                                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                            <polyline points="7 10 12 15 17 10"></polyline>
+                                                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                                                        </svg>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -159,6 +165,13 @@
         </div>
     </div>
 </div>
+
+<script>
+<!-- 엑셀 파일 다운로드 -->
+function download_excel_file(file_id) {
+    location.href = '/project/excel_download?file_id=' + file_id;
+}
+</script>
 
 <!-- swiper js -->
 <script src="{% static 'libs/swiper/swiper-bundle.min.js' %}"></script>

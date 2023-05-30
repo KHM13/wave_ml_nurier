@@ -3,6 +3,7 @@
     <div class="card">
         <div class="card-body">
             <div class="row">
+                {% if mlmodel_pagination %}
                 {% for model in mlmodel_pagination %}
                 <div class="col-xxl-3 col-sm-6">
                     <div class="card profile-project-card shadow-none">
@@ -55,6 +56,15 @@
                         </ul>
                     </div>
                 </div>
+                {% else %}
+                <h5 class="card-title fw-semibold">모델</h5>
+                <div class="text-center mt-3 pt-3">
+                <a href="javascript:void(0)" class="btn btn-soft-dark" data-bs-toggle="modal" data-bs-target="#dataCreateModal">
+                    <i class="bx bx-layer-plus display-6 text-white"></i>
+                </a>
+                <p class="mt-3">버튼을 선택해서 새로운 작업을 시작해보세요.</p>
+                </div>
+                {% endif %}
             </div>
             <!--end row-->
         </div>
@@ -100,6 +110,7 @@ function project_detail_model_init() {
     $('#registrant_name').val('{{ user_name }}');
     var current_page = '{{mlmodel_pagination.number}}';
     var last_page = {{mlmodel_pagination.paginator.num_pages}};
+
     if(current_page <= 1) {
         $("li.page-item").first().addClass("disabled");
         $("li.page-item").last().removeClass("disabled");
