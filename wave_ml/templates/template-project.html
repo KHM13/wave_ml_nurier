@@ -88,7 +88,7 @@
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <div class="text-center mb-4 mt-n3 pt-2">
+                            <div class="text-center mb-4 mt-n3 pt-2 file-upload-hide-tag">
                                 <div class="position-relative d-inline-block">
                                     <div class="position-absolute bottom-0 end-0">
                                         <label for="companylogo-image-input" class="mb-0" data-bs-toggle="tooltip" data-bs-placement="right" title="Select Image">
@@ -113,7 +113,7 @@
                                 </div>
                             </div>
 
-                            <div class="row g-3">
+                            <div class="row g-3 file-upload-hide-tag">
                                 <div class="col-lg-6">
                                     <div>
                                         <label for="select_for_project_type" class="form-label">대분류</label>
@@ -172,9 +172,8 @@
                                        accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, .csv" multiple="multiple">
                                 <input type="file" id="project-file-list" name="project-file-list" class="d-sm-none" multiple="multiple">
                             </div>
-
-                            <ul id="project-selected-file-list" class="list-unstyled mb-0">
-                            </ul>
+                                <ul id="project-selected-file-list" class="list-unstyled mb-0">
+                                </ul>
                         </div>
 
                         <div class="modal-footer">
@@ -191,6 +190,7 @@
             <input type="hidden" id="project_file_id" name="project_file_id" value="">
             <input type="hidden" id="project_file_size" name="project_file_size" value="">
             <input type="hidden" id="project_file_name" name="project_file_name" value="">
+            <input type="hidden" id="project_file_cnt" name="project_file_cnt" value="">
         </form>
         <!-- 프로젝트 아이디 -->
         <input type="hidden" id="project_id" name="project_id" value="">
@@ -221,7 +221,6 @@
     var dataFileSize = [];
     var dataFileName = [];
     var dataFileId = [];
-    var dataFileCnt = 0;
 
     $(function() {
         <!-- 유저 정보 등록 -->
@@ -250,11 +249,21 @@
             $("#myModalLabel").html("프로젝트 등록");
             $("#btn_for_project_registration").html("등록");
 
-            <!-- 등록한 파일 초기화 -->
+            <!-- 등록한 파일 HTML 초기화 -->
             var file_size = $("#project-selected-file-list li").length;
             if(file_size > 0) {
                 $("#project-selected-file-list").html("");
             }
+
+            <!-- 파일관련 데이터 초기화 -->
+            dataTransfer.clearData();
+            dataFileSize.length = 0;
+            dataFileName.length = 0;
+            dataFileId.length = 0;
+            $("#project_file_id").val("");
+            $("#project_file_size").val("");
+            $("#project_file_name").val("");
+            $("#project_file_cnt").val("");
         });
 
         <!-- 모달 시작 시 이벤트 -->
@@ -274,16 +283,6 @@
             <!-- 등록자, 등록일시 수정 불가 지정 -->
             $("#registration_date").attr("disabled", true);
             $("#registrant_name").attr("disabled", true);
-
-            <!-- 파일 관련 설정값 초기화 -->
-            dataTransfer.clearData();
-            dataFileSize.length = 0;
-            dataFileName.length = 0;
-            dataFileId.length = 0;
-            dataFileCnt = 0;
-            $("#project_file_id").val("");
-            $("#project_file_size").val("");
-            $("#project_file_name").val("");
         });
 
         <!-- 파일 등록 (선택 후 열기) -->
@@ -296,7 +295,7 @@
                         dataTransfer.items.add(files[i]);
                         document.getElementById("project-file-list").files = dataTransfer.files;
                         <!-- 파일 미리보기 태그 생성 -->
-                        file_preview_tag_create(files[i].name, files[i].size, "", dataFileCnt);
+                        file_preview_tag_create(files[i].name, files[i].size, "");
                     }
                 }
             }
@@ -317,7 +316,7 @@
                         if(validate_file_extension(files[i])) {
                             dataTransfer.items.add(files[i]);
                             document.getElementById("project-file-list").files = dataTransfer.files;
-                            file_preview_tag_create(files[i].name, files[i].size, "", dataFileCnt);
+                            file_preview_tag_create(files[i].name, files[i].size, "");
                         }
                     }
                 }
@@ -326,8 +325,7 @@
     });
 
     <!-- 파일 미리보기 태그 생성 -->
-    function file_preview_tag_create(fileName, fileSize, fileId, fileCnt) {
-        dataFileCnt = fileCnt;
+    function file_preview_tag_create(fileName, fileSize, fileId) {
         if(fileId == "") {
             fileSize = getByteSize(fileSize);
             dataFileSize.push(fileSize);
@@ -354,7 +352,7 @@
         htmlCode += '</div>';
         htmlCode += '</div>';
         htmlCode += '<div class="flex-shrink-0 ms-3" id="file-remove-btn-wrapper">';
-        htmlCode += '<button type="button" class="btn btn-sm btn-light text-muted lh-1 p-1" onclick="file_remove(this, ' + dataFileCnt + ',' + fileId + ');"><i class="bx bx-x fs-4"></i></button>';
+        htmlCode += '<button type="button" id="file-remove-btn-' + fileId + '" class="btn btn-sm btn-light text-muted lh-1 p-1" onclick="file_remove(this, ' + fileId + ');"><i class="bx bx-x fs-4"></i></button>';
         htmlCode += '</div>';
         htmlCode += '</div>';
         htmlCode += '</div>';
@@ -364,13 +362,13 @@
     }
 
     <!-- 파일등록 미리보기 X 버튼 클릭 시 삭제 -->
-    function file_remove(input, fileCnt ,fileId) {
+    function file_remove(input ,fileId) {
         var li = input.closest('li');
         if(typeof fileId == "undefined" || fileId == null || fileId == "") {
             var files = document.getElementById("project-file-list").files;
             var ul = li.parentNode;
             var index = Array.from(ul.children).indexOf(li);
-            var deleteIndex = index - fileCnt;
+            var deleteIndex = index - $("#project_file_cnt").val();
 
             dataTransfer.items.remove(deleteIndex);
             dataFileSize.splice(deleteIndex, 1);

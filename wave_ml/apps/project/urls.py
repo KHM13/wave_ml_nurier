@@ -26,4 +26,8 @@ urlpatterns = [
     path('detail/documents/', views.detail_documents, name="project-detail-documents"),
     # 프로젝트 상세 첨부파일(xls, xlsx, csv) 다운로드
     path('excel_download/', views.excel_download, name="excel-download"),
+    # 프로젝트 상세 첨부파일(xls, xlsx, csv) 일괄 다운로드
+    path('multiple_excel_download/', views.multiple_excel_download, name="multiple-excel-download"),
+    # 프로젝트 상세 첨부파일(xls, xlsx, csv) 삭제
+    path('multiple_excel_remove/', views.multiple_excel_remove, name="multiple_excel_remove"),
 ]

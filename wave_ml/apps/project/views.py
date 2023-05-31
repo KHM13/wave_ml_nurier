@@ -1,8 +1,10 @@
+import io
 import json
 import os
 import shutil
 import urllib
 import uuid
+import zipfile
 
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -12,6 +14,9 @@ from django.shortcuts import render
 from .models import Project, ProjectFile
 
 # 프로젝트 메인 첫페이지
+from ..mlmodel.models import MlModel
+
+
 def main(request):
     sort = request.session.get('sort', 'update')
     page = validate_page(request.session.get('page', 1))
@@ -265,6 +270,17 @@ def clone(request):
                 )
                 new_files.append(new_file)
 
+        # 모델 복제
+        old_mlmodels = old_project.project_id.all()
+        if old_mlmodels:
+            for old_mlmodel in old_mlmodels:
+                MlModel.objects.create(
+                    project_id=new_project,
+                    model_name=old_mlmodel.model_name,
+                    best_accuracy=old_mlmodel.best_accuracy,
+                    best_recall=old_mlmodel.best_recall
+                )
+
         # 파일시스템 데이터 복제(이미지)
         old_img_path = old_project.project_image.path
         file_dir_img, file_name_img = os.path.split(old_img_path)
@@ -317,23 +333,68 @@ def remove(request):
 
         return list(request)
 
+# 프로젝트 단일 엑셀파일 다운로드
+def single_excel_file_download(file_id):
+    file_obj = ProjectFile.objects.get(id=file_id)
+    # 파일 절대 경로 반환
+    file_path = file_obj.project_file.path
+    # 파일 다운로드 응답 생성
+    response = FileResponse(open(file_path, 'rb'))
+    # 다운로드할 파일의 MIME 타입을 설정
+    response['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    # 한글, 특수문자 인코딩
+    encoded_file_name = urllib.parse.quote(file_obj.project_file_name)
+    # 다운로드할 파일의 이름 설정
+    response['Content-Disposition'] = f'attachment; filename={encoded_file_name}'
+
+    return response
+
 # 프로젝트 상세 엑셀파일 다운로드
 def excel_download(request):
-    if request.GET.get("file_id"):
-        file_id = request.GET.get("file_id")
-        file_obj = ProjectFile.objects.get(id=file_id)
-        # 파일 절대 경로 반환
-        file_path = file_obj.project_file.path
-        # 파일 다운로드 응답 생성
-        response = FileResponse(open(file_path, 'rb'))
-        # 다운로드할 파일의 MIME 타입을 설정
-        response['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        # 한글, 특수문자 인코딩
-        encoded_file_name = urllib.parse.quote(file_obj.project_file_name)
-        # 다운로드할 파일의 이름 설정
-        response['Content-Disposition'] = f'attachment; filename={encoded_file_name}'
+    if request.method == 'GET':
+        if request.GET.get("file_id"):
+            file_id = request.GET.get("file_id")
+            return single_excel_file_download(file_id)
 
-        return response
+# 프로젝트 상세 엑셀파일 일괄 다운로드
+def multiple_excel_download(request):
+    if request.method == 'GET':
+        if request.GET.get("file_id_list"):
+            file_id_list = json.loads(request.GET.get("file_id_list"))
+            in_memory_zip = io.BytesIO()
+            file_cnt = len(file_id_list) - 1
+            encoded_file_name = ""
+
+            if len(file_id_list) > 1:
+                with zipfile.ZipFile(in_memory_zip, 'w') as zip_file:
+                    for index in range(len(file_id_list)):
+                        file_obj = ProjectFile.objects.get(id=file_id_list[index])
+
+                        if int(index) == 0:
+                            encoded_file_name = file_obj.project_file_name
+                        zip_file.write(file_obj.project_file.path, arcname=file_obj.project_file_name)
+
+                file_name = urllib.parse.quote("{} 외 {}건.zip".format(encoded_file_name, file_cnt))
+                in_memory_zip.seek(0)
+                response = HttpResponse(content_type='application/zip')
+                response['Content-Disposition'] = f'attachment; filename=' + file_name
+                response.write(in_memory_zip.read())
+                return response
+            else:
+                return single_excel_file_download(file_id_list[0])
+
+# 엑셀 파일 일괄 삭제
+def multiple_excel_remove(request):
+    if request.method == 'POST':
+        if request.POST.get('file_id_list'):
+            file_id_list = json.loads(request.POST.get("file_id_list"))
+            for index in range(len(file_id_list)):
+                remove_file = ProjectFile.objects.get(id=file_id_list[index])
+                if os.path.isfile(remove_file.project_file.path):
+                    os.remove(remove_file.project_file.path)
+                    remove_file.delete()
+
+        return detail_documents(request)
 
 # 파일 데이터 반환
 def get_project_files(project_files):
@@ -470,6 +531,7 @@ def detail_documents(request):
                 'project_update_date': project_obj.project_update_date,
                 'project_explanation': project_obj.project_explanation,
                 'file_pagination': file_pagination,
-                'page_links': links
+                'page_links': links,
+                'project_file_cnt': len(project_files)
             }
         )

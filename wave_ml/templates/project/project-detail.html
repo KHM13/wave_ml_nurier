@@ -70,7 +70,7 @@
                                             <i class="ri-more-2-fill fs-14 text-white"></i>
                                         </a>
                                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuLink2">
-                                            <li><a class="dropdown-item" href="javascript:project_get_detail()"><i class="ri-pencil-fill align-bottom me-2 text-muted"></i> 편집</a></li>
+                                            <li><a class="dropdown-item" href="javascript:project_get_detail_detail()"><i class="ri-pencil-fill align-bottom me-2 text-muted"></i> 편집</a></li>
                                             <li><a class="dropdown-item" href="javascript:project_remove()"><i class="ri-delete-bin-6-fill align-bottom me-2 text-muted"></i> 삭제</a></li>
                                         </ul>
                                     </div>
@@ -86,7 +86,7 @@
                     <div>
                         <div class="d-flex">
                             <!-- Nav tabs -->
-                            <ul class="nav nav-pills animation-nav profile-nav gap-2 gap-lg-3 flex-grow-1" role="tablist">
+                            <ul class="nav nav-pills animation-nav profile-nav gap-2 gap-lg-3 flex-grow-1" role="tablist" id="nav_tabs">
                                 <li class="nav-item">
                                     <a class="nav-link fs-14 active" onclick="project_detail_init('/project/detail/main/', 'project/project-detail-main.html')" data-bs-toggle="tab" role="tab" style="cursor:pointer;">
                                         <i class="ri-airplay-fill d-inline-block d-md-none"></i> <span class="d-none d-md-inline-block">상세</span>
@@ -98,7 +98,7 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link fs-14" onclick="project_detail_init('/project/detail/documents/', 'project/project-detail-documents.html')" data-bs-toggle="tab" role="tab" style="cursor:pointer;">
+                                    <a class="nav-link fs-14" id="project-detail-documents" onclick="project_detail_init('/project/detail/documents/', 'project/project-detail-documents.html')" data-bs-toggle="tab" role="tab" style="cursor:pointer;">
                                         <i class="ri-price-tag-line d-inline-block d-md-none"></i> <span class="d-none d-md-inline-block">문서</span>
                                     </a>
                                 </li>
@@ -159,6 +159,11 @@ $(function() {
         $("#project_id").val("");
     });
 
+    <!-- 모달 종료 시 이벤트 -->
+    $("#myModal").on("hidden.bs.modal", function(e){
+        $(".file-upload-hide-tag").show();
+    });
+
     <!-- 등록 클릭 시 데이터전처리 페이지로 이동 -->
     $("#btn_for_modal_data_create").on("click", function(e) {
         var project_name = $("#project_id").val();
@@ -201,48 +206,53 @@ function project_detail_init(url, render_html) {
 }
 
 <!-- 프로젝트 편집 초기값 지정 -->
-function project_get_detail() {
-    $('#myModal').modal('show');
-    $("#select_for_project_type").val('{{project_type}}');
-    $("#select_for_project_sub_type").val('{{project_sub_type}}');
-    $("#project_name").val('{{project_name}}');
-    $("#registrant_name").val('{{registrant}}');
-    $("#registration_date").val('{{project_registration_date | date:"Y.m.d"}}');
-    $("#project_explanation").val('{{project_explanation}}');
-    $("#project_id").val('{{project_id}}');
-    $("#project_modify_position_check").val('detail');
-    $("#myModalLabel").html("프로젝트 편집");
-    $("#btn_for_project_registration").html("저장");
+function project_get_detail_detail() {
+    $.ajax({
+        type: 'POST',
+        url: '/project/project_get_detail/',
+        data: {
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val(),
+            'project_id': '{{project_id}}'
+        },
+        success: function(data) {
+            <!-- Form에 필요한 값 세팅 -->
+            $("#myModalLabel").html("프로젝트 편집");
+            $("#btn_for_project_registration").html("저장");
+            $("#select_for_project_type").val(data.project_type);
+            $("#select_for_project_sub_type").val(data.project_sub_type);
+            $("#project_name").val(data.project_name);
+            $("#registrant_name").val(data.registrant);
+            $("#registration_date").val(data.project_registration_date);
+            $("#project_explanation").val(data.project_explanation);
+            $("#project_id").val(data.project_id);
+            $("#project_modify_position_check").val('detail');
+            $("#project_file_cnt").val(data.project_file_cnt);
 
-    <!-- 엔티티 코드 변환 -->
-    var parser = new DOMParser();
-    var project_file_name = parser.parseFromString('{{project_file_name}}', 'text/html').body.textContent;
-    var project_file_size = parser.parseFromString('{{project_file_size}}', 'text/html').body.textContent;
-    var project_file_id = parser.parseFromString('{{project_file_id}}', 'text/html').body.textContent;
+            <!-- file html 생성 -->
+            for(var i=0; i<data.project_file_cnt; i++) {
+                file_preview_tag_create(data.project_file_name[i], data.project_file_size[i], data.project_file_id[i]);
+            }
 
-    <!-- replace로 필요없는 문자 제거 -->
-    var project_file_name_arr = project_file_name.replaceAll("[", "").replaceAll("]", "").replaceAll("\'", "").split(",");
-    var project_file_size_arr = project_file_size.replaceAll("[", "").replaceAll("]", "").replaceAll("\'", "").split(",");
-    var project_file_id_arr = project_file_id.replaceAll("[", "").replaceAll("]", "").replaceAll("\'", "").split(",");
+            <!-- 이미지 파일 유무 판단 -->
+            if(typeof data.project_image == "undefined" || data.project_image == null || data.project_image == "") {
+                $("#img-spot").attr('src', "");
+                $("#img-exists").hide();
+                $("#img-none").show();
+                $("#project_modify_img_check").val("");
+            } else {
+                $("#img-none").hide();
+                $("#img-exists").show();
+                $("#project_modify_img_check").val('true');
+                $("#img-spot").attr('src', data.project_image);
+            }
 
-    <!-- file html 생성 -->
-    for(var i=0; i<'{{project_files.count}}'; i++) {
-        file_preview_tag_create(project_file_name_arr[i], project_file_size_arr[i], project_file_id_arr[i], '{{project_files.count}}');
-    }
-
-    <!-- 이미지 파일 지정 -->
-    var project_img = '{{project_image.url}}';
-    if(project_img == "undefined" || project_img == null || project_img == "") {
-        $("#img-spot").attr('src', "");
-        $("#img-exists").hide();
-        $("#img-none").show();
-        $("#project_modify_img_check").val("");
-    } else {
-        $("#img-none").hide();
-        $("#img-exists").show();
-        $("#project_modify_img_check").val('true');
-        $("#img-spot").attr('src', project_img);
-    }
+            <!-- Modal 수동으로 띄우기 -->
+            $('#myModal').modal('show');
+        },
+        error: function(data) {
+            console.log("project_get_detail error");
+        }
+    });
 }
 
 <!-- 프로젝트 삭제 -->
