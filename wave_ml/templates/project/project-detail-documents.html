@@ -47,7 +47,7 @@
                                                 </div>
                                             </div>
                                             <div class="ms-3 flex-grow-1">
-                                                <h6 class="fs-15 mb-0"><a href="javascript:void(0);">{{file.project_file_name}}</a></h6>
+                                                <h6 class="fs-15 mb-0"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#selectModelToNext">{{file.project_file_name}}</a></h6>
                                             </div>
                                         </div>
                                     </td>
@@ -124,7 +124,7 @@ $(function() {
                 icon: 'warning',
                 confirmButtonClass: 'btn btn-primary w-xs mt-2',
                 buttonsStyling: false
-            })
+            });
             return false;
         }
     });

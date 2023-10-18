@@ -16,8 +16,6 @@
     <link href="{% static 'libs/jsvectormap/css/jsvectormap.min.css' %}" rel="stylesheet" type="text/css" />
     <!-- Swiper slider css -->
     <link href="{% static 'libs/swiper/swiper-bundle.min.css' %}" rel="stylesheet" type="text/css" />
-    <!-- Sweet Alert css -->
-    <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
     <!-- nouisliderribute css -->
     <link rel="stylesheet" href="{% static 'libs/nouislider/nouislider.min.css' %}" />
 
@@ -116,8 +114,8 @@
                     <div class="modal-body">
                         <div class="row g-3">
                             <div class="col-lg-12">
-                                <label for="mlmodel_id" class="form-label">모델명</label>
-                                <input type="text" id="mlmodel_id" class="form-control" readonly />
+                                <label for="mlmodel_name" class="form-label">모델명</label>
+                                <input type="text" id="mlmodel_name" class="form-control" readonly disabled />
                             </div>
 
                             <div class="col-lg-6">
@@ -129,7 +127,7 @@
                             <div class="col-lg-6">
                                 <div>
                                     <label class="create_date">생성일</label>
-                                    <input type="text" class="form-control flatpickr-input" data-provider="flatpickr" data-date-format="Y.m.d" data-default-date="today" id="create_date" placeholder="" readonly>
+                                    <input type="text" class="form-control flatpickr-input" data-provider="flatpickr" data-date-format="Y.m.d" data-default-date="today" id="create_date" placeholder="" disabled>
                                 </div>
                             </div>
                         </div>
@@ -190,9 +188,6 @@
 
     <!-- Swiper slider js -->
     <script src="{% static 'libs/swiper/swiper-bundle.min.js' %}"></script>
-
-    <!-- Sweet Alerts js -->
-    <script src="{% static 'libs/sweetalert2/sweetalert2.min.js' %}"></script>
 
     <!-- nouisliderribute js -->
     <script src="{% static 'libs/nouislider/nouislider.min.js' %}"></script>

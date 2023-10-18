@@ -1,5 +1,8 @@
 {% load static %}
 
+<!-- Sweet Alert css -->
+<link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+
 <!-- ========== App Menu ========== -->
 <div class="app-menu navbar-menu">
     <!-- LOGO -->
@@ -10,16 +13,18 @@
                 <img src="{% static 'images/logo-sm.png' %}" alt="" height="30">
             </span>
             <span class="logo-lg">
-                <img src="{% static 'images/logo-dark.png' %}" alt="" height="17">
+                <img src="{% static 'images/logo-sm.png' %}" alt="" height="30">
+                <img src="{% static 'images/logo-dark.png' %}" alt="" height="17" style="padding-left:10px;">
             </span>
         </a>
         <!-- Light Logo-->
-        <a href="index.html" class="logo logo-light">
+        <a href="/project" class="logo logo-light">
             <span class="logo-sm">
                 <img src="{% static 'images/logo-sm.png' %}" alt="" height="30">
             </span>
             <span class="logo-lg">
-                <img src="{% static 'images/logo-light.png' %}" alt="" height="17">
+                <img src="{% static 'images/logo-sm.png' %}" alt="" height="30">
+                <img src="{% static 'images/logo-light.png' %}" alt="" height="17" style="padding-left:10px;">
             </span>
         </a>
         <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover" id="vertical-hover">
@@ -40,13 +45,13 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="/preprocess">
+                    <a class="nav-link menu-link" onclick="javascript:validation_before_load('/preprocess');">
                         <i class='mdi mdi-graphql'></i> <span data-key="t-apps">데이터전처리</span>
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="/learning">
+                    <a class="nav-link menu-link" onclick="javascript:validation_before_load('/learning');">
                         <i data-feather="codepen"></i> <span>모델학습</span>
                     </a>
                 </li>
@@ -70,3 +75,47 @@
     <div class="sidebar-background"></div>
 </div>
 <!-- Left Sidebar End -->
+
+<!-- Sweet Alerts js -->
+<script src="{% static 'libs/sweetalert2/sweetalert2.min.js' %}"></script>
+<script type="text/javascript">
+function validation_before_load(url) {
+    var confirmEx = function ( message, callback ) {
+        Swal.fire({
+            title: message,
+            icon: 'warning',
+            confirmButtonClass: 'btn btn-primary w-xs mt-2',
+            buttonsStyling: false
+        }).then(function (result) {
+            if ( result.isConfirmed ) {
+                if ( callback ) { callback(); }
+            }
+        });
+    }
+    $.ajax({
+        type: 'GET',
+        url: '/learning/validate',
+        data: {
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+        },
+        success: function(data) {
+            if( data.result == "error_project" ) {
+                confirmEx(data.message, function() {
+                    location.href = "/project";
+                });
+            } else if ( data.result == "error_mlmodel" ) {
+                confirmEx(data.message, function() {
+                    location.href = "/project/detail?project_id=" + data.project_id;
+                });
+            } else {
+                sessionStorage.setItem("processTab", "");
+                sessionStorage.setItem("datasetTab", "");
+                location.href = url;
+            }
+        },
+        error: function(data) {
+            console.log("Ajax error");
+        }
+    });
+}
+</script>

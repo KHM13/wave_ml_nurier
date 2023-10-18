@@ -52,7 +52,6 @@
 
 <!-- Dashboard init -->
 <script src="{% static 'js/pages/dashboard-ecommerce.init.js' %}"></script>
-<script src="{% static 'js/pages/page-preprocess.js' %}"></script>
 <script type="text/javascript">
     $(function() {
         select_column("{{ column }}");
@@ -60,8 +59,12 @@
         $("#search-form").keyup(function() {
             var k = $(this).val();
             $("#data-column-list > li").hide();
-            var temp = $("#data-column-list > li > a > div > h5:contains('" + k + "')");
-            $(temp).closest("li").show();
+            $("#data-column-list > li > a > div > h5").each(function() {
+                if ( $(this).text().toLowerCase().includes(k.toLowerCase()) ) {
+                    $(this).closest("li").show();
+                }
+            });
         });
     });
 </script>
+<script src="{% static 'js/pages/page-preprocess.js' %}"></script>

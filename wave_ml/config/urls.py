@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from wave_ml.apps.project import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -10,6 +11,7 @@ urlpatterns = [
     path('learning/', include('wave_ml.apps.learning.urls')),
     path('evaluation/', include('wave_ml.apps.mlmodel.urls')),
     path('detection/', include('wave_ml.apps.detection.urls')),
+    path('', views.main),
 ]
 
 if settings.DEBUG:

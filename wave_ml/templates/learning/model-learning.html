@@ -4,6 +4,7 @@
 {% block title %}모델 학습{% endblock %}
 
 {% block content %}
+{% csrf_token %}
     <div class="page-content">
         <div class="container-fluid">
             <div class="row g-2">
@@ -67,8 +68,9 @@
                 <div class="col-xl-3 col-lg-4">
                     <div class="card card-height-100">
                         <div class="card-body">
-                            <div class="mb-3">
-                                <button class="btn btn-primary w-100" id="btn_for_model_save">저장</button>
+                            <div class="mb-3 d-flex">
+                                <button class="btn btn-outline-primary w-50 m-2" id="btn_for_model_save">저장</button>
+                                <button class="btn btn-primary w-50 m-2" id="btn_for_model_learning">분석</button>
                             </div>
 
                             <div class="mb-3">
@@ -127,8 +129,11 @@ $(function() {
     $("#input_for_search").keyup(function() {
         var k = $(this).val();
         $("button.nav-link").hide();
-        var temp = $("button.nav-link:contains('" + k + "')");
-        $(temp).show();
+        $("button.nav-link").each(function() {
+            if ( $(this).text().toLowerCase().includes(k.toLowerCase()) ) {
+                $(this).show();
+            }
+        });
     });
 
     $("#btn_for_model_save").on("click", function() {
@@ -157,7 +162,8 @@ $(function() {
             type: 'POST',
             url: '/learning/model_save',
             data: {
-                'model_list': JSON.stringify(model_list)
+                'model_list': JSON.stringify(model_list),
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
             },
             success: function(data) {
                 if( data.result == "success" ) {
@@ -166,7 +172,9 @@ $(function() {
                         icon: 'success',
                         confirmButtonClass: 'btn btn-primary w-xs mt-2',
                         buttonsStyling: false
-                    })
+                    }).then(function () {
+                        alert_model_learning("저장한 모델들을 분석합니다.");
+                    });
                 } else {
                     Swal.fire({
                         title:'문제가 발생하여 저장되지 않았습니다.\n다시 시도해주세요.',
@@ -177,6 +185,10 @@ $(function() {
                 }
             }
         });
+    });
+
+    $("#btn_for_model_learning").on("click", function() {
+        alert_model_learning("저장되어있는 모델 정보로 분석합니다.");
     });
 });
 
@@ -190,7 +202,8 @@ function show_detail(algorithm) {
         type: 'POST',
         url: '/learning/detail',
         data: {
-            'algorithm': algorithm
+            'algorithm': algorithm,
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
         },
         success: function(data) {
             $("#div_for_learning_detail").html("");
@@ -204,6 +217,59 @@ function sorting_text() {
         $(this).children().detach().sort(function(a, b) {
             return $(a).text().trim().localeCompare($(b).text().trim());
         }).appendTo($(this));
+    });
+}
+
+function alert_model_learning(message) {
+    Swal.fire({
+        title: message,
+        text: '분석시 데이터양에 따라 많은 시간이 소요될수도 있습니다. 지금 분석하시겠습니까?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonClass: 'btn btn-primary w-xs mt-2',
+        cancelButtonClass: 'btn btn-light w-xs me-2 mt-2',
+        confirmButtonText: '시작',
+        cancelButtonText: '취소',
+        reverseButtons: true, // 버튼 순서 거꾸로
+        buttonsStyling: false,
+        showCloseButton: true,
+        customClass: 'fs-5'
+    }).then(function (result) {
+        if ( result.isConfirmed ) {
+            learning_models();
+        } else if ( result.isDismissed ) {
+            return false;
+        }
+    });
+}
+
+function learning_models() {
+    $.ajax({
+        type: 'POST',
+        url: '/learning/learning',
+        data: {
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+        },
+        success: function(data) {
+            if( data.result == "success" ) {
+                Swal.fire({
+                    title:'분석이 완료되었습니다.',
+                    icon: 'success',
+                    confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                    buttonsStyling: false,
+                    confirmButtonText: '분석결과'
+                }).then(function () {
+                    location.href = "/evaluation";
+                });
+            } else {
+                Swal.fire({
+                    title:'문제가 발생하여 저장되지 않았습니다.\n다시 시도해주세요.',
+                    icon: 'error',
+                    confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                    buttonsStyling: false
+                })
+            }
+        }
     });
 }
 

@@ -11,6 +11,7 @@ class Process(models.Model):
     input_value = models.TextField()
     replace_value = models.TextField()
     sort = models.IntegerField()
+    create_date = models.DateTimeField(auto_now_add=True)
 
     def get_process_list(self, mlmodel_id, column_name):
         result = self.__class__.objects.filter(mlmodel_id=mlmodel_id, column_name=column_name).order_by('sort').values()
@@ -36,14 +37,15 @@ class Process(models.Model):
 
 class MLSampling(models.Model):
     mlmodel_id = models.ForeignKey(MlModel, related_name="mlmodel_info", on_delete=models.CASCADE, to_field="id", db_column="mlmodel_id")
-    dataset_name = models.TextField(blank=True, max_length=30)
+    dataset_name = models.TextField(blank=True, null=False, max_length=30)
     feature_algorithm = models.TextField()
-    columns = models.TextField(blank=False)
+    columns = models.TextField()
     column_size = models.IntegerField(blank=False, default=0)
     split_algorithm = models.TextField()
     split_rate = models.IntegerField(blank=False)
     k_value = models.IntegerField(blank=False, default=0)
     sampling_algorithm = models.TextField()
+    target = models.TextField(blank=False)
 
     def get_feature_columns(self, mlmodel_id):
         model = self.__class__.objects.filter(mlmodel_id=mlmodel_id).values()
@@ -68,3 +70,12 @@ class MLSampling(models.Model):
             return model.last()
         else:
             return {}
+
+
+class MLDatasetFile(models.Model):
+    mlmodel_id = models.ForeignKey(MlModel, related_name="mlmodel_rel_id", on_delete=models.CASCADE, to_field="id", db_column="mlmodel_id")
+    dataset_name = models.TextField(blank=False, null=False)
+    create_date = models.DateTimeField(auto_now_add=True)
+    dataset_file = models.TextField(unique=True, null=False, blank=False)
+    dataset_file_extension = models.TextField(blank=False, default="csv")
+

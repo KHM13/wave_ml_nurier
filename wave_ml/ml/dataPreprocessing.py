@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import statsmodels.api as sm
 import time
-
 from pandas import DataFrame
 from collections import Counter
 from imblearn.under_sampling import RandomUnderSampler, TomekLinks
@@ -14,6 +13,10 @@ from sklearn.preprocessing import MinMaxScaler, RobustScaler, StandardScaler, No
 
 
 # 데이터 타입 변경
+from pyspark.ml.evaluation import RegressionEvaluator
+from pyspark.ml.tuning import TrainValidationSplit, CrossValidator
+
+
 def data_type_control(df, column, data_type):
     print(f"column : {column}, data_type : {data_type}")
 
@@ -82,9 +85,6 @@ def process_outlier(df, column, process, input_value):
         max = df[column].max()
         min = df[column].min()
 
-        print(df_data.index)
-        print(df_data.index.min())
-        print(df_data.index.max())
         for index in outlier_index_list:
             value = df_data[column].iloc[int(index)]
             if value >= max:
@@ -108,7 +108,7 @@ def process_outlier(df, column, process, input_value):
 
 
 # 문자열 변환
-def replace_value(df, column, work_input, replace_input):
+def fs_replace_value(df, column, work_input, replace_input):
     df_data = df.copy()
     df_data = df_data.replace({column: work_input}, replace_input)
     return df_data
@@ -151,7 +151,7 @@ def process_apply(df, column, process, work, input_value, replace_value):
     elif process == 'dummy':
         df_apply = process_dummy_data(df, column)
     elif process == 'replace':
-        df_apply = replace_value(df, column, input_value, replace_value)
+        df_apply = fs_replace_value(df, column, input_value, replace_value)
     elif process == 'scaler':
         df_apply = process_scaler(df, column, work)
 
@@ -301,7 +301,7 @@ def stepwise_model(x, y):
     return (step_models['model'][len(step_models['model'])])
 
 
-# 데이터 분할
+# 데이터 분할 (sklearn)
 def train_test_data_division(df, target, columns, split_rate):
     x_data = df[columns]
     y_data = df[[target]]
@@ -315,7 +315,7 @@ def train_test_data_division(df, target, columns, split_rate):
     return train_data, test_data
 
 
-# 데이터 분할
+# 데이터 분할 (sklearn)
 def k_fold_cross_validation(df, columns, k_value, target):
     k_fold = StratifiedKFold(n_splits=k_value, shuffle=True, random_state=42)
     x_data = df[columns]
@@ -333,7 +333,7 @@ def k_fold_cross_validation(df, columns, k_value, target):
     return train_list, test_list
 
 
-# 데이터 분할
+# 데이터 분할 (sklearn)
 def shuffle_split(df, columns, split_rate, k_value, target):
     x_data = df[columns]
     y_data = df[[target]]
@@ -350,6 +350,39 @@ def shuffle_split(df, columns, split_rate, k_value, target):
         test_list.append(test_data)
 
     return train_list, test_list
+
+
+# 데이터 분할 (spark)
+def train_test_data_split(df, split_rate, seed):
+    rate: float = split_rate / 100.0
+    splits: list = [rate, 1 - rate]
+    split_data = df.randomSplit(weights=splits, seed=seed)
+    train_data = split_data[0]
+    test_data = split_data[1]
+
+    return train_data, test_data
+
+
+# 데이터 평가 분할 (spark)
+def get_train_validation_split(model, param_grid, target, split_rate, k):
+    rate: float = split_rate / 100.0
+    train_validation_split = TrainValidationSplit().setEstimator(model)\
+                                .setEvaluator(RegressionEvaluator(labelCol=target))\
+                                .setEstimatorParamMaps(param_grid)\
+                                .setTrainRatio(rate)\
+                                .setParallelism(k)
+
+    return train_validation_split
+
+
+# 데이터 분할 (spark)
+def get_cross_validator(model, param_grid, target, k):
+    cross_validator = CrossValidator().setEstimator(model)\
+                        .setEvaluator(RegressionEvaluator(labelCol=target))\
+                        .setEstimatorParamMaps(param_grid)\
+                        .setParallelism(k)
+
+    return cross_validator
 
 
 # 불균형 데이터 보정

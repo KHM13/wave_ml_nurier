@@ -5,6 +5,7 @@
 {% block title %}데이터 전처리{% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <div class="page-content">
     <div class="container-fluid">
         <div class="tab-content">
@@ -43,15 +44,10 @@
                                             <table class="table table-nowrap mb-0">
                                                 <thead class="table-light">
                                                     <tr>
-                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">변수명</th>
-                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">개수</th>
-                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">평균값</th>
-                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">표준편차</th>
-                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">최소값</th>
-                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">최대값</th>
-                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">유일값</th>
-                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">결측값</th>
-                                                        <th scope="col" class="sticky-top" style="z-index: 1001;">변수유형</th>
+                                                        <th scope="col" class="sticky-top text-uppercase" style="z-index: 1001;">Column</th>
+                                                        {% for col in df_info.columns %}
+                                                        <th scope="col" class="sticky-top text-uppercase" style="z-index: 1001;">{{ col }}</th>
+                                                        {% endfor %}
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -63,7 +59,6 @@
                                                         <td>{{ v }}</td>
                                                         {% endfor %}
                                                         {% endwith %}
-                                                        <td></td>
                                                     </tr>
                                                 {% endfor %}
                                                 </tbody>
@@ -115,9 +110,16 @@
 <script src="{% static 'js/pages/dashboard-analytics.init.js' %}"></script>
 <script type="text/javascript">
 $(function() {
-    data_reload();
     init();
 
+    $(document).on('keydown keyup', function(e) {
+        if(e.which === 116) {
+           data_reload();
+        }
+        if(e.which === 82 && e.ctrlKey) {
+           data_reload();
+        }
+    });
 });
 
 function tab_progress(tabs) {
@@ -141,7 +143,8 @@ function tab_progress(tabs) {
             type: 'POST',
             url: '/preprocess/process',
             data: {
-                'select_column': select_column
+                'select_column': select_column,
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
             },
             success: function(data) {
                 $("#preprocess-02").html("");
@@ -164,6 +167,9 @@ function tab_progress(tabs) {
         $.ajax({
             type: 'POST',
             url: url_value,
+            data: {
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+            },
             success: function(data) {
                 $("#preprocess-03").html("");
                 $("#preprocess-03").html(data);
@@ -174,6 +180,9 @@ function tab_progress(tabs) {
         $.ajax({
             type: 'POST',
             url: '/preprocess/data_create',
+            data: {
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+            },
             success: function(data) {
                 $("#preprocess-04").html("");
                 $("#preprocess-04").html(data);
@@ -204,7 +213,8 @@ function save_target() {
         type: 'POST',
         url: '/preprocess/target_save',
         data: {
-            'target_id': target_id
+            'target_id': target_id,
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
         },
         success: function(data) {
             if( data.result == "success" ) {
@@ -216,6 +226,7 @@ function save_target() {
 }
 
 function init() {
+    data_reload();
     var select_element = $("#select_for_target_id");
     select_element.children('option:not(:first)').remove();
     {% for val in df_info.index %}

@@ -5,11 +5,11 @@
         <div class="card mb-2">
             <div class="card-body">
                 <div class="d-flex flex-wrap align-items-center">
-                    <div class="col-xl-1 col-lg-2">
+                    <div class="col-xl-2 col-lg-2">
                         <h5 class="fs-16 fw-semibold mb-2">{{column}}</h5>
                     </div>
 
-                    <div class="col-xl-11 col-lg-10 filter-choices-input ms-auto">
+                    <div class="col-xl-10 col-lg-10 filter-choices-input ms-auto">
                         <div class="choices" data-type="text">
                             <div class="choices__inner" style="min-height: auto;">
                                 <div class="choices__list choices__list--multiple" id="preprocess-choices">
@@ -247,7 +247,8 @@ $(function() {
             type: 'POST',
             url: '/preprocess/process/detail',
             data: {
-                'column': col
+                'column': col,
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
             },
             success: function(data) {
                 $("#preprocess-detail").html("");
@@ -294,7 +295,8 @@ $(function() {
                     'workInput': workInput,
                     'replaceInput': replaceInput,
                     'reprocess': reprocess,
-                    'prev': prev
+                    'prev': prev,
+                    'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
                 },
                 success: function(data) {
                     if(reprocess) {
@@ -332,6 +334,7 @@ function boxplot() {
         url: '/preprocess/graph/boxplot',
         data: {
             'column': column,
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
         },
         success: function(data) {
             $("#boxplot").html("");
@@ -351,6 +354,7 @@ function corr() {
         url: '/preprocess/graph/corr',
         data: {
             'column': column,
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
         },
         success: function(data) {
             $("#target-corr").html("");

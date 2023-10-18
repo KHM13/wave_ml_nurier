@@ -43,12 +43,12 @@
 
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="flush-headingUnderSampling">
-                            <button class="accordion-button bg-transparent shadow-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseUnderSampling" aria-expanded="false" aria-controls="flush-collapseUnderSampling">
+                            <button class="accordion-button bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseUnderSampling" aria-expanded="true" aria-controls="flush-collapseUnderSampling">
                                 <span class="text-uppercase fs-12 fw-semibold">Under Sampling</span> <span class="badge bg-success rounded-pill align-middle ms-1 filter-badge"></span>
                             </button>
                         </h2>
 
-                        <div id="flush-collapseUnderSampling" class="accordion-collapse collapse" aria-labelledby="flush-headingUnderSampling">
+                        <div id="flush-collapseUnderSampling" class="accordion-collapse collapse show" aria-labelledby="flush-headingUnderSampling">
                             <div class="accordion-body text-body pt-0">
                                 <div class="d-flex flex-column gap-2 mt-3 filter-check">
                                     <div class="form-check">
@@ -63,11 +63,11 @@
 
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="flush-headingOverSampling">
-                            <button class="accordion-button bg-transparent shadow-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOverSampling" aria-expanded="false" aria-controls="flush-collapseOverSampling">
+                            <button class="accordion-button bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOverSampling" aria-expanded="true" aria-controls="flush-collapseOverSampling">
                                 <span class="text-uppercase fs-12 fw-semibold">Over Sampling</span> <span class="badge bg-success rounded-pill align-middle ms-1 filter-badge"></span>
                             </button>
                         </h2>
-                        <div id="flush-collapseOverSampling" class="accordion-collapse collapse" aria-labelledby="flush-headingOverSampling">
+                        <div id="flush-collapseOverSampling" class="accordion-collapse collapse show" aria-labelledby="flush-headingOverSampling">
                             <div class="accordion-body text-body pt-1">
                                 <div class="d-flex flex-column gap-2 filter-check">
                                     <div class="form-check">
@@ -86,12 +86,12 @@
 
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="flush-headingCombineSampling">
-                            <button class="accordion-button bg-transparent shadow-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseCombineSampling" aria-expanded="false" aria-controls="flush-collapseCombineSampling">
+                            <button class="accordion-button bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseCombineSampling" aria-expanded="true" aria-controls="flush-collapseCombineSampling">
                                 <span class="text-uppercase fs-12 fw-semibold">Combine Sampling</span> <span class="badge bg-success rounded-pill align-middle ms-1 filter-badge"></span>
                             </button>
                         </h2>
 
-                        <div id="flush-collapseCombineSampling" class="accordion-collapse collapse" aria-labelledby="flush-headingCombineSampling">
+                        <div id="flush-collapseCombineSampling" class="accordion-collapse collapse show" aria-labelledby="flush-headingCombineSampling">
                             <div class="accordion-body text-body">
                                 <div class="d-flex flex-column gap-2 filter-check">
                                     <div class="form-check">
@@ -157,7 +157,8 @@ $(function() {
                 url: "/preprocess/sampling/execute",
                 data: {
                     'data_sampling': JSON.stringify(data_sampling),
-                    'sampling_algorithm': sampling_algorithm
+                    'sampling_algorithm': sampling_algorithm,
+                    'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
                 },
                 success: function(data) {
                     $("#div_for_imbalanced_data").html("");
@@ -203,7 +204,8 @@ function init() {
         url: "/preprocess/sampling/execute",
         data: {
             'data_sampling': JSON.stringify(select_algorithm),
-            'sampling_algorithm': sampling_algorithm
+            'sampling_algorithm': sampling_algorithm,
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
         },
         success: function(data) {
             $("#div_for_imbalanced_data").html("");

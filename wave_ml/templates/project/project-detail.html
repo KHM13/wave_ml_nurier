@@ -20,7 +20,11 @@
                             {% if project_image %}
                             <img src="{{project_image.url}}" alt="user-img" class="img-thumbnail rounded-circle w-100 h-100"/>
                             {% else %}
-                            <img src="{% static 'images/users/avatar-1.jpg' %}" alt="user-img" class="img-thumbnail rounded-circle" />
+                            <div class="avatar-title bg-light rounded-circle" id="img-none">
+                                <div class="bg-avatarbg avatar-md rounded-circle d-flex justify-content-center align-items-center">
+                                    <i class='bx bx-customize' style="font-size: 35px;"></i>
+                                </div>
+                            </div>
                             {% endif %}
                         </div>
                     </div>
@@ -125,8 +129,8 @@
                         <div class="modal-body">
                             <div class="row g-3">
                                 <div class="col-lg-12">
-                                    <label for="project_id" class="form-label">모델명</label>
-                                    <input type="text" id="project_id" class="form-control"/>
+                                    <label for="model_name" class="form-label">모델명</label>
+                                    <input type="text" id="model_name" class="form-control"/>
                                 </div>
                             </div>
                         </div>
@@ -137,6 +141,58 @@
                     </div><!-- /.modal-content -->
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
+
+            <form name="modelToNextForm" id="modelToNextForm" method="get">
+                <input type="hidden" name="mlmodel_id" id="mlmodel_id" value="" />
+                <input type="hidden" name="project_id" id="project_id" value="{{project_id}}" />
+            </form>
+            <div id="selectModelToNext" class="modal fade" tabindex="-1" aria-labelledby="selectModelToNextLabel" aria-hidden="true" style="display: none;">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-white">이동할 페이지를 선택해주세요.</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row g-4">
+                                <div class="col-lg-4 col-sm-12">
+                                    <div class="form-check card-radio">
+                                        <button class="btn btn-outline-primary p-3" style="width: 100%;" onclick="javascript:go_to_next('preprocess');">
+                                            <div class="text-center pb-3">
+                                                <i class="ri-centos-line display-6 text-muted"></i>
+                                            </div>
+                                            <p class="fs-14 text-center text-wrap">데이터 전처리</p>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4 col-sm-12">
+                                    <div class="form-check card-radio">
+                                        <button class="btn btn-outline-primary p-3" style="width: 100%;" onclick="javascript:go_to_next('learning');">
+                                            <div class="text-center pb-3">
+                                                <i class="mdi mdi-cube-scan display-6 text-muted"></i>
+                                            </div>
+                                            <p class="fs-14 text-center text-wrap">모델 학습</p>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4 col-sm-12">
+                                    <div class="form-check card-radio">
+                                        <button class="btn btn-outline-primary p-3" style="width: 100%;" onclick="javascript:go_to_next('evaluation');">
+                                            <div class="text-center pb-3">
+                                                <i class="mdi mdi-gradient-horizontal display-6 text-muted"></i>
+                                            </div>
+                                            <p class="fs-14 text-center text-wrap">모델 평가</p>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+
         </div><!-- container-fluid -->
     </div><!-- End Page-content -->
 
@@ -156,7 +212,7 @@ $(function() {
 
     <!-- 모달 시작 시 이벤트 -->
     $("#dataCreateModal").on("show.bs.modal", function(e){
-        $("#project_id").val("");
+        $("#model_name").val("");
     });
 
     <!-- 모달 종료 시 이벤트 -->
@@ -166,7 +222,7 @@ $(function() {
 
     <!-- 등록 클릭 시 데이터전처리 페이지로 이동 -->
     $("#btn_for_modal_data_create").on("click", function(e) {
-        var project_name = $("#project_id").val();
+        var model_name = $("#model_name").val();
 
         <!-- 프로젝트 파일개수 유효성검사 -->
         if('{{project_file_cnt}}' <= 0) {
@@ -180,8 +236,16 @@ $(function() {
             return false;
         } else {
             $("#btn_for_modal_data_cancel").trigger("click");
-            location.href='/preprocess?model_name='+project_name;
+            sessionStorage.setItem("processTab", "");
+            sessionStorage.setItem("datasetTab", "");
+            location.href='/preprocess?model_name='+model_name;
         }
+    });
+
+    $("#selectModelToNext").on('show.bs.modal', function(e) {
+        var clicked_btn = $(e.relatedTarget);
+        var model_id = clicked_btn.data("id");
+        $("#mlmodel_id").val(model_id);
     });
 });
 
@@ -286,6 +350,14 @@ function project_remove() {
             });
         }
     });
+}
+
+<!-- 모델 선택시 다음 스택으로 넘어가기 -->
+function go_to_next(next_url) {
+    var mlmodel_id = $("#mlmodel_id").val();
+    $("#modelToNextForm").attr("action", "/" + next_url).submit();
+    sessionStorage.setItem("processTab", "");
+    sessionStorage.setItem("datasetTab", "");
 }
 
 </script>

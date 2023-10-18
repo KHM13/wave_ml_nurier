@@ -118,7 +118,7 @@
                                     <div>
                                         <label for="select_for_project_type" class="form-label">대분류</label>
                                         <select class="form-select" id="select_for_project_type" name="project_type" required>
-                                            <option value="누리어시스템" selected>누리어시스템</option>
+                                            <option value="NH농협상호금융" selected>NH농협상호금융</option>
                                             <option value="NH농협은행">NH농협은행</option>
                                         </select>
                                     </div>
@@ -129,6 +129,8 @@
                                         <select class="form-select" id="select_for_project_sub_type" name="project_sub_type" required>
                                             <option value="인터넷 뱅킹" selected>인터넷 뱅킹</option>
                                             <option value="스마트 뱅킹">스마트 뱅킹</option>
+                                            <option value="올원뱅크">올원뱅크</option>
+                                            <option value="콕뱅크">콕뱅크</option>
                                         </select>
                                     </div>
                                 </div>
@@ -141,14 +143,15 @@
                                 <div class="col-lg-6">
                                     <div>
                                         <label for="registrant_name" class="form-label">등록자</label>
-                                        <input type="text" id="registrant_name" name="registrant_name" class="form-control" required readonly />
+                                        <input type="text" id="registrant_name" name="registrant_name" class="form-control" value="{{user_name}}" required readonly />
+                                        <input type="hidden" id="user_id" name="user_id" value="{{ user_id }}" />
                                     </div>
                                 </div>
 
                                 <div class="col-lg-6">
                                     <div>
                                         <label for="registration_date" class="form-label">등록일시</label>
-                                        <input type="text" id="registration_date" class="form-control flatpickr-input" data-provider="flatpickr" data-date-format="Y.m.d" data-default-date="today" placeholder="" readonly>
+                                        <input type="text" id="registration_date" class="form-control flatpickr-input" data-provider="flatpickr" data-date-format="Y.m.d" data-default-date="today" placeholder="" disabled="disabled">
                                     </div>
                                 </div>
 
@@ -223,8 +226,6 @@
     var dataFileId = [];
 
     $(function() {
-        <!-- 유저 정보 등록 -->
-        $('#registrant_name').val('{{ user_name }}');
 
         <!-- 프로젝트 등록 -->
         $("#btn_for_project_registration").on("click", function(e) {
@@ -268,9 +269,6 @@
 
         <!-- 모달 시작 시 이벤트 -->
         $("#myModal").on("show.bs.modal", function(e){
-            <!-- 유저 정보 지정 -->
-            $('#registrant_name').val('{{ user_name }}');
-
             <!-- 등록자, 등록일시 기본값 지정 -->
             $("#registration_name").val($('#registrant_name').val());
             var today = new Date();
@@ -279,10 +277,6 @@
             var day = ('0' + today.getDate()).slice(-2);
             var dateString = year + '.' + month  + '.' + day;
             $("#registration_date").val(dateString);
-
-            <!-- 등록자, 등록일시 수정 불가 지정 -->
-            $("#registration_date").attr("disabled", true);
-            $("#registrant_name").attr("disabled", true);
         });
 
         <!-- 파일 등록 (선택 후 열기) -->
@@ -408,9 +402,10 @@
         var byteUnits = ["KB", "MB", "GB", "TB"];
         for (let i = 0; i < byteUnits.length; i++) {
             size = size / 1024;
-            if (size < 1024)
-            var fileSize = size.toFixed(1) + "/" + byteUnits[i];
-            return fileSize;
+            if (size < 1024) {
+                var fileSize = size.toFixed(1) + "/" + byteUnits[i];
+                return fileSize;
+            }
         }
     }
 
@@ -459,16 +454,15 @@
             })
             return false;
         }
-<!--        &lt;!&ndash; 로그인 구현되면 주석 해제 &ndash;&gt;-->
-<!--        else if(typeof registrant_name == "undefined" || registrant_name == null || registrant_name == "") {-->
-<!--            Swal.fire({-->
-<!--                title:'등록자를 확인해주세요',-->
-<!--                icon: 'warning',-->
-<!--                confirmButtonClass: 'btn btn-primary w-xs mt-2',-->
-<!--                buttonsStyling: false-->
-<!--            })-->
-<!--            return false;-->
-<!--        }-->
+        else if(typeof registrant_name == "undefined" || registrant_name == null || registrant_name == "") {
+            Swal.fire({
+                title:'등록자를 확인해주세요',
+                icon: 'warning',
+                confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                buttonsStyling: false
+            })
+            return false;
+        }
 
         <!-- 등록, 편집 url 판단 -->
         var url = "";

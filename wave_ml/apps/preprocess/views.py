@@ -1,38 +1,45 @@
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse, HttpResponse
+from wave_ml.config.settings.base import MEDIA_ROOT
 from wave_ml.ml import dataChecking, dataPreprocessing, dataChart
+from wave_ml.ml.common import CommonUtil
 from wave_ml.apps.mlmodel.models import MlModel
 from wave_ml.apps.project.models import Project, ProjectFile
-from .models import Process, MLSampling
+from .models import Process, MLSampling, MLDatasetFile
+from datetime import datetime
 import json
+import os
 
 
 # 데이터 전처리 화면 첫진입
 # step 1. 데이터 확인 화면
 def main(request):
-    project_id = request.session.get("project_id", None)
-    if project_id is None:
-        print("[ERROR] project id 가 없습니다")
-        result = json.dumps({"result": "프로젝트를 선택해주세요"})
-        return HttpResponse(result, content_type='application/json')
+    project_id = request.GET.get("project_id", request.session.get('project_id'))
+    request.session.clear()
 
+    # 모델 새로 등록 시
     if request.GET.get("model_name") is not None:
         project_model = Project.objects.get(id=project_id)
-        mlmodel = MlModel(model_name=request.GET.get("model_name"), project_id=project_model)
+        mlmodel = MlModel(model_name=request.GET.get("model_name", "test"), project_id=project_model)
         mlmodel.save()
         request.session['mlmodel_id'] = mlmodel.id
 
-    # file = open('wave_ml/data/heart.csv', 'r', encoding='EUC-KR')
+    request.session['project_id'] = project_id
+    # 프로젝트에 등록되어있는 파일 불러오기
     project_file_model = ProjectFile.objects.filter(project_id=project_id).values()
-
     df = dataChecking.files_to_df(project_file_model)
+
+    # 프로젝트 내부에 저장되어있는 테스트용 임시 파일 불러오기
+    # file = open('wave_ml/data/heart.csv', 'r', encoding='EUC-KR')
+    # df = dataChecking.file_to_df(file)
+
     df_apply = df.copy()
 
     json_df = dataChecking.df_to_json(df)
     request.session['df'] = json_df
-    mlmodel_id = request.session.get("mlmodel_id")
+    mlmodel_id = request.GET.get("mlmodel_id", request.session.get("mlmodel_id"))
+    request.session['mlmodel_id'] = mlmodel_id
     target = request.session.get("target", '')
 
     for column in df_apply.columns:
@@ -40,6 +47,11 @@ def main(request):
         for p in process_list:
             df_apply = dataPreprocessing.process_apply(df_apply, column, p['process_type'], p['work_type'],
                                                        p['input_value'], p['replace_value'])
+
+    if target == '' and MLSampling.objects.filter(mlmodel_id=mlmodel_id).exists():
+        sampling = MLSampling().get_info(mlmodel_id)
+        target = sampling['target']
+        request.session['target'] = target
 
     json_df_apply = dataChecking.df_to_json(df_apply)
     request.session['df_apply'] = json_df_apply
@@ -60,10 +72,22 @@ def main(request):
     )
 
 
-@csrf_exempt
+# 목표 변수 설정
 def save_target(request):
     target_id = request.POST.get("target_id", '')
     request.session['target'] = target_id
+
+    mlmodel_id = request.session.get("mlmodel_id", request.POST.get("mlmodel_id"))
+
+    if MLSampling.objects.filter(mlmodel_id=mlmodel_id).exists():
+        MLSampling.objects.filter(mlmodel_id=mlmodel_id).update(target=target_id)
+    else:  # 기존 작업이 저장되어 있지 않은 경우 새로 등록
+
+        mlmodel = MlModel.objects.get(id=mlmodel_id)
+        model = MLSampling(mlmodel_id=mlmodel, feature_algorithm="", columns="",
+                           column_size=0,
+                           split_algorithm="Random Split", split_rate=70, k_value=0, sampling_algorithm="", target=target_id)
+        model.save()
 
     result = json.dumps({"result": "success"})
     return HttpResponse(result, content_type='application/json')
@@ -73,7 +97,6 @@ def save_target(request):
 ################################## 변수 전처리 START ##################################
 
 # step 2. 변수 전처리 화면
-@csrf_exempt
 def process(request):
     df_apply = request.session['df_apply']
     mlmodel_id = request.session['mlmodel_id']
@@ -107,7 +130,6 @@ def process(request):
 
 
 # 변수별 데이터 상세 화면
-@csrf_exempt
 def detail(request):
     column = request.POST.get('column')
     df_apply = request.session['df_apply']
@@ -149,7 +171,6 @@ def detail(request):
 
 
 # 데이터 유형 변환
-@csrf_exempt
 def type_change(request):
     df_apply = request.session['df_apply']
     target = request.session['target']
@@ -184,7 +205,6 @@ def type_change(request):
 
 
 # 결측치 처리 작업
-@csrf_exempt
 def process_missing_value(request):
     df_apply = request.session['df_apply']
     target = request.session['target']
@@ -220,7 +240,6 @@ def process_missing_value(request):
 
 
 # 이상치 처리 작업
-@csrf_exempt
 def process_outlier(request):
     df_apply = request.session['df_apply']
     target = request.session['target']
@@ -256,7 +275,6 @@ def process_outlier(request):
 
 
 # 사분위/중앙값 그래프
-@csrf_exempt
 def graph_boxplot(request):
     if request.session.get('df_preprocess', None):
         df = request.session["df_preprocess"]
@@ -281,7 +299,6 @@ def graph_boxplot(request):
 
 
 # 목표변수와의 분포 그래프
-@csrf_exempt
 def graph_corr(request):
     if request.session.get('df_preprocess', None):
         df = request.session["df_preprocess"]
@@ -308,7 +325,6 @@ def graph_corr(request):
 
 
 # 문자열 통합 처리 작업
-@csrf_exempt
 def process_replacing_value(request):
     df_apply = request.session['df_apply']
     target = request.session['target']
@@ -343,7 +359,6 @@ def process_replacing_value(request):
 
 
 # 데이터 가변수화 처리 작업
-@csrf_exempt
 def process_dummy(request):
     df_apply = request.session['df_apply']
     target = request.session['target']
@@ -377,7 +392,6 @@ def process_dummy(request):
 
 
 # 데이터 정규화 처리 작업
-@csrf_exempt
 def process_scaler(request):
     df_apply = request.session['df_apply']
     target = request.session['target']
@@ -411,7 +425,6 @@ def process_scaler(request):
 
 
 # 처리 작업 적용
-@csrf_exempt
 def process_apply(request):
     column = request.POST.get('column')
     process = request.POST.get('process')
@@ -453,7 +466,8 @@ def process_apply(request):
         sort_index = 1
 
     # 새 작업 저장
-    process_model = Process(mlmodel_id=mlmodel_id, column_name=column, process_type=process, work_type=work,
+    mlmodel = MlModel.objects.get(id=mlmodel_id)
+    process_model = Process(mlmodel_id=mlmodel, column_name=column, process_type=process, work_type=work,
                             input_value=work_input, replace_value=replace_input, sort=sort_index)
     process_model.save()
 
@@ -494,7 +508,6 @@ def process_apply(request):
 
 
 # 적용 작업 삭제
-@csrf_exempt
 def process_remove(request):
     df = request.session['df']
     mlmodel_id = request.session['mlmodel_id']
@@ -546,7 +559,6 @@ def process_remove(request):
 ################################## 데이터셋 전처리 START ##################################
 
 # step 3. 데이터셋 전처리 화면
-@csrf_exempt
 def feature_select(request):
     df_apply = request.session['df_apply']
     target = request.session['target']
@@ -570,13 +582,13 @@ def feature_select(request):
         {
             'info': info,
             'select_column': select_column,
-            'feature_algorithm': feature_algorithm
+            'feature_algorithm': feature_algorithm,
+            'target': target
         }
     )
 
 
 # 변수 선택법 알고리즘 실행
-@csrf_exempt
 def execute_feature_select(request):
     df_apply = request.session['df_apply']
     df = dataChecking.json_to_df(df_apply)
@@ -608,36 +620,49 @@ def execute_feature_select(request):
     )
 
 
+# 변수선택법 저장
 # 데이터 분할 화면 진입
-@csrf_exempt
 def data_split(request):
-    df_apply = request.session['df_apply']
-    target = request.session['target']
-    df = dataChecking.json_to_df(df_apply)
-    info = dataChecking.get_data_info(df, target)
-
     mlmodel_id = request.session['mlmodel_id']
 
     # 변수선택법 화면에서 넘어올때 적용될 값
     if request.POST.get("select_column") is not None:
         fs_name = request.POST.get("fs_name")
         select_column_list = json.loads(request.POST.get("select_column"))
+
+        df_apply = request.session['df_apply']
+        df_preprocess = dataChecking.json_to_df(df_apply)
+        select_df = df_preprocess[select_column_list]
+        request.session['df_fs'] = dataChecking.df_to_json(select_df)
+
         select_column = json.dumps(select_column_list)
 
         # 기존 데이터셋 전처리 작업이 저장되어 있는 경우 수정
         if MLSampling.objects.filter(mlmodel_id=mlmodel_id).exists():
             MLSampling.objects.filter(mlmodel_id=mlmodel_id).update(feature_algorithm=fs_name, columns=select_column, column_size=len(select_column_list))
         else:   # 기존 작업이 저장되어 있지 않은 경우 새로 등록
-
             mlmodel = MlModel.objects.get(id=mlmodel_id)
             model = MLSampling(mlmodel_id=mlmodel, feature_algorithm=fs_name, columns=select_column, column_size=len(select_column_list),
                                split_algorithm="Random Split", split_rate=70, k_value=0, sampling_algorithm="")
             model.save()
 
+    df_fs = request.session.get('df_fs', None)
+    df = None
+    if df_fs is None:
+        if MLSampling.objects.filter(mlmodel_id=mlmodel_id).exists():
+            sampling = MLSampling.objects.get(mlmodel_id=mlmodel_id)
+            columns = json.loads(sampling.columns)
+            df_apply = request.session.get("df_apply")
+            df_apply_temp = dataChecking.json_to_df(df_apply)
+            df = df_apply_temp[columns]
+    else:
+        df = dataChecking.json_to_df(df_fs)
+    target = request.session['target']
+    info = dataChecking.get_data_info(df, target)
+
     sampling_model = MLSampling().get_info(mlmodel_id)
-    columns = json.loads(sampling_model['columns'])
-    info['size'] = sampling_model['column_size']
-    info['columns'] = columns
+    info['size'] = len(df.columns)
+    info['columns'] = df.columns
 
     return render(
         request,
@@ -652,25 +677,39 @@ def data_split(request):
 
 
 # 데이터 분할 알고리즘 적용
-@csrf_exempt
+# 불균형 데이터 보정 화면 진입
 def data_sampling(request):
     mlmodel_id = request.session['mlmodel_id']
-    df_apply = request.session['df_apply']
     target = request.session['target']
-    df = dataChecking.json_to_df(df_apply)
+
+    df_fs = request.session.get('df_fs', None)
+    df = None
+    is_df_apply = False
+    if df_fs is None:
+        if MLSampling.objects.filter(mlmodel_id=mlmodel_id).exists():
+            sampling = MLSampling.objects.get(mlmodel_id=mlmodel_id)
+            columns = json.loads(sampling.columns)
+            df_apply = request.session.get("df_apply")
+            df_apply_temp = dataChecking.json_to_df(df_apply)
+            df = df_apply_temp[columns]
+            is_df_apply = True
+    else:
+        df = dataChecking.json_to_df(df_fs)
 
     models = MLSampling().get_info(mlmodel_id)
-    columns = json.loads(models['columns'])
-    columns.remove(target)
+    columns = df.columns
+    columns = columns.drop(target)
     select_sampling_algorithm = models['sampling_algorithm']
 
     # 데이터 분할 화면에서 넘어올때 적용될 값
-    if request.POST.get("algorithm") is not None:
-        algorithm = request.POST.get("algorithm")
-        split_value = request.POST.get("split_value").replace('%', '') if request.POST.get("split_value") != '' else 0
-        k_value = request.POST.get("k_value") if request.POST.get("k_value") != '' else 0
+    if request.POST.get("algorithm") is not None or is_df_apply:
+        algorithm = request.POST.get("algorithm", models['split_algorithm'])
+        split_value = request.POST.get("split_value").replace('%', '') if request.POST.get("split_value") != '' and request.POST.get("split_value") is not None else models['split_rate']
+        k_value = request.POST.get("k_value") if request.POST.get("k_value") != '' and request.POST.get("k_value") is not None else models['k_value']
+
         # 데이터 분할 알고리즘 적용 저장
-        MLSampling.objects.filter(mlmodel_id=mlmodel_id).update(split_algorithm=algorithm, split_rate=int(split_value), k_value=int(k_value))
+        if not is_df_apply:
+            MLSampling.objects.filter(mlmodel_id=mlmodel_id).update(split_algorithm=algorithm, split_rate=int(split_value), k_value=int(k_value))
 
         if algorithm == "Random Split":
             train_data, test_data = dataPreprocessing.train_test_data_division(df, target, columns, int(split_value))
@@ -716,7 +755,6 @@ def data_sampling(request):
 
 
 # 불균형 데이터 보정 알고리즘 실행
-@csrf_exempt
 def execute_data_sampling(request):
     data_sampling = json.loads(request.POST.get("data_sampling"))
     train_data = request.session['train_data']
@@ -759,14 +797,11 @@ def execute_data_sampling(request):
 
 
 # 불균형 데이터 보정 적용 저장
-@csrf_exempt
 def data_sampling_apply(request):
     try:
         select_algorithm = request.POST.get("select_algorithm")
         train_data = request.session['train_data']
         train_df = dataChecking.json_to_df(train_data)
-        test_data = request.session['test_data']
-        test_df = dataChecking.json_to_df(test_data)
         mlmodel_id = request.session['mlmodel_id']
         target = request.session['target']
 
@@ -775,11 +810,8 @@ def data_sampling_apply(request):
 
         if select_algorithm != "OriginalData":
             balanced_data = dataPreprocessing.set_imbalanced_data(select_algorithm, train_df, target)
-            df_apply = dataChecking.dataframe_concat(balanced_data, test_df)
-        else:
-            df_apply = dataChecking.dataframe_concat(train_df, test_df)
+            request.session['train_data'] = dataChecking.df_to_json(balanced_data)
 
-        request.session['df_apply'] = dataChecking.df_to_json(df_apply)
         result = json.dumps({"result": "success"})
         return HttpResponse(result, content_type='application/json')
 
@@ -788,18 +820,23 @@ def data_sampling_apply(request):
         result = json.dumps({"result": "error"})
         return HttpResponse(result, content_type='application/json')
 
+
 ################################## 데이터셋 전처리 END ##################################
 ################################## 학습 데이터 생성 START ##################################
 
+
 # step 4. 학습 데이터 생성 화면
-@csrf_exempt
 def data_create(request):
     df_apply = request.session['df_apply']
     target = request.session['target']
     df = dataChecking.json_to_df(df_apply)
     data_info = dataChecking.get_data_info(df, target)
 
+    project_id = request.session.get('project_id', request.POST.get('project_id'))
+    project_obj = Project.objects.get(id=project_id)
+
     mlmodel_id = request.session['mlmodel_id']
+    mlmodel = MlModel.objects.get(id=mlmodel_id)
 
     # 현재 모델에 적용된 전처리 작업 리스트
     process_models = Process.objects.filter(mlmodel_id=mlmodel_id).values()
@@ -808,43 +845,21 @@ def data_create(request):
     # 현재 모델에 적용된 데이터셋 처리 작업 리스트
     sampling_models = MLSampling().get_info(mlmodel_id)
 
-    # 화면에 표시될 데이터셋 최대 갯수
-    per_page = 9
     # 현재 모델에 적용된 데이터셋을 제외한 프로젝트 내 데이터셋 리스트
-    list_models = MLSampling.objects.exclude(mlmodel_id=mlmodel_id, dataset_name='')
+    list_models = MLSampling.objects.exclude(mlmodel_id=mlmodel_id)
     dataset_size = len(list_models.values())
 
-    # 페이징처리
-    paginator = Paginator(list_models, per_page)
     page_number = request.GET.get('page', 1)
-    if (page_number):
-        page_number = int(page_number)
-    else:
-        page_number = 1
-    # 현재 페이지에 해당하는 프로젝트 리스트 반환
-    page_obj = paginator.page(page_number)
-
-    # 페이지 버튼의 범위 제한
-    if page_obj.number <= 3:
-        page_btn_range = range(1, min(6, paginator.num_pages + 1))
-    else:
-        if page_obj.number <= paginator.num_pages - 2:
-            page_btn_range = range(max(page_obj.number - 2, 1), min(page_obj.number + 3, paginator.num_pages + 1))
-        else:
-            page_btn_range = range(paginator.num_pages - 4, paginator.num_pages + 1)
-
-    links = []
-    for pr in page_btn_range:
-        if pr == page_number:
-            links.append('<li class="page-item active"><a href="javascript:void(0);" class="page-link">%d</a></li>' % pr)
-        else:
-            links.append('<li class="page-item"><a href="javascript:go_page(%d);" class="page-link">%d</a></li>' % (pr, pr))
+    # 페이징 처리
+    page_obj, links = CommonUtil.paginator(page_number, 2, list_models)
 
     return render(
         request,
         'preprocess/data-create.html',
         {
-            'mlmodel_id': mlmodel_id,
+            'mlmodel': mlmodel,
+            'project_id': project_id,
+            'registrant': project_obj.registrant,
             'data_info': data_info,
             'process_size': process_size,
             'sampling_models': sampling_models,
@@ -856,39 +871,12 @@ def data_create(request):
 
 
 # 페이징처리
-@csrf_exempt
 def load_dataset_list(request, page):
     mlmodel_id = request.session['mlmodel_id']
-    per_page = 9
-    list_models = MLSampling.objects.exclude(mlmodel_id=mlmodel_id, dataset_name='')
+    list_models = MLSampling.objects.exclude(mlmodel_id=mlmodel_id)
     dataset_size = len(list_models.values())
-
-    paginator = Paginator(list_models, per_page)
-    page_number = page
-    if (page_number):
-        page_number = int(page_number)
-    else:
-        page_number = 1
-    # 현재 페이지에 해당하는 프로젝트 리스트 반환
-    page_obj = paginator.page(page_number)
-
-    # 페이지 버튼의 범위 제한
-    if page_obj.number <= 3:
-        page_btn_range = range(1, min(6, paginator.num_pages + 1))
-    else:
-        if page_obj.number <= paginator.num_pages - 2:
-            page_btn_range = range(max(page_obj.number - 2, 1), min(page_obj.number + 3, paginator.num_pages + 1))
-        else:
-            page_btn_range = range(paginator.num_pages - 4, paginator.num_pages + 1)
-
-    links = []
-    for pr in page_btn_range:
-        if pr == page_number:
-            links.append(
-                '<li class="page-item active"><a href="javascript:void(0);" class="page-link">%d</a></li>' % pr)
-        else:
-            links.append(
-                '<li class="page-item"><a href="javascript:go_page(%d);" class="page-link">%d</a></li>' % (pr, pr))
+    # 페이징 처리
+    page_obj, links = CommonUtil.paginator(page, 2, list_models)
 
     return render(
         request,
@@ -902,12 +890,51 @@ def load_dataset_list(request, page):
 
 
 # 데이터셋 저장
-@csrf_exempt
 def dataset_save(request):
-    mlmodel_id = request.POST.get("mlmodel_id")
+    mlmodel_id = request.session['mlmodel_id']
     dataset_name = request.POST.get("dataset_name")
-    create_date = request.POST.get("create_date")
 
-    df_train = request.session['']
+    df_apply = request.session.get("df_fs", None)
+    is_df_apply = False
+    if df_apply is None:
+        is_df_apply = True
+        df_apply = request.session.get("df_apply")
+    df = dataChecking.json_to_df(df_apply)
 
+    try:
+        # 데이터셋전처리 메뉴에서 바로 학습데이터 생성 화면으로 넘어왔을 때
+        if MLSampling.objects.filter(mlmodel_id=mlmodel_id).exists():
+            mlsampling = MLSampling.objects.get(mlmodel_id=mlmodel_id)
+            columns = json.loads(mlsampling.columns)
+            if is_df_apply:
+                df = df[columns]
 
+        file_name = f'{dataset_name}_{CommonUtil.CommonUtil().now_type4}'
+        file_path = f'{MEDIA_ROOT}\\file\\dataset\\{CommonUtil.CommonUtil().now_type3}\\'
+        os.makedirs(file_path, exist_ok=True)
+        df.to_csv(f'{file_path}{file_name}.csv', sep=",", mode="w", encoding="EUC-KR", index=False, header=True, chunksize=100)
+
+        if MLSampling.objects.filter(mlmodel_id=mlmodel_id).exists():
+            MLSampling.objects.filter(mlmodel_id=mlmodel_id).update(dataset_name=dataset_name)
+
+        if MLDatasetFile.objects.filter(mlmodel_id=mlmodel_id).exists():
+            exists_file = MLDatasetFile.objects.get(mlmodel_id=mlmodel_id)
+            if os.path.isfile(f'{exists_file.dataset_file}.{exists_file.dataset_file_extension}'):
+                os.remove(f'{exists_file.dataset_file}.{exists_file.dataset_file_extension}')
+            exists_file.delete()
+
+        mlmodel = MlModel.objects.get(id=mlmodel_id)
+
+        MLDatasetFile.objects.create(
+            mlmodel_id=mlmodel,
+            dataset_name=dataset_name,
+            dataset_file=f'{file_path}{file_name}',
+            dataset_file_extension='csv'
+        )
+
+        result = json.dumps({"result": "success"})
+        return HttpResponse(result, content_type='application/json')
+    except Exception as e:
+        print(e)
+        result = json.dumps({"result": "error"})
+        return HttpResponse(result, content_type='application/json')

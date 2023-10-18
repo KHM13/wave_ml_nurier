@@ -13,7 +13,8 @@ function select_column(col) {
         type: 'POST',
         url: '/preprocess/process/detail',
         data: {
-            'column': col
+            'column': col,
+            'csrfmiddlewaretoken': document.querySelector('[name=csrfmiddlewaretoken]').value
         },
         success: function(data) {
             $("#preprocess-detail").html("");
@@ -54,7 +55,8 @@ function change_datatype() {
         data: {
             'column': column,
             'type': type,
-            'select_tab': tab_href
+            'select_tab': tab_href,
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
         },
         success: function(data) {
             $("input[name='input_for_data_type']").data('type', type);
@@ -97,7 +99,8 @@ function remove_item(this_item) {
             'column': col,
             'process': process,
             'work': work,
-            'replace_input': replaceInput
+            'replace_input': replaceInput,
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
         },
         success: function(data) {
             parent_div.detach();
@@ -222,7 +225,8 @@ function process_missing() {
                 'column': column,
                 'process': value,
                 'input_value': "",
-                'select_tab': tab_href
+                'select_tab': tab_href,
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
             },
             success: function(data) {
                 $("#div_for_dataset_raw").remove();
@@ -260,7 +264,8 @@ function process_outlier() {
                 'column': column,
                 'process': value,
                 'input_value': "",
-                'select_tab': tab_href
+                'select_tab': tab_href,
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
             },
             success: function(data) {
                 $("#div_for_dataset_raw").remove();
@@ -292,7 +297,8 @@ function input_replace_value() {
             'column': column,
             'work_input': work_input,
             'replace_input': replace_input,
-            'select_tab': tab_href
+            'select_tab': tab_href,
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
         },
         success: function(data) {
             $("#div_for_dataset_raw").remove();
@@ -319,7 +325,8 @@ function process_dummy() {
         url: '/preprocess/process/process_dummy',
         data: {
             'column': column,
-            'select_tab': tab_href
+            'select_tab': tab_href,
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
         },
         success: function(data) {
             $("#div_for_dataset_raw").remove();
@@ -348,7 +355,8 @@ function process_scaler() {
         data: {
             'column': column,
             'process': value,
-            'select_tab': tab_href
+            'select_tab': tab_href,
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
         },
         success: function(data) {
             $("#div_for_dataset_raw").remove();
@@ -381,7 +389,8 @@ function process_replace_input() {
                 'column': column,
                 'process': "input",
                 'input_value': replace_input,
-                'select_tab': tab_href
+                'select_tab': tab_href,
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
             },
             success: function(data) {
                 $("#div_for_dataset_raw").remove();
@@ -400,7 +409,8 @@ function process_replace_input() {
                 'column': column,
                 'process': "input",
                 'input_value': replace_input,
-                'select_tab': tab_href
+                'select_tab': tab_href,
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
             },
             success: function(data) {
                 $("#div_for_dataset_raw").remove();
@@ -421,7 +431,8 @@ function process_replace_input() {
                 'column': column,
                 'work_input': work_input,
                 'replace_input': replace_input,
-                'select_tab': tab_href
+                'select_tab': tab_href,
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
             },
             success: function(data) {
                 $("#div_for_dataset_raw").remove();

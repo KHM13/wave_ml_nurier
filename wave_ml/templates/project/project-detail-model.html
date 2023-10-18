@@ -6,11 +6,11 @@
                 {% if mlmodel_pagination %}
                 {% for model in mlmodel_pagination %}
                 <div class="col-xxl-3 col-sm-6">
-                    <div class="card profile-project-card shadow-none">
+                    <div class="card profile-project-card shadow-none" name="model-card" data-id="{{model.id}}">
                         <div class="card-body p-4">
                             <div class="d-flex">
                                 <div class="flex-grow-1 text-muted overflow-hidden">
-                                    <h5 class="fs-14 fw-semibold text-truncate"><a href="#" class="text-dark">{{model.model_name}}</a></h5>
+                                    <h5 class="fs-14 fw-semibold text-truncate"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#selectModelToNext" data-id="{{model.id}}" class="text-dark">{{model.model_name}}</a></h5>
                                     <p class="text-muted text-truncate mb-0">Recall : <span class="fw-semibold text-dark">{{model.best_recall}}</span></p>
                                     <p class="text-muted text-truncate mb-0">Accuracy : <span class="fw-semibold text-dark">{{model.best_accuracy}}</span></p>
                                 </div>
@@ -24,7 +24,11 @@
                                 <div class="flex-grow-1">
                                     <div class="d-flex align-items-center">
                                         <div class="avatar-xs flex-shrink-0 me-3">
-                                            <img src="" alt="" class="img-fluid rounded-circle">
+                                            {% if user_image %}
+                                            <img src="{{user_image.url}}" alt="user-img" class="img-fluid rounded-circle w-100 h-100"/>
+                                            {% else %}
+                                            <img src="{% static 'images/users/user-dummy-img.jpg' %}" alt="user-img" class="img-fluid rounded-circle" />
+                                            {% endif %}
                                         </div>
                                         <div class="flex-grow-1">
                                             <div>

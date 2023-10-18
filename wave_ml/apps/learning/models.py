@@ -16,6 +16,7 @@ class ModelLearning(models.Model):
 
 
 class MlParameter(models.Model):
+    objects = None
     model_learning_id = models.ForeignKey(ModelLearning, related_name="model_learning_id", on_delete=models.CASCADE, to_field="id", db_column="model_learning_id")
     algorithm = models.TextField(blank=False)
     parameter_name = models.TextField(blank=False)

@@ -16,7 +16,11 @@ def file_to_df(file):
 def files_to_df(files):
     data = []
     for file in files:
-        df = pd.read_csv(f"wave_ml/media/{file['project_file']}", encoding="euc-kr", index_col=None, header=0)
+        try:
+            df = pd.read_csv(f"wave_ml/media/{file['project_file']}", encoding='euc-kr', index_col=None, header=0)
+        except Exception as e:
+            print(e)
+            df = pd.read_csv(f"wave_ml/media/{file['project_file']}", encoding='utf-8', index_col=None, header=0)
         data.append(df)
 
     return pd.concat(data, axis=0, ignore_index=True)
@@ -64,7 +68,6 @@ def get_train_test_info(train_data, test_data, target):
     train_shape = train_data.shape
     test_shape = test_data.shape
     columns = get_column_list(train_data)
-    print(columns)
     result = {'train_count': train_shape[0], 'size': len(columns), 'test_count': test_shape[0], 'columns': columns, 'target': target}
     return result
 
@@ -172,5 +175,4 @@ def get_process_name(process):
 
 def dataframe_concat(df1, df2):
     df_merged = pd.concat([df1, df2], ignore_index=True, sort=False)
-    print(df_merged.shape)
     return df_merged

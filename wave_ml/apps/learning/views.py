@@ -1,15 +1,27 @@
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 from wave_ml.apps.learning.models import ModelLearning, MlParameter
 from wave_ml.apps.mlmodel.models import MlModel
+from wave_ml.apps.preprocess.models import Process, MLSampling, MLDatasetFile
+from wave_ml.apps.project.models import Project, ProjectFile
+from wave_ml.ml import dataModeling, dataChecking, dataPreprocessing
 
+from ...ml.common.SparkCommon import SparkCommon
+from wave_ml.ml.data.DataObject import DataObject
+from wave_ml.ml.data.SparkDataObject import SparkDataObject
+
+import pandas as pd
+import findspark
 import json
 
 
 # 모델학습 메인이동
 def main(request):
-    mlmodel_id = request.session['mlmodel_id']
+    mlmodel_id = request.GET.get("mlmodel_id", request.session.get("mlmodel_id"))
+    project_id = request.GET.get("project_id", request.session.get("project_id"))
+    request.session['mlmodel_id'] = mlmodel_id
+    request.session['project_id'] = project_id
+
     model_list = []
     if ModelLearning.objects.filter(mlmodel_id=mlmodel_id).exists():
         mlmodel = ModelLearning.objects.filter(mlmodel_id=mlmodel_id).values()
@@ -33,8 +45,25 @@ def main(request):
     )
 
 
+# 메인 이동 전 session 확인
+def validate(request):
+    project_id = request.session.get("project_id", None)
+    if project_id is None:
+        print("[ERROR] project id 가 없습니다")
+        result = json.dumps({"result": "error_project", "message": "프로젝트를 먼저 선택해주세요"})
+        return HttpResponse(result, content_type='application/json')
+
+    mlmodel_id = request.session.get('mlmodel_id', None)
+    if mlmodel_id is None:
+        print("[ERROR] mlmodel id 가 없습니다")
+        result = json.dumps({"result": "error_mlmodel", "message": "모델을 선택해주세요", "project_id": project_id})
+        return HttpResponse(result, content_type='application/json')
+
+    result = json.dumps({"result": "success"})
+    return HttpResponse(result, content_type='application/json')
+
+
 # 하이퍼 파라미터 설정
-@csrf_exempt
 def detail(request):
     algorithm = request.POST.get("algorithm", "")
     explanation = ""
@@ -71,7 +100,6 @@ def detail(request):
 
 
 # 모델 저장
-@csrf_exempt
 def save_model_list(request):
     try:
         model_list = json.loads(request.POST.get("model_list"))
@@ -84,7 +112,9 @@ def save_model_list(request):
 
         for model in model_list:
             # 등록
-            ml_model = MlModel.objects.get(id=mlmodel_id, project_id=project_id)
+            project = Project.objects.get(id=project_id)
+            ml_model = MlModel.objects.get(id=mlmodel_id, project_id=project)
+
             learning_model = ModelLearning(
                 mlmodel_id=ml_model,
                 algorithm=model['algorithm']
@@ -99,6 +129,87 @@ def save_model_list(request):
                     parameter_value=value
                 )
                 parameter_model.save()
+
+        result = json.dumps({"result": "success"})
+        return HttpResponse(result, content_type='application/json')
+    except Exception as e:
+        print(f"exception : {e}")
+        result = json.dumps({"result": "error"})
+        return HttpResponse(result, content_type='application/json')
+
+
+# 선택된 모델 학습
+def learning_models(request):
+    try:
+        mlmodel_id = request.session['mlmodel_id']
+        project_id = request.session.get("project_id", None)
+
+        if MLDatasetFile.objects.filter(mlmodel_id=mlmodel_id).exists():
+            datasetFile = MLDatasetFile.objects.get(mlmodel_id=mlmodel_id)
+            data = DataObject(f"{datasetFile.dataset_file}.{datasetFile.dataset_file_extension}")
+        else:
+            project_file_model = ProjectFile.objects.filter(project_id=project_id).values()
+            files = []
+            for file in project_file_model:
+                files.append(file['project_file'])
+            data = DataObject("wave_ml/media/", files)
+            df = data.get_data()
+            for column in df.columns:
+                process_list = Process().get_process_list(mlmodel_id, column)
+                for p in process_list:
+                    df = dataPreprocessing.process_apply(df, column, p['process_type'], p['work_type'], p['input_value'], p['replace_value'])
+            data.set_data(df)
+
+        mlsampling = MLSampling.objects.get(mlmodel_id=mlmodel_id)
+        columns = json.loads(mlsampling.columns)
+
+        df = data.get_data()
+        print(df.columns)
+        if len(df.columns) != len(columns):
+            df = df[columns]
+            data.set_data(df)
+
+        target = mlsampling.target
+        split_value = mlsampling.split_rate
+        k_value = mlsampling.k_value
+
+        columns.remove(target)
+
+        spark_df = SparkDataObject(data)
+        spark_df.set_features(columns)
+        spark_df.set_label_column(target)
+
+        train_list, test_list = [], []
+        if mlsampling.split_algorithm == "Random Split":
+            train_data, test_data = dataPreprocessing.train_test_data_division(df, target, columns, int(split_value))
+            train_list.append(train_data)
+            test_list.append(test_data)
+        elif mlsampling.split_algorithm == "K-fold Cross Validation":
+            train_list, test_list = dataPreprocessing.k_fold_cross_validation(df, columns, int(k_value), target)
+        else:
+            train_list, test_list = dataPreprocessing.shuffle_split(df, columns, int(split_value), int(k_value), target)
+
+        if ModelLearning.objects.filter(mlmodel_id=mlmodel_id).exists():
+            mlmodel = ModelLearning.objects.filter(mlmodel_id=mlmodel_id).values()
+
+            results = []
+            for index, train_data in enumerate(train_list):
+                test_data = test_list.__getitem__(index)
+                train_data = dataPreprocessing.set_imbalanced_data(mlsampling.sampling_algorithm, train_data, target)
+
+                spark_df.set_train_data(train_data)
+                spark_df.set_test_data(test_data)
+
+                for model in mlmodel:
+                    learning_id = model['id']
+                    algorithm = model['algorithm']
+                    parameter = MlParameter.objects.filter(model_learning_id=learning_id, algorithm=algorithm).values()
+                    hyper_parameters = []
+                    for param in parameter:
+                        temp = {'name': param['parameter_name'], 'value': param['parameter_value']}
+                        hyper_parameters.append(temp)
+                    model_result = dataModeling.analyze_model(train_data, test_data, target, algorithm, hyper_parameters)
+                    results.append(model_result)
 
         result = json.dumps({"result": "success"})
         return HttpResponse(result, content_type='application/json')

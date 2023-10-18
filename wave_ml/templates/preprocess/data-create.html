@@ -8,16 +8,19 @@
                     <div class="row g-4 mb-3">
                         <div class="col-auto">
                             <div class="avatar-lg">
-                                <img src="{% static '/images/users/avatar-1.jpg' %}" alt="user-img" class="img-thumbnail rounded-circle" />
+                                {% if user_image %}
+                                <img src="{{user_image.url}}" alt="user-img" class="img-thumbnail rounded-circle w-100 h-100"/>
+                                {% else %}
+                                <img src="{% static 'images/users/user-dummy-img.jpg' %}" alt="user-img" class="img-thumbnail rounded-circle" />
+                                {% endif %}
                             </div>
                         </div>
                         <!--end col-->
                         <div class="col">
                             <div class="p-2">
-                                <h3 class="mb-1">은행 Project 1</h3>
-                                <p class="">금융&middot;은행</p>
+                                <h3 class="mb-1">{{ mlmodel.model_name }}</h3>
                                 <div class="hstack gap-1">
-                                    <div class="me-2"><i class="bx bx-user me-1 fs-16 align-middle"></i>유재석 / 총괄</div>
+                                    <div class="me-2"><i class="bx bx-user me-1 fs-16 align-middle"></i>{{registrant}}</div>
                                 </div>
                             </div>
                         </div>
@@ -61,6 +64,7 @@
 
                     <div class="position-absolute bottom-0 end-0 p-3">
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#dataCreateModal"><i class="ri-add-line align-bottom me-1"></i> 데이터 생성</button>
+                        <button class="btn btn-outline-primary" id="btn_for_return_project_detail"><i class="ri-file-list-line"></i> 프로젝트 상세</button>
                     </div>
                 </div>
                 <!-- end card body -->
@@ -239,15 +243,15 @@
 <script type="text/javascript">
 $(function() {
     init();
-    $("#mlmodel_id").val("{{ mlmodel_id }}");
 
+    <!-- 데이터 생성 버튼 클릭시 이벤트 -->
     $("#btn_for_modal_data_create").on("click", function() {
-        var mlmodel_id = $("#mlmodel_id").val();
+        var mlmodel_name = $("#mlmodel_name").val();
         var dataset_name = $("#dataset_name").val();
         var create_date = $("#create_date").val();
 
-        if ( mlmodel_id != "{{ mlmodel_id }}" ) {
-            $("#mlmodel_id").val("{{ mlmodel_id }}");
+        if ( mlmodel_name != "{{ mlmodel.model_name }}" ) {
+            $("#mlmodel_name").val("{{ mlmodel.model_name }}");
             Swal.fire({
                 title:'다시 시도해주세요',
                 icon: 'warning',
@@ -271,38 +275,58 @@ $(function() {
                 buttonsStyling: false
             })
             return false;
-        }
+        } else {
 
-        $.ajax({
-            type: 'POST',
-            url: '/preprocess/dataset_save',
-            data: {
-                'mlmodel_id': mlmodel_id,
-                'dataset_name': dataset_name,
-                'create_date': create_date
-            },
-            success: function(data) {
-                Swal.fire({
-                    title:'학습 데이터가 정상적으로 생성되었습니다',
-                    icon: 'success',
-                    confirmButtonClass: 'btn btn-primary w-xs mt-2',
-                    buttonsStyling: false
-                })
-            },
-            error: function(data) {
-                console.log("dataset save error");
-                Swal.fire({
-                    title:'데이터 생성이 정상적으로 이루어지지 않았습니다',
-                    icon: 'error',
-                    confirmButtonClass: 'btn btn-primary w-xs mt-2',
-                    buttonsStyling: false
-                })
-            }
-        });
+            $.ajax({
+                type: 'POST',
+                url: '/preprocess/dataset_save',
+                data: {
+                    'mlmodel_name': mlmodel_name,
+                    'dataset_name': dataset_name,
+                    'create_date': create_date,
+                    'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+                },
+                success: function(data) {
+                    if( data.result == "success" ) {
+                        Swal.fire({
+                            title:'학습 데이터가 정상적으로 생성되었습니다',
+                            icon: 'success',
+                            confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                            buttonsStyling: false
+                        })
+                    } else {
+                        Swal.fire({
+                            title:'데이터 생성이 정상적으로 이루어지지 않았습니다',
+                            icon: 'error',
+                            confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                            buttonsStyling: false
+                        })
+                    }
+                },
+                error: function(data) {
+                    console.log("dataset save error");
+                    Swal.fire({
+                        title:'데이터 생성이 정상적으로 이루어지지 않았습니다',
+                        icon: 'error',
+                        confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                        buttonsStyling: false
+                    })
+                },
+                complete: function() {
+                    $("#dataCreateModal").modal("hide");
+                }
+            });
+        }
+    });
+
+    $("#btn_for_return_project_detail").on("click", function() {
+        location.href = "/project/detail?project_id=" + {{ project_id }};
     });
 });
 
+<!-- 초기 셋팅 -->
 function init() {
+    <!-- 페이징 처리 관련 셋팅 -->
     var current_page = $("li.page-item.active").text().trim();
     var last_page = $("li.page-item").eq(-2).text().trim();
 
@@ -316,6 +340,13 @@ function init() {
         $("li.page-item").last().removeClass("disabled");
         $("li.page-item").first().removeClass("disabled");
     }
+
+    <!-- 데이터 생성 모달 팝업 초기 셋팅 -->
+    $("#mlmodel_name").val("{{ mlmodel.model_name }}");
+    $("#dataset_name").val("{{ sampling_models.dataset_name }}");
+    if ( "{{ sampling_models.create_date }}" != "" ) {
+        $("#create_date").val("{{ sampling_models.create_date }}");
+    }
 }
 
 function go_page(page_num) {
@@ -323,7 +354,8 @@ function go_page(page_num) {
         type: 'GET',
         url: '/preprocess/' + page_num,
         data: {
-            'page': page_num
+            'page': page_num,
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
         },
         success: function(data) {
             $("#project-documents").html("");

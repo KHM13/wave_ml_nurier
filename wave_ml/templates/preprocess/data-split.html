@@ -131,24 +131,15 @@
             if( $(this).attr("id") == "random-split" ) {
                 $("#split-title").text("RANDOM SPLIT");
                 $("#explain_for_split").text("학습 / 테스트 경계를 임의로 생성하여 지정한 범위 내의 데이터를 무작위로 분할합니다");
-                $("#slider-random-split").show();
-                $("#inputNumber").prop("disabled", false);
                 $("#inputNumber").val($(".noUi-tooltip").text().trim());
-                $("#k-split").prop("disabled", true);
             } else if ( $(this).attr("id") == "k-fold-split" ) {
                 $("#split-title").text("K-FOLD CROSS VALIDATION");
                 $("#explain_for_split").text("k 갯수만큼 나누어진 데이터 세트를 k번 반복하여 k개의 분할된 데이터 세트를 얻습니다");
-                $("#slider-random-split").hide();
-                $("#inputNumber").prop("disabled", true);
-                $("#inputNumber").val("");
-                $("#k-split").prop("disabled", false);
+                $("#inputNumber").val($(".noUi-tooltip").text().trim());
             } else {
                 $("#split-title").text("SHUFFLE SPLIT");
                 $("#explain_for_split").text("분할 비율로 나누어진 데이터 세트를 k번 반복하여 k개의 분할된 데이터 세트를 얻습니다");
-                $("#slider-random-split").show();
-                $("#inputNumber").prop("disabled", false);
                 $("#inputNumber").val($(".noUi-tooltip").text().trim());
-                $("#k-split").prop("disabled", false);
             }
         });
 
@@ -191,6 +182,7 @@
             if ( value == "Random Split" ) {
                 randomSplitSlider.noUiSlider.set(70);
             } else if ( value == "K-fold Cross Validation" ) {
+                randomSplitSlider.noUiSlider.set(70);
                 $("#k-split").val(5);
             } else {
                 randomSplitSlider.noUiSlider.set(70);
@@ -202,6 +194,9 @@
             $.ajax({
                 type: 'POST',
                 url: "/preprocess/select",
+                data: {
+                    'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+                },
                 success: function(data) {
                     $("#preprocess-03").html("");
                     $("#preprocess-03").html(data);
@@ -225,7 +220,15 @@
                     return false;
                 }
             } else if ( algorithm == "K-fold Cross Validation" ) {
-                if ( k_value < 2 ) {
+                if ( split_value < 10 ) {
+                    Swal.fire({
+                        title:'분할 비율을 10% 이상으로 설정하세요',
+                        icon: 'warning',
+                        confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                        buttonsStyling: false
+                    })
+                    return false;
+                } else if ( k_value < 2 ) {
                     Swal.fire({
                         title:'반복 K 횟수는 2 이상이어야 합니다',
                         icon: 'warning',
@@ -260,7 +263,8 @@
                 data: {
                     'algorithm': algorithm,
                     'split_value': split_value,
-                    'k_value': k_value
+                    'k_value': k_value,
+                    'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
                 },
                 success: function(data) {
                     $("#preprocess-03").html("");
@@ -285,6 +289,7 @@ function init() {
             if ( split_algorithm == "Random Split" ) {
                 randomSplitSlider.noUiSlider.set(split_rate);
             } else if( split_algorithm == "K-fold Cross Validation" ) {
+                randomSplitSlider.noUiSlider.set(split_rate);
                 $("#k-split").prop("disabled", false);
                 $("#k-split").val(k_value);
             } else {

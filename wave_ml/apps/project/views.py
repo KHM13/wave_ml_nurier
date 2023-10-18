@@ -14,13 +14,22 @@ from django.shortcuts import render
 from .models import Project, ProjectFile
 
 # 프로젝트 메인 첫페이지
-from ..mlmodel.models import MlModel
+from wave_ml.apps.mlmodel.models import MlModel
 
 
 def main(request):
+    if request.session.get('sort') is None:
+        request.session.clear()
     sort = request.session.get('sort', 'update')
     page = validate_page(request.session.get('page', 1))
     keyword = request.session.get('keyword', "")
+
+    # 테스트용 임시 하드코딩
+    user_id = 'TEST_USER'
+    user_name = '테스터'
+
+    request.session['user_id'] = user_id
+    request.session['user_name'] = user_name
 
     return render(
         request,
@@ -28,20 +37,22 @@ def main(request):
         {
             'sort': sort,
             'page': page,
-            'keyword': keyword
+            'keyword': keyword,
+            'user_name': user_name,
+            'user_id': user_id
         }
     )
+
 
 # 프로젝트 리스트 호출
 def list(request):
     if request.method == 'POST':
-        # 추후 수정 필요
-        user_id = 'TEST_USER'
 
         # 기존 조건 확인
         sort = request.POST.get('sort', request.session.get('sort'))
         page = validate_page(request.POST.get('page', request.session.get('page')))
         keyword = request.POST.get('keyword', request.session.get('keyword'))
+        user_id = request.session.get("user_id")
 
         # 세션 처리
         request.session['sort'] = sort
@@ -49,7 +60,8 @@ def list(request):
         request.session['keyword'] = keyword
 
         # 리스트 정렬 조회
-        project_list = list_sort(sort, user_id, keyword)
+        project_list = list_sort(sort, user_id, keyword) # 시연으로 인한 주석 처리
+        # project_list = list_sort_test(sort, keyword)
 
         # 페이징 처리
         project_obj, links = paginator(page, project_list, 8)
@@ -66,6 +78,27 @@ def list(request):
                 'keyword': keyword
             }
         )
+
+
+# 프로젝트 리스트 정렬 조회 - 시연용
+def list_sort_test(sort, keyword):
+    if keyword:
+        if sort == 'name':
+            project_list = Project.objects.filter(Q(project_name__contains=keyword)).order_by('project_name')
+        elif sort == 'registration':
+            project_list = Project.objects.filter(Q(project_name__contains=keyword)).order_by('-project_registration_date')
+        else:
+            project_list = Project.objects.filter(Q(project_name__contains=keyword)).order_by('-project_update_date')
+    else:
+        if sort == 'name':
+            project_list = Project.objects.all().order_by('project_name')
+        elif sort == 'registration':
+            project_list = Project.objects.all().order_by('-project_registration_date')
+        else:
+            project_list = Project.objects.all().order_by('-project_update_date')
+
+    return project_list
+
 
 # 프로젝트 리스트 정렬 조회
 def list_sort(sort, user_id, keyword):
@@ -86,11 +119,13 @@ def list_sort(sort, user_id, keyword):
 
     return project_list
 
+
 # 페이징 validation
 def validate_page(page):
     if page == "" or page is None or int(page) <= 0:
         page = 1
     return page
+
 
 # 페이징 처리
 def paginator(page, project_list, projects_per_page):
@@ -118,6 +153,7 @@ def paginator(page, project_list, projects_per_page):
                 '<li class="page-item"><a href="javascript:go_page(%d)" class="page-link">%d</a></li>' % (pr, pr))
 
     return project_obj, links
+
 
 # 아이디로 프로젝트 세부정보 가져오기
 def project_get_detail(request):
@@ -157,6 +193,7 @@ def project_get_detail(request):
 
         return HttpResponse(data_json, content_type='application/json')
 
+
 # 프로젝트 등록
 def registration(request):
     if request.method == 'POST':
@@ -165,13 +202,14 @@ def registration(request):
         if request.FILES.get('project_image'):
             project_img = request.FILES.get('project_image');
 
+        user_id = request.session.get('user_id', 'TEST_USER')
+
         # 프로젝트
         new_project = Project.objects.create(
             project_type=request.POST.get('project_type'),
             project_sub_type=request.POST.get('project_sub_type'),
             project_name=request.POST.get('project_name'),
-            # 추후 수정 필요
-            registrant='TEST_USER',
+            registrant=user_id,
             project_explanation=request.POST.get('project_explanation'),
             project_image=project_img
         )
@@ -191,6 +229,7 @@ def registration(request):
                 )
 
         return list(request)
+
 
 # 프로젝트 편집
 def modify(request):
@@ -242,6 +281,7 @@ def modify(request):
         else:
             return detail(request)
 
+
 # 프로젝트 복제
 def clone(request):
     if request.method == 'POST':
@@ -270,6 +310,20 @@ def clone(request):
                 )
                 new_files.append(new_file)
 
+            # 파일시스템 데이터 복제(파일)
+            for old_file, new_file in zip(old_files, new_files):
+                old_file_path = old_file.project_file.path
+                file_dir, file_name = os.path.split(old_file_path)
+                file_name, file_ext = os.path.splitext(file_name)
+                unique_id_file = uuid.uuid4().hex
+
+                file_path_prefix = file_dir.split("\\")[-2] + "/" + file_dir.split("\\")[-1]
+                new_file_name = f"{file_name}_복제본_{unique_id_file}{file_ext}"
+                new_file_path = os.path.abspath(f"{file_dir}/{new_file_name}")
+                shutil.copy2(old_file_path, new_file_path)
+                new_file.project_file = f"{file_path_prefix}/{new_file_name}"
+                new_file.save()
+
         # 모델 복제
         old_mlmodels = old_project.project_id.all()
         if old_mlmodels:
@@ -282,33 +336,21 @@ def clone(request):
                 )
 
         # 파일시스템 데이터 복제(이미지)
-        old_img_path = old_project.project_image.path
-        file_dir_img, file_name_img = os.path.split(old_img_path)
-        file_name_img, file_ext_img = os.path.splitext(file_name_img)
-        unique_id_img = uuid.uuid4().hex
+        if old_project.project_image:
+            old_img_path = old_project.project_image.path
+            file_dir_img, file_name_img = os.path.split(old_img_path)
+            file_name_img, file_ext_img = os.path.splitext(file_name_img)
+            unique_id_img = uuid.uuid4().hex
 
-        img_path_prefix = file_dir_img.split("\\")[-2] + "/" + file_dir_img.split("\\")[-1]
-        new_img_name = f"{file_name_img}_복제본_{unique_id_img}{file_ext_img}"
-        new_img_path = os.path.abspath(f"{file_dir_img}/{new_img_name}")
-        shutil.copy2(old_img_path, new_img_path)
-        new_project.project_image = f"{img_path_prefix}/{new_img_name}"
-        new_project.save()
-
-        # 파일시스템 데이터 복제(파일)
-        for old_file, new_file in zip(old_files, new_files):
-            old_file_path = old_file.project_file.path
-            file_dir, file_name = os.path.split(old_file_path)
-            file_name, file_ext = os.path.splitext(file_name)
-            unique_id_file = uuid.uuid4().hex
-
-            file_path_prefix = file_dir.split("\\")[-2] + "/" + file_dir.split("\\")[-1]
-            new_file_name = f"{file_name}_복제본_{unique_id_file}{file_ext}"
-            new_file_path = os.path.abspath(f"{file_dir}/{new_file_name}")
-            shutil.copy2(old_file_path, new_file_path)
-            new_file.project_file = f"{file_path_prefix}/{new_file_name}"
-            new_file.save()
+            img_path_prefix = file_dir_img.split("\\")[-2] + "/" + file_dir_img.split("\\")[-1]
+            new_img_name = f"{file_name_img}_복제본_{unique_id_img}{file_ext_img}"
+            new_img_path = os.path.abspath(f"{file_dir_img}/{new_img_name}")
+            shutil.copy2(old_img_path, new_img_path)
+            new_project.project_image = f"{img_path_prefix}/{new_img_name}"
+            new_project.save()
 
         return list(request)
+
 
 # 프로젝트 삭제
 def remove(request):
@@ -333,6 +375,7 @@ def remove(request):
 
         return list(request)
 
+
 # 프로젝트 단일 엑셀파일 다운로드
 def single_excel_file_download(file_id):
     file_obj = ProjectFile.objects.get(id=file_id)
@@ -349,12 +392,14 @@ def single_excel_file_download(file_id):
 
     return response
 
+
 # 프로젝트 상세 엑셀파일 다운로드
 def excel_download(request):
     if request.method == 'GET':
         if request.GET.get("file_id"):
             file_id = request.GET.get("file_id")
             return single_excel_file_download(file_id)
+
 
 # 프로젝트 상세 엑셀파일 일괄 다운로드
 def multiple_excel_download(request):
@@ -383,6 +428,7 @@ def multiple_excel_download(request):
             else:
                 return single_excel_file_download(file_id_list[0])
 
+
 # 엑셀 파일 일괄 삭제
 def multiple_excel_remove(request):
     if request.method == 'POST':
@@ -395,6 +441,7 @@ def multiple_excel_remove(request):
                     remove_file.delete()
 
         return detail_documents(request)
+
 
 # 파일 데이터 반환
 def get_project_files(project_files):
@@ -411,6 +458,7 @@ def get_project_files(project_files):
     file_data = zip(file_name, file_size, file_id, file_registration_date)
 
     return file_data, file_name, file_size, file_id, file_registration_date
+
 
 # 프로젝트 상세 -> 메인
 def detail(request):
@@ -459,12 +507,13 @@ def detail(request):
         }
     )
 
+
 # 프로젝트 상세 -> 상세
 def detail_main(request):
     if request.method == 'POST':
         # 프로젝트
-        user_id = request.session.get('project_id', request.POST.get('project_id'))
-        project_obj = Project.objects.get(id=user_id)
+        project_id = request.session.get('project_id', request.POST.get('project_id'))
+        project_obj = Project.objects.get(id=project_id)
         # 파일
         project_files = project_obj.project.all()
         file_data, file_name, file_size, file_id, file_registration_date = get_project_files(project_files)
@@ -476,7 +525,7 @@ def detail_main(request):
             request,
             'project/project-detail-main.html',
             {
-                'project_id': user_id,
+                'project_id': project_id,
                 'registrant': project_obj.registrant,
                 'project_registration_date': project_obj.project_registration_date,
                 'project_update_date': project_obj.project_update_date,
@@ -491,11 +540,12 @@ def detail_main(request):
             }
         )
 
+
 # 프로젝트 상세 -> 모델
 def detail_model(request):
     if request.method == 'POST':
-        user_id = request.session.get('project_id', request.POST.get('project_id'))
-        project_obj = Project.objects.get(id=user_id)
+        project_id = request.session.get('project_id', request.POST.get('project_id'))
+        project_obj = MlModel.objects.get(id=project_id)
         mlmodel = project_obj.project_id.order_by("-best_recall", "-best_accuracy").all()
         mlmodel_pagination, links = paginator(request.POST.get("page", 1), mlmodel, 12)
 
@@ -503,7 +553,7 @@ def detail_model(request):
             request,
             request.POST.get('render_html', 'project/project-detail-main.html'),
             {
-                'project_id': user_id,
+                'project_id': project_id,
                 'registrant': project_obj.registrant,
                 'project_registration_date': project_obj.project_registration_date,
                 'project_update_date': project_obj.project_update_date,
@@ -513,11 +563,12 @@ def detail_model(request):
             }
         )
 
+
 # 프로젝트 상세 -> 문서
 def detail_documents(request):
     if request.method == 'POST':
-        user_id = request.session.get('project_id', request.POST.get('project_id'))
-        project_obj = Project.objects.get(id=user_id)
+        project_id = request.session.get('project_id', request.POST.get('project_id'))
+        project_obj = Project.objects.get(id=project_id)
         project_files = project_obj.project.all()
         file_pagination, links = paginator(request.POST.get("page", 1), project_files, 10)
 
@@ -525,7 +576,7 @@ def detail_documents(request):
             request,
             request.POST.get('render_html', 'project/project-detail-main.html'),
             {
-                'project_id': user_id,
+                'project_id': project_id,
                 'registrant': project_obj.registrant,
                 'project_registration_date': project_obj.project_registration_date,
                 'project_update_date': project_obj.project_update_date,

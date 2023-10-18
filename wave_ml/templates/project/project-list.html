@@ -32,9 +32,11 @@
                                 {% if project.project_image %}
                                 <img src="{{project.project_image.url}}" alt="main-img" class="img-fluid rounded w-100 h-100">
                                 {% else %}
-                                <span class="avatar-title bg-soft-indigo rounded" id="list-img-wrapper">
-                                    <img src="{% static 'images/users/avatar-1.jpg' %}" alt="main-img" class="img-fluid w-100 h-100">
-                                </span>
+                                <div class="avatar-title bg-light rounded-circle" id="img-none">
+                                    <div class="bg-avatarbg avatar-md rounded-circle d-flex justify-content-center align-items-center">
+                                        <i class='bx bx-customize' style="font-size: 35px;"></i>
+                                    </div>
+                                </div>
                                 {% endif %}
                             </div>
                         </div>
