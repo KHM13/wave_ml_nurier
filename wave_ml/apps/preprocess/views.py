@@ -909,8 +909,9 @@ def dataset_save(request):
             if is_df_apply:
                 df = df[columns]
 
-        file_name = f'{dataset_name}_{CommonUtil.CommonUtil().now_type4}'
-        file_path = f'{MEDIA_ROOT}\\file\\dataset\\{CommonUtil.CommonUtil().now_type3}\\'
+        file_name = f'{dataset_name}_{datetime.now().strftime("%H%M%S")}'
+        file_path = f'{MEDIA_ROOT}\\file\\dataset\\{datetime.now().strftime("%Y%m%d")}\\'
+
         os.makedirs(file_path, exist_ok=True)
         df.to_csv(f'{file_path}{file_name}.csv', sep=",", mode="w", encoding="EUC-KR", index=False, header=True, chunksize=100)
 

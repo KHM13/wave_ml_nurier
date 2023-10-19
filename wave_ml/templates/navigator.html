@@ -96,7 +96,8 @@ function validation_before_load(url) {
         type: 'GET',
         url: '/learning/validate',
         data: {
-            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val(),
+            'url': url
         },
         success: function(data) {
             if( data.result == "error_project" ) {
@@ -110,7 +111,7 @@ function validation_before_load(url) {
             } else {
                 sessionStorage.setItem("processTab", "");
                 sessionStorage.setItem("datasetTab", "");
-                location.href = url;
+                location.href = data.url;
             }
         },
         error: function(data) {

@@ -11,7 +11,6 @@ from wave_ml.ml.data.DataObject import DataObject
 from wave_ml.ml.data.SparkDataObject import SparkDataObject
 
 import pandas as pd
-import findspark
 import json
 
 
@@ -59,7 +58,8 @@ def validate(request):
         result = json.dumps({"result": "error_mlmodel", "message": "모델을 선택해주세요", "project_id": project_id})
         return HttpResponse(result, content_type='application/json')
 
-    result = json.dumps({"result": "success"})
+    url = request.GET.get("url", None)
+    result = json.dumps({"result": "success", "url": f"{url}?mlmodel_id={mlmodel_id}&project_id={project_id}"})
     return HttpResponse(result, content_type='application/json')
 
 
@@ -164,7 +164,6 @@ def learning_models(request):
         columns = json.loads(mlsampling.columns)
 
         df = data.get_data()
-        print(df.columns)
         if len(df.columns) != len(columns):
             df = df[columns]
             data.set_data(df)
