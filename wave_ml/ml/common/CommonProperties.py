@@ -29,7 +29,7 @@ class CommonProperties:
 
     def __init__(self):
         properties = configparser.ConfigParser()
-        properties.read(f'/{BASE_DIR}/ml/resource/config.ini', encoding='UTF-8')
+        properties.read(f'{BASE_DIR}\\ml\\resource\\config.ini', encoding='UTF-8')
 
         self.server = properties['SERVER']
         self.spark = properties['SPARK']
@@ -315,6 +315,9 @@ class CommonProperties:
 
     def set_spark_app_name(self, app_name):
         self.spark_app_name = app_name
+
+    def get_spark_app_name(self):
+        return self.spark_app_name
 
     def set_server_running(self, is_server_running):
         self.isServerRunning = is_server_running

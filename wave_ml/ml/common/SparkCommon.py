@@ -22,9 +22,7 @@ class SparkCommon:
         return SparkCommon.__instance
 
     def set_spark_session(self):
-        key: str
-
-        self.__spark = SparkSession.builder.appName(prop.spark_app_name).master(prop().get_spark_master()).getOrCreate()
+        self.__spark = SparkSession.builder.appName(prop().get_spark_app_name()).master(prop().get_spark_master()).getOrCreate()
 
         for it in sprop().spark.__iter__():
             self.__spark.conf.set(it, sprop().spark.get(it))
