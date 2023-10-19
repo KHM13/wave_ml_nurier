@@ -4,11 +4,11 @@ from multipledispatch import dispatch
 from wave_ml.fds.common.LoggingHandler import LoggingHandler
 from wave_ml.ml.common.CommonProperties import CommonProperties as prop
 from wave_ml.ml.common.CommonUtil import CommonUtil as util
-
+from wave_ml.config.settings.base import BASE_DIR
 
 class SparkConfProperties:
     spark: SectionProxy = {}
-    properties_path: str = "/wave_ml_201/wave_ml_nurier/wave_ml/ml/resource/sparkConf.ini"
+    properties_path: str = f"/{BASE_DIR}/ml/resource/sparkConf.ini"
     properties = configparser.ConfigParser()
 
     def __init__(self):

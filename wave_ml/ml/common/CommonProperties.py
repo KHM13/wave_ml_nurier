@@ -1,6 +1,7 @@
 import os
 import configparser
 from configparser import SectionProxy
+from wave_ml.config.settings.base import BASE_DIR
 
 
 class CommonProperties:
@@ -28,7 +29,7 @@ class CommonProperties:
 
     def __init__(self):
         properties = configparser.ConfigParser()
-        properties.read('/wave_ml_201/wave_ml_nurier/wave_ml/ml/resource/config.ini', encoding='UTF-8')
+        properties.read(f'/{BASE_DIR}/ml/resource/config.ini', encoding='UTF-8')
 
         self.server = properties['SERVER']
         self.spark = properties['SPARK']
