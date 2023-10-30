@@ -1,12 +1,8 @@
 from wave_ml.ml.common.CommonProperties import CommonProperties as prop
 from wave_ml.ml.common.CommonUtil import CommonUtil as util
-from wave_ml.fds.common.LoggingHandler import LoggingHandler
 from datetime import datetime
 from multipledispatch import dispatch
 import time
-
-logger = LoggingHandler(f"{prop().get_result_log_file_path()}{util().now_type3()}_output", "a", "DEBUG")
-logger = logger.get_log()
 
 
 class StaticCommonUtil:
@@ -53,7 +49,6 @@ class StaticCommonUtil:
         except Exception as e:
             result = datetime
             print(f"[StaticCommonUtil][getDateFormatToDate] ERROR : {e}")
-            logger.error(f"[StaticCommonUtil][getDateFormatToDate] ERROR : {e}")
         return result
 
     @staticmethod
@@ -76,14 +71,11 @@ class StaticCommonUtil:
             else:
                 return self.getDateFormatToString(date_format_type, datetime)
         except Exception as e:
-            print("[StaticCommonUtil.getDateFormatToString][Exception]")
-            logger.error(e)
-
+            print(f"[StaticCommonUtil.getDateFormatToString][Exception]: {e}")
             try:
                 return self.getDateFormatToString(date_format_type, datetime)
             except Exception as e:
-                print("[StaticCommonUtil.getDateFormatToString][Exception]")
-                logger.error(e)
+                print(f"[StaticCommonUtil.getDateFormatToString][Exception]: {e}")
         return ""
 
     def getTr_dtmFromStd_gbl_id(self, std_gbl_id: str) -> str:

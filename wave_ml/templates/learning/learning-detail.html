@@ -11,7 +11,7 @@
             <div class="flex-shrink-0">
                 <button type="button" class="btn btn-outline-primary" id="btn_for_parameters_reset"><i class="ri-restart-line"></i> 초기화</button>
                 <button type="button" class="btn btn-outline-primary" id="btn_for_optimization"><i class="bx bx-category-alt"></i> 최적화</button>
-                <button type="button" class="btn btn-datablue" id="btn_for_add"><i class="ri-add-line"></i> 추가</button>
+                <button type="button" class="btn btn-datablue" id="btn_for_add"><i class="ri-add-line"></i> 리스트 추가</button>
             </div>
         </div>
 
@@ -56,12 +56,12 @@
                     </div>
                     {% endif %}
 
-                    {% if select_algorithm == 'Random Forest Regression' %}
+                    {% if select_algorithm == 'Multilayer Perceptron Classifier' %}
                     <div class="mb-5" name="div_for_hyper_parameters">
                         <div class="d-flex align-items-center mb-3">
-                            <p class="text-muted fs-15 mb-0">Criterion</p>
+                            <p class="text-muted fs-15 mb-0">solver</p>
                             <div class="ms-1">
-                                <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="right" title="분할 기준 선택, 'friedman_mse, mse, mae' 가 있음">
+                                <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="right" title="경사하강과 같은 로컬 최소값을 찾는데 사용하는 최적화 루틴">
                                     <!-- Button trigger modal -->
                                     <button type="button" class="btn btn-ghost-tooltip btn-sm btn-icon">
                                         <i data-feather="info" class="icon-sm"></i>
@@ -71,16 +71,15 @@
                         </div>
 
                         <div>
-                            <select class="form-select" id="criterion">
-                                <option value="friedman_mse">friedman_mse</option>
-                                <option value="mse">mse</option>
-                                <option value="mae">mae</option>
+                            <select class="form-select" id="solver">
+                                <option value="l-bfgs">l-bfgs</option>
+                                <option value="gd">gd</option>
                             </select>
                         </div>
                     </div>
                     {% endif %}
 
-                    {% if 'Linear Regression' in select_algorithm or select_algorithm == 'Logistic Regression' or select_algorithm == 'Multilayer Perceptron Classifier' or select_algorithm == 'Gradient Boosted Tree Classifier' %}
+                    {% if 'Linear Regression' in select_algorithm or select_algorithm == 'Logistic Regression' or select_algorithm == 'Gradient Boosted Tree Classifier' or select_algorithm == 'LinearSVC' %}
                     <div class="mb-5" name="div_for_hyper_parameters">
                         <div class="d-flex align-items-center mb-3">
                             <p class="text-muted fs-15 mb-0">Max iter</p>
@@ -236,7 +235,7 @@
                     </div>
                     {% endif %}
 
-                    {% if select_algorithm == 'Linear Regression' or select_algorithm == 'Logistic Regression' or select_algorithm == 'LinearSVC' %}
+                    {% if select_algorithm == 'Linear Regression' or select_algorithm == 'Logistic Regression' %}
                     <div class="mb-5" name="div_for_hyper_parameters">
                         <div class="d-flex align-items-center mb-3">
                             <p class="text-muted fs-15 mb-0">Elasticnet param</p>
@@ -273,7 +272,9 @@
                             </div>
                         </div>
                     </div>
+                    {% endif %}
 
+                    {% if select_algorithm == 'Linear Regression' or select_algorithm == 'Logistic Regression' or select_algorithm == 'LinearSVC' %}
                     <div class="mb-5" name="div_for_hyper_parameters">
                         <div class="d-flex align-items-center mb-3">
                             <p class="text-muted fs-15 mb-0">reg param</p>
@@ -317,7 +318,7 @@
                         <div class="d-flex align-items-center mb-3">
                             <p class="text-muted fs-15 mb-0">block size</p>
                             <div class="ms-1">
-                                <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="right" title="데이터를 분산처리하기 위해 사용되는 값, 일반적으로 작은 블록크기를 사용하며 대규모 데이터셋 처리시 큰 블록 크기 사용, 작은 블록 크기는 빠른 처리 속도를 제공하지만 메모리 사용량이 증가">
+                                <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="right" title="각 반복 중에 포함될 입력 수, 작을수록 학습 시간이 길어지는 대신 정확도가 향상됨">
 
                                     <!-- Button trigger modal -->
                                     <button type="button" class="btn btn-ghost-tooltip btn-sm btn-icon">
@@ -328,42 +329,14 @@
                         </div>
                         <div>
                             <select class="form-select" id="block_size">
-                                <option value="64KB">64KB</option>
-                                <option value="128KB">128KB</option>
-                                <option value="256KB">256KB</option>
-                                <option value="256KB">512KB</option>
-                                <option value="1MB">1MB</option>
-                                <option value="2MB">2MB</option>
-                                <option value="4MB">4MB</option>
-                                <option value="8MB">8MB</option>
-                                <option value="16MB">16MB</option>
-                            </select>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if 'SVC' in select_algorithm %}
-                    <div class="mb-5" name="div_for_hyper_parameters">
-                        <div class="d-flex align-items-center mb-3">
-                            <p class="text-muted fs-15 mb-0">kernel</p>
-                            <div class="ms-1">
-                                <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="right" title="알고리즘에서 사용할 커널 유형 지정">
-
-                                    <!-- Button trigger modal -->
-                                    <button type="button" class="btn btn-ghost-tooltip btn-sm btn-icon">
-                                        <i data-feather="info" class="icon-sm"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <select class="form-select" id="kernel">
-                                <option value="linear">linear</option>
-                                <option value="poly">poly</option>
-                                <option value="rbf">rbf</option>
-                                <option value="sigmoid">sigmoid</option>
-                                <option value="precomputed">precomputed</option>
-                                <option value="callable">callable</option>
+                                <option value="3">3</option>
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="128">128</option>
+                                <option value="256">256</option>
+                                <option value="512">512</option>
                             </select>
                         </div>
                     </div>
@@ -430,8 +403,8 @@
                 if ( parameter_name == 'N Estimators' ) {
                     mergingTooltipSlider.noUiSlider.set([10,100]);
                     $(this).find("input[name='range-step']").val(10);
-                } else if ( parameter_name == 'Criterion' ) {
-                    $("#criterion option").eq(0).prop("selected", true);
+                } else if ( parameter_name == 'solver' ) {
+                    $("#solver option").eq(0).prop("selected", true);
                 } else if ( parameter_name == 'Max iter' ) {
                     mergingTooltipSlider03.noUiSlider.set([10,100]);
                     $(this).find("input[name='range-step']").val(10);
@@ -465,8 +438,8 @@
                 if ( parameter_name == 'N Estimators' ) {
                     mergingTooltipSlider.noUiSlider.set([100,300]);
                     $(this).find("input[name='range-step']").val(50);
-                } else if ( parameter_name == 'Criterion' ) {
-                    $("#criterion option").eq(0).prop("selected", true);
+                } else if ( parameter_name == 'solver' ) {
+                    $("#solver option").eq(0).prop("selected", true);
                 } else if ( parameter_name == 'Max iter' ) {
                     mergingTooltipSlider03.noUiSlider.set([100,500]);
                     $(this).find("input[name='range-step']").val(100);
@@ -486,7 +459,7 @@
                     mergingTooltipSlider07.noUiSlider.set([0.01,1.0]);
                     $(this).find("input[name='range-step']").val(0.25);
                 } else if ( parameter_name == 'block size' ) {
-                    $("#block_size option").eq(1).prop("selected", true);
+                    $("#block_size option").eq(5).prop("selected", true);
                 } else if ( parameter_name == 'kernel' ) {
                     $("#kernel option").eq(2).prop("selected", true);
                 }
@@ -595,8 +568,8 @@ function init_setting() {
                     }
                     $("div[name='div_for_hyper_parameters']").eq(n).find("input[name='range-step']").val(step);
                 } else {
-                    if ( hyper_parameter[0] == 'Criterion' ) {
-                        $("#criterion option").each(function() {
+                    if ( hyper_parameter[0] == 'solver' ) {
+                        $("#solver option").each(function() {
                             if ( $(this).text().trim() == hyper_parameter[1].trim() ) {
                                 $(this).prop("selected", true);
                             } else {

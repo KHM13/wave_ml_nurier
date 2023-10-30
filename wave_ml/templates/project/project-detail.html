@@ -43,8 +43,8 @@
                         <div class="row text text-white-50 text-center">
                             <div class="col-3">
                                 <div class="p-2">
-                                    {% if mlmodel %}
-                                    <h4 class="text-white mb-1">{{best_mlmodel.best_recall}}</h4>
+                                    {% if best_mlmodel.best_recall %}
+                                    <h4 class="text-white mb-1">{{best_mlmodel.best_recall | floatformat:2}}</h4>
                                     {% else %}
                                     <h4 class="text-white mb-1">0</h4>
                                     {% endif %}
@@ -53,8 +53,8 @@
                             </div>
                             <div class="col-3">
                                 <div class="p-2">
-                                    {% if mlmodel %}
-                                    <h4 class="text-white mb-1">{{best_mlmodel.best_accuracy}}</h4>
+                                    {% if best_mlmodel.best_accuracy %}
+                                    <h4 class="text-white mb-1">{{best_mlmodel.best_accuracy | floatformat:2}}</h4>
                                     {% else %}
                                     <h4 class="text-white mb-1">0</h4>
                                     {% endif %}

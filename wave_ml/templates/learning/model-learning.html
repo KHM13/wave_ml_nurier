@@ -69,8 +69,8 @@
                     <div class="card card-height-100">
                         <div class="card-body">
                             <div class="mb-3 d-flex">
-                                <button class="btn btn-outline-primary w-50 m-2" id="btn_for_model_save">저장</button>
-                                <button class="btn btn-primary w-50 m-2" id="btn_for_model_learning">분석</button>
+                                <button class="btn btn-outline-primary w-50 m-2" id="btn_for_model_save">선택내역 저장</button>
+                                <button class="btn btn-primary w-50 m-2" id="btn_for_model_learning">모델 학습</button>
                             </div>
 
                             <div class="mb-3">
@@ -188,7 +188,7 @@ $(function() {
     });
 
     $("#btn_for_model_learning").on("click", function() {
-        alert_model_learning("저장되어있는 모델 정보로 분석합니다.");
+        alert_model_learning("저장되어있는 모델 정보로 학습합니다.");
     });
 });
 
@@ -223,7 +223,7 @@ function sorting_text() {
 function alert_model_learning(message) {
     Swal.fire({
         title: message,
-        text: '분석시 데이터양에 따라 많은 시간이 소요될수도 있습니다. 지금 분석하시겠습니까?',
+        text: '학습시 데이터양에 따라 많은 시간이 소요될수도 있습니다. 지금 학습하시겠습니까?',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonClass: 'btn btn-primary w-xs mt-2',
@@ -253,17 +253,17 @@ function learning_models() {
         success: function(data) {
             if( data.result == "success" ) {
                 Swal.fire({
-                    title:'분석이 완료되었습니다.',
+                    title: data.message,
                     icon: 'success',
                     confirmButtonClass: 'btn btn-primary w-xs mt-2',
                     buttonsStyling: false,
-                    confirmButtonText: '분석결과'
+                    confirmButtonText: '학습 결과'
                 }).then(function () {
                     location.href = "/evaluation";
                 });
             } else {
                 Swal.fire({
-                    title:'문제가 발생하여 저장되지 않았습니다.\n다시 시도해주세요.',
+                    title: data.message,
                     icon: 'error',
                     confirmButtonClass: 'btn btn-primary w-xs mt-2',
                     buttonsStyling: false

@@ -7,7 +7,7 @@ from multipledispatch import dispatch
 from imblearn.over_sampling import SMOTE, RandomOverSampler
 from imblearn.under_sampling import RandomUnderSampler
 from imblearn.pipeline import Pipeline
-from pyspark.sql.types import StringType, DoubleType
+from pyspark.sql.types import StringType, DoubleType, LongType, IntegerType, FloatType, TimestampType, StructField, StructType
 from sklearn.preprocessing import MinMaxScaler, RobustScaler, StandardScaler
 from sklearn.model_selection import train_test_split, RepeatedStratifiedKFold, cross_val_score
 
@@ -73,3 +73,17 @@ class DataObject:
     def set_test_data(self, data: DataFrame):
         self.__test_data = data
 
+    def get_data_schema(self):
+        schema = []
+        for column, type in self.__data.dtypes.items():
+            spark_data_type = get_spark_data_type(type)
+            schema.append(StructField(column, spark_data_type))
+        return StructType(schema)
+
+
+def get_spark_data_type(type_name):
+    if type_name == "int64": return LongType()
+    elif type_name == "int32": return IntegerType()
+    elif type_name == "float64": return DoubleType()
+    elif type_name == "float32": return FloatType()
+    return StringType()

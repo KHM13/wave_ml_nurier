@@ -1,10 +1,12 @@
 from multipledispatch import dispatch
+from pyspark import SQLContext
+from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 from pyspark.ml.feature import VectorAssembler, StringIndexer, Bucketizer
 from pyspark.ml.feature import Normalizer, StandardScaler, RobustScaler, MinMaxScaler, MaxAbsScaler
 from wave_ml.ml.common.SparkCommon import SparkCommon as scommon
 from wave_ml.ml.data.DataObject import DataObject
-
+import pandas
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -19,9 +21,8 @@ class SparkDataObject:
     label_column: str
 
     def __init__(self, data: DataObject):
-        spark = scommon.getInstance().get_spark_session()
-
-        self.__data = spark.createDataFrame(data.get_data())
+        spark: SparkSession = scommon.getInstance().get_spark_session()
+        self.__data = spark.createDataFrame(data=data.get_data())
         self.__columnList = self.__data.columns
         self.pipeline_array = []
 
@@ -50,6 +51,9 @@ class SparkDataObject:
 
     def get_columns_size(self):
         return len(self.__columnList)
+
+    def get_column_list(self):
+        return self.__columnList
 
     # Data Split
     @dispatch(float)
@@ -97,3 +101,7 @@ class SparkDataObject:
 
     def set_features(self, columns):
         self.features = VectorAssembler(inputCols=columns, outputCol="features", handleInvalid="skip")
+
+    def reset_pipline_array(self, columns):
+        self.pipeline_array = []
+        self.pipeline_array.append(VectorAssembler(inputCols=columns, outputCol="features", handleInvalid="skip"))

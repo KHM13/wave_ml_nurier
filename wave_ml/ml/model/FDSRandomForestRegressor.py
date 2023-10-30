@@ -1,4 +1,4 @@
-from pyspark.ml.classification import DecisionTreeClassifier
+from pyspark.ml.regression import RandomForestRegressor
 from pyspark.ml.tuning import TrainValidationSplit, ParamGridBuilder
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml import Pipeline
@@ -9,27 +9,27 @@ from wave_ml.ml.common.CommonUtil import CommonUtil as util
 from wave_ml.ml.common.CommonProperties import CommonProperties as prop
 
 
-class FDSDecisionTreeClassifier(FDSModel):
+class FDSRandomForestRegressor(FDSModel):
 
-    model: DecisionTreeClassifier
+    model: RandomForestRegressor
     train_validation_split: TrainValidationSplit
 
     def __init__(self, data: SparkDataObject):
-        super(FDSDecisionTreeClassifier, self).__init__(data)
-        self.model = DecisionTreeClassifier()
+        super(FDSRandomForestRegressor, self).__init__(data)
+        self.model = RandomForestRegressor()
 
     def create(self):
         self.model_title = self.model.__class__.__name__
         return self
 
-    def set_model(self, train_size: float, label: str, max_depth: list, min_samples_split: list):
+    def set_model(self, train_size: float, label, max_depth: list, n_estimators: list):
         self.model.setMaxBins(prop().get_model_max_beans())\
             .setFeaturesCol("features")\
             .setLabelCol(label)
 
         param_grid = ParamGridBuilder()\
-            .addGrid(self.model.maxDepth, max_depth) \
-            .addGrid(self.model.minInfoGain, min_samples_split) \
+            .addGrid(self.model.maxDepth, max_depth)\
+            .addGrid(self.model.numTrees, n_estimators)\
             .build()
 
         self.train_validation_split = TrainValidationSplit()\

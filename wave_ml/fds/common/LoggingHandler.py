@@ -17,11 +17,11 @@ class LoggingHandler:
             "WARNING": logging.WARNING,
             "ERROR": logging.ERROR,
             "CRITICAL": logging.CRITICAL}
+        self.log.setLevel(self.levels.get(level))
 
-        file_handler = logging.FileHandler(f"{name}.log", mode=mode, encoding="UTF-8")
+        file_handler = logging.FileHandler(f"D:\\wave_ml_201\\wave_ml_nurier\\wave_ml\\logs\\{name}.log", mode=mode, encoding="UTF-8")
         file_handler.setFormatter(self.formatter)
         self.log.addHandler(file_handler)
-        self.log.setLevel(self.levels.get(level))
 
     def get_log(self):
         return self.log

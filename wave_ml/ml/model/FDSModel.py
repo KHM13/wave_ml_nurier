@@ -1,9 +1,11 @@
 import math
-from multipledispatch import dispatch
 from logging import Logger
+from multipledispatch import dispatch
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.ml.feature import DataFrame, Bucketizer
 
+from wave_ml.fds.common.LoggingHandler import LoggingHandler
+from wave_ml.ml.common.CommonUtil import CommonUtil
 from wave_ml.ml.data.SparkDataObject import SparkDataObject
 
 
@@ -16,14 +18,10 @@ class FDSModel:
     prediction_bucketizer_size: float
 
     model_title = "model_title"
-    media_group_name: str
-    media_group_code_array: list
 
-    def __init__(self, log, data):
-        self.log: Logger = log
+    def __init__(self, data):
         self.data: SparkDataObject = data
-        self.media_group_name = data.get_media_group_name()
-        self.media_group_code_array = data.get_media_group_code_array()
+        self.log: Logger = LoggingHandler(f"{CommonUtil().now_type3()}_output", "a", "ERROR").get_log()
         self.pipeline_array = self.data.get_pipeline_array()
         self.prediction_bucketizer_size = 0.0
 
@@ -33,7 +31,6 @@ class FDSModel:
 
     @dispatch(DataFrame)
     def training(self, data):
-        self.log.info("Model Training")
         self.model_result = self.pipeline.fit(data)
 
     @dispatch(int)
@@ -53,8 +50,8 @@ class FDSModel:
         self.log.info("Model Predicting")
         self.prediction = self.model_result.transform(data)
 
-    def prediction_result(self):
-        return self.prediction.select("prediction", ML_Field.get_label())
+    def prediction_result(self, label):
+        return self.prediction.select("prediction", label)
 
     def save_model(self, file_path):
         try:

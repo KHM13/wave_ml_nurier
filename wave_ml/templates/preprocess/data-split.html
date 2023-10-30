@@ -113,7 +113,7 @@
                             <span class="input-group-text">학습데이터 분할비율</span>
                             <input type="text" class="form-control" id="inputNumber" aria-label="" value="70%" pattern="^[^0]\d*">
                             <span class="input-group-text">반복 K횟수</span>
-                            <input type="text" class="form-control" aria-label="" id="k-split" pattern="[0-9]+" disabled>
+                            <input type="text" class="form-control" aria-label="" id="k-split" pattern="[0-9]+">
                         </div>
                     </div>
                 </div>
@@ -132,14 +132,20 @@
                 $("#split-title").text("RANDOM SPLIT");
                 $("#explain_for_split").text("학습 / 테스트 경계를 임의로 생성하여 지정한 범위 내의 데이터를 무작위로 분할합니다");
                 $("#inputNumber").val($(".noUi-tooltip").text().trim());
+                $("#k-split").prop("readonly", true);
+                $("#k-split").val(1);
             } else if ( $(this).attr("id") == "k-fold-split" ) {
                 $("#split-title").text("K-FOLD CROSS VALIDATION");
                 $("#explain_for_split").text("k 갯수만큼 나누어진 데이터 세트를 k번 반복하여 k개의 분할된 데이터 세트를 얻습니다");
                 $("#inputNumber").val($(".noUi-tooltip").text().trim());
+                $("#k-split").prop("readonly", false);
+                $("#k-split").val(1);
             } else {
                 $("#split-title").text("SHUFFLE SPLIT");
                 $("#explain_for_split").text("분할 비율로 나누어진 데이터 세트를 k번 반복하여 k개의 분할된 데이터 세트를 얻습니다");
                 $("#inputNumber").val($(".noUi-tooltip").text().trim());
+                $("#k-split").prop("readonly", false);
+                $("#k-split").val(1);
             }
         });
 
@@ -180,12 +186,16 @@
         $("#btn_for_optimization").on("click", function() {
             var value = $("input[name='split']:checked").parents("div.card-radio").text().trim();
             if ( value == "Random Split" ) {
+                $("#k-split").prop("readonly", true);
+                $("#k-split").val("1");
                 randomSplitSlider.noUiSlider.set(70);
             } else if ( value == "K-fold Cross Validation" ) {
                 randomSplitSlider.noUiSlider.set(70);
+                $("#k-split").prop("readonly", false);
                 $("#k-split").val(5);
             } else {
                 randomSplitSlider.noUiSlider.set(70);
+                $("#k-split").prop("readonly", false);
                 $("#k-split").val(5);
             }
         });
@@ -288,13 +298,15 @@ function init() {
             $(this).click();
             if ( split_algorithm == "Random Split" ) {
                 randomSplitSlider.noUiSlider.set(split_rate);
+                $("#k-split").prop("readonly", true);
+                $("#k-split").val("1");
             } else if( split_algorithm == "K-fold Cross Validation" ) {
                 randomSplitSlider.noUiSlider.set(split_rate);
-                $("#k-split").prop("disabled", false);
+                $("#k-split").prop("readonly", false);
                 $("#k-split").val(k_value);
             } else {
                 randomSplitSlider.noUiSlider.set(split_rate);
-                $("#k-split").prop("disabled", false);
+                $("#k-split").prop("readonly", false);
                 $("#k-split").val(k_value);
             }
         }

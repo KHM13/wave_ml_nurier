@@ -9,6 +9,7 @@ from wave_ml.ml import dataModeling, dataChecking, dataPreprocessing
 from ...ml.common.SparkCommon import SparkCommon
 from wave_ml.ml.data.DataObject import DataObject
 from wave_ml.ml.data.SparkDataObject import SparkDataObject
+from wave_ml.ml.common.CommonUtil import CommonUtil
 
 import pandas as pd
 import json
@@ -171,12 +172,13 @@ def learning_models(request):
         target = mlsampling.target
         split_value = mlsampling.split_rate
         k_value = mlsampling.k_value
+        rate: float = int(split_value)/100.0
 
         columns.remove(target)
-
         spark_df = SparkDataObject(data)
         spark_df.set_features(columns)
         spark_df.set_label_column(target)
+        spark_df.set_split_data(rate)
 
         train_list, test_list = [], []
         if mlsampling.split_algorithm == "Random Split":
@@ -191,28 +193,53 @@ def learning_models(request):
         if ModelLearning.objects.filter(mlmodel_id=mlmodel_id).exists():
             mlmodel = ModelLearning.objects.filter(mlmodel_id=mlmodel_id).values()
 
-            results = []
-            for index, train_data in enumerate(train_list):
-                test_data = test_list.__getitem__(index)
-                train_data = dataPreprocessing.set_imbalanced_data(mlsampling.sampling_algorithm, train_data, target)
+            util = CommonUtil()
+            spark = SparkCommon.getInstance().get_spark_session()
+            for model in mlmodel:
+                learning_id = model['id']
+                algorithm = model['algorithm']
+                parameter = MlParameter.objects.filter(model_learning_id=learning_id, algorithm=algorithm).values()
+                hyper_parameters = []
+                for param in parameter:
+                    temp = {'name': param['parameter_name'], 'value': param['parameter_value']}
+                    hyper_parameters.append(temp)
 
-                spark_df.set_train_data(train_data)
-                spark_df.set_test_data(test_data)
+                model_results = []
+                for index, train_data in enumerate(train_list):
+                    test_data = test_list.__getitem__(index)
+                    train_data = dataPreprocessing.set_imbalanced_data(mlsampling.sampling_algorithm, train_data, target)
+                    spark_df.reset_pipline_array(columns)
+                    spark_df.set_train_data(spark.createDataFrame(train_data))
+                    spark_df.set_test_data(spark.createDataFrame(test_data))
+                    model_result = dataModeling.analyze_model(spark_df, algorithm, hyper_parameters, rate)
+                    model_results.append(model_result)
 
-                for model in mlmodel:
-                    learning_id = model['id']
-                    algorithm = model['algorithm']
-                    parameter = MlParameter.objects.filter(model_learning_id=learning_id, algorithm=algorithm).values()
-                    hyper_parameters = []
-                    for param in parameter:
-                        temp = {'name': param['parameter_name'], 'value': param['parameter_value']}
-                        hyper_parameters.append(temp)
-                    model_result = dataModeling.analyze_model(train_data, test_data, target, algorithm, hyper_parameters)
-                    results.append(model_result)
+                sorted_results = sorted(model_results, key=lambda x: x['recall'], reverse=True)
+                best_model: dict = sorted_results.__getitem__(0)
+                ModelLearning.objects.filter(mlmodel_id=mlmodel_id, algorithm=best_model.get("model_name")).update(
+                    accuracy=best_model.get("accuracy"),
+                    recall=best_model.get("recall"),
+                    precision=best_model.get("precision"),
+                    f1_score=best_model.get("f1"),
+                    r2=best_model.get("r2"),
+                    mse=best_model.get("mse"),
+                    rmse=best_model.get("rmse"),
+                    mae=best_model.get("mae"),
+                    confusion_matrix=best_model.get("confusion_matrix"),
+                    best_params=best_model.get("best_params"),
+                    learning_date=util.now()
+                )
 
-        result = json.dumps({"result": "success"})
+            best_mlmodel = ModelLearning.objects.filter(mlmodel_id=mlmodel_id).order_by('-recall').values().first()
+            MlModel.objects.filter(id=mlmodel_id).update(
+                model_name=best_mlmodel['algorithm'],
+                best_accuracy=best_mlmodel['accuracy'],
+                best_recall=best_mlmodel['recall'],
+            )
+
+        result = json.dumps({"result": "success", "message": "모델 학습이 완료되었습니다."})
         return HttpResponse(result, content_type='application/json')
     except Exception as e:
         print(f"exception : {e}")
-        result = json.dumps({"result": "error"})
+        result = json.dumps({"result": "error", "message": "학습 중 문제가 발생하였습니다.\n다시 시도해주세요."})
         return HttpResponse(result, content_type='application/json')
