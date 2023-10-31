@@ -6,7 +6,7 @@
             <div class="card-body">
                 <div class="d-flex flex-wrap align-items-center">
                     <div class="col-xl-2 col-lg-2">
-                        <h5 class="fs-16 fw-semibold mb-2">{{column}}</h5>
+                        <h5 class="fs-16 fw-semibold mb-2" id="column_name">{{column}}</h5>
                     </div>
 
                     <div class="col-xl-10 col-lg-10 filter-choices-input ms-auto">
@@ -14,10 +14,18 @@
                             <div class="choices__inner" style="min-height: auto;">
                                 <div class="choices__list choices__list--multiple" id="preprocess-choices">
                                     {% for data in badge %}
-                                    <div class="choices__item choices__item--selectable bg-choicesbg text-choicesfont border-choicesbg">
-                                        {{ data.name }}
-                                        <button type="button" class="choices__button text-choicesfont border-choicesfont" onclick="remove_item(this);" data-process="{{ data.process_type }}" data-work="{{ data.work_type }}">Remove item</button>
-                                    </div>
+                                        {% if data.name == "변수 삭제" %}
+                                        <div class="choices__item choices__item--selectable bg-danger text-light border-danger">
+                                            {{ data.name }}
+                                            <button type="button" class="choices__button text-choicesfont border-choicesfont" onclick="remove_item(this);" data-process="{{ data.process_type }}" data-work="{{ data.work_type }}">Remove item</button>
+                                        </div>
+                                        {% endif %}
+                                        {% if data.name != "변수 삭제" %}
+                                        <div class="choices__item choices__item--selectable bg-choicesbg text-choicesfont border-choicesbg">
+                                            {{ data.name }}
+                                            <button type="button" class="choices__button text-choicesfont border-choicesfont" onclick="remove_item(this);" data-process="{{ data.process_type }}" data-work="{{ data.work_type }}">Remove item</button>
+                                        </div>
+                                        {% endif %}
                                     {% endfor %}
                                 </div>
                             </div>
@@ -207,6 +215,7 @@
                 <div class="mt-4 hstack gap-2">
                     <button class="btn btn-soft02-primary w-100" id="btn_process_cancel">취소</button>
                     <button class="btn btn-primary w-100" id="btn_process_apply">적용</button>
+                    <button class="btn btn-danger w-100" id="btn_process_except">삭제</button>
                 </div>
             </div>
         </div>
@@ -240,9 +249,53 @@ $(function() {
         process_replace_input();
     });
 
+    $("#btn_process_except").on("click", function() {
+        var col = $("#select_column").val();
+        
+        if ($(".bg-danger").length > 0) {
+            Swal.fire({
+                title: "이미 삭제된 변수입니다.",
+                icon: 'warning',
+                confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                buttonsStyling: false
+            })
+            return
+        }
+
+        Swal.fire({
+            text: col + " 변수를 삭제하시겠습니까?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonClass: 'btn btn-primary w-xs mt-2',
+            cancelButtonClass: 'btn btn-light w-xs me-2 mt-2',
+            confirmButtonText: '예',
+            cancelButtonText: '아니요',
+            reverseButtons: false, // 버튼 순서 거꾸로
+            buttonsStyling: false,
+            showCloseButton: true,
+            customClass: 'fs-5'
+        }).then(function (result) {
+            if ( result.isConfirmed ) {
+                $.ajax({
+                type: 'POST',
+                url: '/preprocess/process/except',
+                data: {
+                    'column': col,
+                    'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+                },
+                success: function(data) {
+                    append_item(data.name);
+                }
+                });
+            } else if ( result.isDismissed ) {
+                return false;
+            }
+        });
+    });
+
     $("#btn_process_cancel").on("click", function() {
         var col = $("#select_column").val();
-
+        
         $.ajax({
             type: 'POST',
             url: '/preprocess/process/detail',
@@ -253,6 +306,9 @@ $(function() {
             success: function(data) {
                 $("#preprocess-detail").html("");
                 $("#preprocess-detail").html(data);
+            },
+            error: function(data) {
+                console.log("process except error");
             }
         });
     });

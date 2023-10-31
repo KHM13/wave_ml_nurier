@@ -140,6 +140,7 @@ def detail(request):
     # 해당 컬럼의 데이터 목록 조회
     value_list = dataChecking.data_detail(df, column)
     # 해당 컬럼의 데이터 통계값 조회
+    
     desc = dataChecking.data_desc(df, column)
     # 해당 컬럼의 데이터 유형 조회 ( 데이터값 종류가 10개 미만이면 데이터유형을 카테고리형으로 선택 )
     data_type = dataChecking.get_data_type(df, column) if not dataChecking.is_data_category(df, column) else "category"
@@ -283,10 +284,24 @@ def graph_boxplot(request):
     column = request.POST.get("column")
 
     df_data = dataChecking.json_to_df(df)
-    # 해당 컬럼 이상치 조회
-    outlier = dataPreprocessing.detect_outlier(df_data, column)
+
     # 데이터 분포 박스 그래프
     result = dataChart.box_plot_graph(df_data, column, 750, 500)
+
+    if result == "":
+        return render(
+            request,
+            'preprocess/tab-boxplot.html',
+            {
+                "column": column,
+                "outlier": "",
+                "graph": "",
+                "message": "※ 데이터 타입을 확인해주세요."
+            }
+        )
+    
+    # 해당 컬럼 이상치 조회
+    outlier = dataPreprocessing.detect_outlier(df_data, column)
     return render(
         request,
         'preprocess/tab-boxplot.html',
@@ -308,8 +323,33 @@ def graph_corr(request):
 
     target = request.session['target']
     df_data = dataChecking.json_to_df(df)
+    
+    
     # 해당 컬럼의 값 별 목표 변수 값 분포 그래프
     result = dataChart.scatter_graph(df_data, column, target)
+
+    if result == "" :
+        # 해당 컬럼이 문자열 or 목표 변수가 문자열
+        ch1 = df_data[column].dtype == "object"
+        ch2 = df_data[target].dtype == "object"
+        message = ""
+        if ch1:
+            message = "※ 데이터 타입을 확인해주세요."
+        if ch2:
+            message = "※ 목표변수 타입이 문자열입니다."
+
+        if ch1 or ch2:
+            return render(
+                request,
+                'preprocess/tab-corr.html',
+                {
+                    "column": column,
+                    "freq": "",
+                    "graph": "",
+                    "message": message
+                }
+            )
+
     # 해당 컬럼의 최빈값 조회
     freq = dataChecking.data_freq(df_data, column)
 
@@ -335,7 +375,7 @@ def process_replacing_value(request):
 
     df = dataChecking.json_to_df(df_apply)
     # 문자열 통합 처리 작업 적용
-    df_data = dataPreprocessing.replace_value(df, column, work_input, replace_input)
+    df_data = dataPreprocessing.fs_replace_value(df, column, work_input, replace_input)
     # 적용 후 미리보기 화면을 위한 데이터 정보 재조회
     preview = dataChecking.data_preview(df_data, column, target)
     df_preprocess = dataChecking.df_to_json(df_data)
@@ -422,6 +462,34 @@ def process_scaler(request):
             "select_tab": select_tab
         }
     )
+
+# 변수 삭제
+def except_columns(request):
+    column = request.POST.get('column')
+    process = "delete"
+    result = {}
+    result['name'] = process
+    
+    # DB에 프로세스 추가
+    mlmodel_id = request.session['mlmodel_id']
+
+    # 해당 컬럼의 마지막 SORT 값 조회
+    sort_list = Process().get_process_list(mlmodel_id, column)
+    if sort_list is not None and len(sort_list) > 0:
+        sort_index = int(sort_list.latest('sort')['sort']) + 1
+    elif len(sort_list) == 1:
+        sort_index = int(sort_list['sort']) + 1
+    else:
+        sort_index = 1
+
+    # 삭제 저장(process)
+    mlmodel = MlModel.objects.get(id=mlmodel_id)
+    process_model = Process(mlmodel_id=mlmodel, column_name=column, process_type=process, work_type="",
+                            input_value="", replace_value="", sort=sort_index)
+    process_model.save()
+
+    return JsonResponse(result)
+
 
 
 # 처리 작업 적용
@@ -526,8 +594,11 @@ def process_remove(request):
         Process.objects.filter(mlmodel_id=mlmodel_id, column_name=select_column, process_type=process, work_type=work, replace_value=replace_input).delete()
     elif process == "dummy":
         Process.objects.filter(mlmodel_id=mlmodel_id, column_name=select_column, process_type=process).delete()
+    elif process == "delete":
+        Process.objects.filter(mlmodel_id=mlmodel_id, column_name=select_column, process_type=process).delete()
     else:
         Process.objects.filter(mlmodel_id=mlmodel_id, column_name=select_column, process_type=process, work_type=work).delete()
+    
 
     # 삭제 후 남은 작업 처리 재적용
     for column in df_apply.columns:
@@ -563,10 +634,16 @@ def feature_select(request):
     df_apply = request.session['df_apply']
     target = request.session['target']
     df = dataChecking.json_to_df(df_apply)
-    info = dataChecking.get_data_info(df, target)
-
     mlmodel_id = request.session['mlmodel_id']
+    
+    # 삭제 변수 제외
+    if Process.objects.filter(mlmodel_id=mlmodel_id, process_type="delete").exists():
+        deleted_list = Process.objects.filter(mlmodel_id=mlmodel_id, process_type="delete").values()
+        for i in deleted_list:
+            df = df.drop(i['column_name'], axis=1)
 
+    info = dataChecking.get_data_info(df, target)
+    
     # 데이터셋 전처리 작업 불러오기
     if MLSampling.objects.filter(mlmodel_id=mlmodel_id).exists():   # 기존 작업 존재할경우
         sampling = MLSampling().get_feature_columns(mlmodel_id)     # 변수 선택법 적용 내용 불러오기
@@ -909,9 +986,8 @@ def dataset_save(request):
             if is_df_apply:
                 df = df[columns]
 
-        file_name = f'{dataset_name}_{datetime.now().strftime("%H%M%S")}'
-        file_path = f'{MEDIA_ROOT}\\file\\dataset\\{datetime.now().strftime("%Y%m%d")}\\'
-
+        file_name = f'{dataset_name}_{CommonUtil.CommonUtil().now_type4}'
+        file_path = f'{MEDIA_ROOT}\\file\\dataset\\{CommonUtil.CommonUtil().now_type3}\\'
         os.makedirs(file_path, exist_ok=True)
         df.to_csv(f'{file_path}{file_name}.csv', sep=",", mode="w", encoding="EUC-KR", index=False, header=True, chunksize=100)
 

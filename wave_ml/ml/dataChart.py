@@ -11,6 +11,8 @@ warnings.filterwarnings("ignore")
 
 # 이상치 확인용 박스플롯 그래프
 def box_plot_graph(df, column, width, height):
+    if df[column].dtype == "object":
+        return ""
     layout = go.Layout(template='plotly_white', width=width, height=height)
     fig = go.Figure(layout=layout)
     fig.add_trace(go.Box(y=df[column], name=column, marker=dict(color="#5380b2", outliercolor="#f06548")))
@@ -21,6 +23,8 @@ def box_plot_graph(df, column, width, height):
 
 # 목표변수와 상관관계 분포 파악 그래프
 def scatter_graph(df, column, target):
+    if df[column].dtype == "object" or df[target].dtype == "object":
+        return ""
     df_temp = df.loc[:, [column, target]] if column != target else df.loc[:, target]
     fig = px.parallel_categories(df_temp, color=target, color_continuous_scale=px.colors.sequential.RdBu)
     result = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
