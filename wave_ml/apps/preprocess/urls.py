@@ -15,6 +15,7 @@ urlpatterns = [
     path('process/process_scaler', views.process_scaler, name="process-scaler"),
     path('process/apply', views.process_apply, name="process-apply"),
     path('process/remove', views.process_remove, name="process-remove"),
+    path('process/except', views.except_columns, name="process-except"),
     path('graph/boxplot', views.graph_boxplot, name="graph-boxplot"),
     path('graph/corr', views.graph_corr, name="graph-corr"),
     path('select', views.feature_select, name="feature_select"),

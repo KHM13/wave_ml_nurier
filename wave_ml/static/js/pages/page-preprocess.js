@@ -71,12 +71,21 @@ function change_datatype() {
 }
 
 function append_item(name) {
-    var process = $("select[name='select_for_process']").val();
-    var work = $("select[name='select_for_work']").val();
-    var choice = '<div class="choices__item choices__item--selectable bg-choicesbg text-choicesfont border-choicesbg">' + name
-                + '<button type="button" class="choices__button text-choicesfont border-choicesfont" onclick="remove_item(this);" data-process="' +
-                process + '" data-work="' + work + '">Remove item</button></div>';
-    $("#preprocess-choices").append(choice);
+    if(name === "delete") {
+        var column = $("#column_name").text();
+        var choice = '<div class="choices__item choices__item--selectable bg-danger text-light border-danger">변수 삭제' +
+        '<button type="button" class="choices__button text-choicesfont border-choicesfont" onclick="remove_item(this);" data-process="delete" column_name='
+        + column +' data-work="test">Remove item</button></div>';
+        $("#preprocess-choices").append(choice);
+        return
+    } else {
+        var process = $("select[name='select_for_process']").val();
+        var work = $("select[name='select_for_work']").val();
+        var choice = '<div class="choices__item choices__item--selectable bg-choicesbg text-choicesfont border-choicesbg">' + name
+                    + '<button type="button" class="choices__button text-choicesfont border-choicesfont" onclick="remove_item(this);" data-process="' +
+                    process + '" data-work="' + work + '">Remove item</button></div>';
+        $("#preprocess-choices").append(choice);
+    }
 }
 
 function remove_item(this_item) {

@@ -36,9 +36,12 @@ def data_type_control(df, column, data_type):
 
 
 # 아웃라이어 탐지
-def detect_outlier(df, column):
+def detect_outlier(df:DataFrame, column):
+    if df[column].dtype == "object": return ""
     if df[column].isnull().sum() > 0:
-        df = df.dropna(axis=0)
+        column_list = df[column].notna()
+        df = df[column_list]
+
     Q1 = np.percentile(df[column], 25)
     me = np.percentile(df[column], 50)
     Q3 = np.percentile(df[column], 75)

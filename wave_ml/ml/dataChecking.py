@@ -122,13 +122,16 @@ def data_statistics(df):
     df_type = pd.Series(df.dtypes, name='type')
 
     result = pd.concat([df_desc, df_unique, df_missing, df_type], axis=1)
-
     return result.to_dict(orient='split')
 
 
 # 데이터 상세조회 정보
 def data_detail(df, column):
-    list = sorted(df[column].unique())
+    list = []
+    if (df[column].dtype == "object") :
+        list = df[column].unique()
+    else :
+        list = sorted(df[column].unique())
     return list
 
 
@@ -171,6 +174,8 @@ def get_process_name(process):
         return "가변수화"
     elif process == "scaler":
         return "데이터 정규화"
+    elif process == "delete":
+        return "변수 삭제"
 
 
 def dataframe_concat(df1, df2):

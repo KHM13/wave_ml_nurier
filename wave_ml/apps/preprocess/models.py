@@ -32,6 +32,8 @@ class Process(models.Model):
                 m['name'] = "가변수화"
             elif m['process_type'] == "scaler":
                 m['name'] = "데이터 정규화"
+            elif m['process_type'] == "delete":
+                m['name'] = "변수 삭제"
         return model
 
 
