@@ -155,7 +155,8 @@
 <script type="text/javascript">
 $(function() {
     init();
-
+    select_customizing();
+    
     $("input[name='col_select']").on("click", function() {
         all_switch_check();
         select_customizing();
@@ -194,19 +195,13 @@ $(function() {
                 select_algorithm = "";
             }
             
-            var selected_features = new Array();
-            $("input[name='col_select']:checked").each(function() {
-                selected_features.push($(this).attr('data-col').trim());
-            });
-            
             $.ajax({
                 type: 'POST',
                 url: '/preprocess/select/execute',
                 data: {
                     "feature_select": JSON.stringify(feature_select),
                     "select_algorithm": select_algorithm,
-                    "csrfmiddlewaretoken": $('[name=csrfmiddlewaretoken]').val(),
-                    "selected_features": JSON.stringify(selected_features)
+                    "csrfmiddlewaretoken": $('[name=csrfmiddlewaretoken]').val()
                 },
                 success: function(data) {
                     $("#div_for_feature_select").html("");

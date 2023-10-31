@@ -674,8 +674,7 @@ def execute_feature_select(request):
 
     
     # 전체 컬럼 목록 및 사이즈
-    columns = json.loads(request.POST.get('selected_features'))
-    df = df[columns]
+    columns = dataChecking.get_column_list(df)
     info = {'columns': columns, 'size': len(columns)}
 
     # 실행할 변수선택법 json 으로 보낸 Array 데이터 리스트로 변환
