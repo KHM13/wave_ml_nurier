@@ -156,6 +156,7 @@ def detail(request):
         main_graph = dataChart.main_graph(df, column, target)
     except Exception as e:
         print(e)
+        main_graph = ""
 
     return render(
         request,
@@ -591,7 +592,7 @@ def process_remove(request):
 
     # 적용되었던 작업 삭제
     if process == "replace":
-        Process.objects.filter(mlmodel_id=mlmodel_id, column_name=select_column, process_type=process, work_type=work, replace_value=replace_input).delete()
+        Process.objects.filter(mlmodel_id=mlmodel_id, column_name=select_column, process_type=process).delete()
     elif process == "dummy":
         Process.objects.filter(mlmodel_id=mlmodel_id, column_name=select_column, process_type=process).delete()
     elif process == "delete":
@@ -671,8 +672,10 @@ def execute_feature_select(request):
     df = dataChecking.json_to_df(df_apply)
     target = request.session['target']
 
+    
     # 전체 컬럼 목록 및 사이즈
-    columns = dataChecking.get_column_list(df)
+    columns = json.loads(request.POST.get('selected_features'))
+    df = df[columns]
     info = {'columns': columns, 'size': len(columns)}
 
     # 실행할 변수선택법 json 으로 보낸 Array 데이터 리스트로 변환

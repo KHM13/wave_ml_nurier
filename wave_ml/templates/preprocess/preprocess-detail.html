@@ -285,6 +285,7 @@ $(function() {
                 },
                 success: function(data) {
                     append_item(data.name);
+                    item_count();
                 }
                 });
             } else if ( result.isDismissed ) {

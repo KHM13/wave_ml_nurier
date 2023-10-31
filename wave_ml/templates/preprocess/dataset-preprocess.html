@@ -114,20 +114,35 @@
                                 </tr>
                             </thead>
                             <tbody>
-                            {% for col in info.columns %}
+                            {% if select_column|length > 0 %}
+                                {% for col in info.columns %}
+                                    <tr>
+                                        <td class="text-left ps-4">{{ col }}</td>
+                                        <td>
+                                            <div class="form-check form-switch text-center">
+                                                {% if col in select_column %}
+                                                <input class="form-check-input" type="checkbox" role="switch" name="col_select" data-col="{{ col }}" checked>
+                                                {% else %}
+                                                <input class="form-check-input" type="checkbox" role="switch" name="col_select" data-col="{{ col }}" >
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                            {% if select_column == "" %}
+                                {% for col in info.columns %}
                                 <tr>
                                     <td class="text-left ps-4">{{ col }}</td>
                                     <td>
                                         <div class="form-check form-switch text-center">
-                                            {% if col in select_column %}
                                             <input class="form-check-input" type="checkbox" role="switch" name="col_select" data-col="{{ col }}" checked>
-                                            {% else %}
-                                            <input class="form-check-input" type="checkbox" role="switch" name="col_select" data-col="{{ col }}">
-                                            {% endif %}
                                         </div>
                                     </td>
                                 </tr>
-                            {% endfor %}
+                                {% endfor %}
+                            {% endif %}
+
                             </tbody>
                         </table>
                     </div>
@@ -178,14 +193,20 @@ $(function() {
             if ( select_algorithm == "Customizing" ) {
                 select_algorithm = "";
             }
-
+            
+            var selected_features = new Array();
+            $("input[name='col_select']:checked").each(function() {
+                selected_features.push($(this).attr('data-col').trim());
+            });
+            
             $.ajax({
                 type: 'POST',
                 url: '/preprocess/select/execute',
                 data: {
                     "feature_select": JSON.stringify(feature_select),
                     "select_algorithm": select_algorithm,
-                    "csrfmiddlewaretoken": $('[name=csrfmiddlewaretoken]').val()
+                    "csrfmiddlewaretoken": $('[name=csrfmiddlewaretoken]').val(),
+                    "selected_features": JSON.stringify(selected_features)
                 },
                 success: function(data) {
                     $("#div_for_feature_select").html("");
