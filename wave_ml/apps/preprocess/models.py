@@ -25,7 +25,7 @@ class Process(models.Model):
             elif m['process_type'] == "outlier":
                 m['name'] = "이상치 처리"
             elif m['process_type'] == "replace":
-                m['name'] = f"문자열 통합:{m['replace_value']}"
+                m['name'] = f"문자열 통합:{m['input_value']}:{m['replace_value']}"
             elif m['process_type'] == "datatype":
                 m['name'] = "데이터 유형 변경"
             elif m['process_type'] == "dummy":

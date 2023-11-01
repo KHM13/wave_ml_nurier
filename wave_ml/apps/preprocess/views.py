@@ -570,7 +570,7 @@ def process_apply(request):
         result = {}
         if process == 'replace':
             process_name = dataChecking.get_process_name(process)
-            result['name'] = f"{process_name}:{replace_input}"
+            result['name'] = f"{process_name}:{work_input}:{replace_input}"
         else:
             result['name'] = dataChecking.get_process_name(process)
         return JsonResponse(result)
@@ -585,14 +585,18 @@ def process_remove(request):
     select_column = request.POST.get('column')
     process = request.POST.get('process')
     work = request.POST.get('work', '')
+    beforeData = request.POST.get('beforeData', '')
     replace_input = request.POST.get('replace_input', '')
+
+    print(beforeData)
+    print(replace_input)
 
     df = dataChecking.json_to_df(df)
     df_apply = df.copy()
 
     # 적용되었던 작업 삭제
     if process == "replace":
-        Process.objects.filter(mlmodel_id=mlmodel_id, column_name=select_column, process_type=process).delete()
+        Process.objects.filter(mlmodel_id=mlmodel_id, column_name=select_column, process_type=process, input_value=beforeData).delete()
     elif process == "dummy":
         Process.objects.filter(mlmodel_id=mlmodel_id, column_name=select_column, process_type=process).delete()
     elif process == "delete":

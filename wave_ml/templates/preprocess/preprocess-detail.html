@@ -323,7 +323,7 @@ $(function() {
 
         var name = $("select[name='select_for_process'] option:selected").text();
         if ( process == "replace" ) {
-            name += ":" + replaceInput;
+            name = name + ":" + workInput + ":" + replaceInput;
         }
 
         var apply = true;

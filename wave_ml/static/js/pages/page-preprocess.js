@@ -94,11 +94,13 @@ function remove_item(this_item) {
     var process = $(this_item).data('process');
     var work = $(this_item).data('work');
     var replaceInput = "";
+    var beforeData = "";
 
     if ( process == "replace") {
         var temp = $(this_item).closest("div").text().trim().split(" ");
-        var input = temp[0].split(":")
-        replaceInput = input[1]
+        var input = temp[1].split(":");
+        beforeData = input[1];
+        replaceInput = input[2];
     }
 
     $.ajax({
@@ -108,6 +110,7 @@ function remove_item(this_item) {
             'column': col,
             'process': process,
             'work': work,
+            'beforeData': beforeData,
             'replace_input': replaceInput,
             'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
         },
