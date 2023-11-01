@@ -19,7 +19,7 @@ class ModelLearning(models.Model):
     Provability = models.FloatField(blank=True, null=True)
     Prediction = models.FloatField(blank=True, null=True)
     Favorite = models.BooleanField(default=False)
-    learning_date = models.TextField(blank=True, null=True)
+    learning_date = models.TextField(blank=True, null=True, default='')
 
 
 class MlParameter(models.Model):

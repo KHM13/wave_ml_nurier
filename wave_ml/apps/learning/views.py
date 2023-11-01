@@ -207,7 +207,8 @@ def learning_models(request):
                 model_results = []
                 for index, train_data in enumerate(train_list):
                     test_data = test_list.__getitem__(index)
-                    train_data = dataPreprocessing.set_imbalanced_data(mlsampling.sampling_algorithm, train_data, target)
+                    if mlsampling.sampling_algorithm not in "OriginalData":
+                        train_data = dataPreprocessing.set_imbalanced_data(mlsampling.sampling_algorithm, train_data, target)
                     spark_df.reset_pipline_array(columns)
                     spark_df.set_train_data(spark.createDataFrame(train_data))
                     spark_df.set_test_data(spark.createDataFrame(test_data))
@@ -216,6 +217,10 @@ def learning_models(request):
 
                 sorted_results = sorted(model_results, key=lambda x: x['recall'], reverse=True)
                 best_model: dict = sorted_results.__getitem__(0)
+
+                matrix: list = best_model.get("confusion_matrix")
+                confusion_matrix = {'TP': int(matrix[0][0]), 'TN': int(matrix[1][0]), 'FP': int(matrix[0][1]), 'FN': int(matrix[1][1])}
+
                 ModelLearning.objects.filter(mlmodel_id=mlmodel_id, algorithm=best_model.get("model_name")).update(
                     accuracy=best_model.get("accuracy"),
                     recall=best_model.get("recall"),
@@ -225,14 +230,13 @@ def learning_models(request):
                     mse=best_model.get("mse"),
                     rmse=best_model.get("rmse"),
                     mae=best_model.get("mae"),
-                    confusion_matrix=best_model.get("confusion_matrix"),
+                    confusion_matrix=confusion_matrix,
                     best_params=best_model.get("best_params"),
                     learning_date=util.now()
                 )
 
             best_mlmodel = ModelLearning.objects.filter(mlmodel_id=mlmodel_id).order_by('-recall').values().first()
             MlModel.objects.filter(id=mlmodel_id).update(
-                model_name=best_mlmodel['algorithm'],
                 best_accuracy=best_mlmodel['accuracy'],
                 best_recall=best_mlmodel['recall'],
             )
