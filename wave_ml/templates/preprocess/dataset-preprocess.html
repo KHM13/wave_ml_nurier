@@ -156,7 +156,8 @@
 $(function() {
     init();
     select_customizing();
-    
+    ch = {{ ch }}
+
     $("input[name='col_select']").on("click", function() {
         all_switch_check();
         select_customizing();
@@ -177,6 +178,23 @@ $(function() {
     });
 
     $("#btn_executor").on("click", function() {
+
+        if (ch == 1) {
+            Swal.fire({
+                title:'데이터 보정(타입 변경)이 필요합니다',
+                icon: 'warning',
+                confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                buttonsStyling: false
+            })
+        } else if (ch == 2) {
+            Swal.fire({
+                title:'데이터 보정(결측치)이 필요합니다',
+                icon: 'warning',
+                confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                buttonsStyling: false
+            })
+        }
+
         if ( $("input[name='variable']:checked").length == 0 ) {
             Swal.fire({
                 title:'실행할 변수 선택법 알고리즘을\n하나 이상 선택해주세요',

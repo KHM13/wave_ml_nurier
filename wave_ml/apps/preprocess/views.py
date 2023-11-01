@@ -640,7 +640,10 @@ def feature_select(request):
     target = request.session['target']
     df = dataChecking.json_to_df(df_apply)
     mlmodel_id = request.session['mlmodel_id']
-    
+
+    # 다음 단계로 진입할 수 있는지 여부 확인
+    ch = dataChecking.checkNextStage(df)
+
     # 삭제 변수 제외
     if Process.objects.filter(mlmodel_id=mlmodel_id, process_type="delete").exists():
         deleted_list = Process.objects.filter(mlmodel_id=mlmodel_id, process_type="delete").values()
@@ -665,7 +668,8 @@ def feature_select(request):
             'info': info,
             'select_column': select_column,
             'feature_algorithm': feature_algorithm,
-            'target': target
+            'target': target,
+            'ch' : ch
         }
     )
 
@@ -680,7 +684,7 @@ def execute_feature_select(request):
     # 전체 컬럼 목록 및 사이즈
     columns = dataChecking.get_column_list(df)
     info = {'columns': columns, 'size': len(columns)}
-
+    
     # 실행할 변수선택법 json 으로 보낸 Array 데이터 리스트로 변환
     feature_select = json.loads(request.POST.get('feature_select'))
     # 선택되어있던 변수선택법 알고리즘명 불러오기

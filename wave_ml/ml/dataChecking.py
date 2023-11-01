@@ -181,3 +181,14 @@ def get_process_name(process):
 def dataframe_concat(df1, df2):
     df_merged = pd.concat([df1, df2], ignore_index=True, sort=False)
     return df_merged
+
+def checkNextStage(df : pd.DataFrame):
+    columns = get_column_list(df)
+    ch = 0
+
+    for column in columns:
+        if df[column].dtype == "object":
+            ch = 1
+        if df[column].isnull().sum() > 0:
+            ch = 2
+    return ch
