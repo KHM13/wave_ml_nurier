@@ -1,10 +1,11 @@
 {% load static %}
+            {% if evaluation %}
             <div class="col-xl-12">
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card mb-2">
                             <div class="card-body">
-                                <h5 class="fs-16 fw-semibold mb-0">Random Forest Classifier <span class="badge badge-soft-success">Best Accuracy</span></h5>
+                                <h5 class="fs-16 fw-semibold mb-0">{{ select_algorithm }} <span class="badge badge-soft-success">Best Recall</span></h5>
                             </div>
                         </div>
                     </div>
@@ -23,12 +24,13 @@
                         </div>
 
                         <div class="card mb-2">
-                            <div class="card-header">
-                                <h5 class="card-title fw-semibold mb-0">VALUE 1</h5>
-                            </div>
                             <div class="card-body">
                                 <div class="table-responsive table-card">
-                                    <table class="table table-nowrap mb-0">
+                                    <table class="table table-nowrap mb-0" id="table_for_evaluation">
+                                        <colgroup>
+                                            <col width="40%;"/>
+                                            <col width="60%;"/>
+                                        </colgroup>
                                         <thead class="table-light">
                                             <tr>
                                                 <th>항목</th>
@@ -38,41 +40,54 @@
                                         <tbody>
                                             <tr>
                                                 <td>Accuracy</td>
-                                                <td>0.8021978021978022</td>
+                                                <td>{{ evaluation.accuracy }}</td>
                                             </tr>
                                             <tr>
                                                 <td>Recall</td>
-                                                <td>0.25692897244666996</td>
+                                                <td>{{ evaluation.recall }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Precision</td>
+                                                <td>{{ evaluation.precision }}</td>
                                             </tr>
                                             <tr>
                                                 <td>F1 SCORE</td>
-                                                <td>0.25692897244666996</td>
+                                                <td>{{ evaluation.f1_score }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>R2</td>
+                                                <td>{{ evaluation.r2 }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>MSE</td>
+                                                <td>{{ evaluation.mse }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>RMSE</td>
+                                                <td>{{ evaluation.rmse }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>MAE</td>
+                                                <td>{{ evaluation.mae }}</td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
 
                                 <div class="align-items-center mt-4 pt-2 justify-content-between d-flex">
-                                    <div class="flex-shrink-0">
-                                        <div class="text-muted">
-                                            Showing <span class="fw-semibold">5</span> of <span class="fw-semibold">25</span> Results
-                                        </div>
-                                    </div>
+                                    <div class="flex-shrink-0"></div>
                                     <ul class="pagination pagination-separated pagination-sm mb-0">
-                                        <li class="page-item disabled">
-                                            <a href="#" class="page-link">←</a>
+                                        <li class="page-item">
+                                            <a href="javascript:control_table_evaluation(0);" class="page-link disabled">←</a>
                                         </li>
                                         <li class="page-item">
-                                            <a href="#" class="page-link">1</a>
-                                        </li>
-                                        <li class="page-item active">
-                                            <a href="#" class="page-link">2</a>
+                                            <a href="javascript:control_table_evaluation(0);" class="page-link active">1</a>
                                         </li>
                                         <li class="page-item">
-                                            <a href="#" class="page-link">3</a>
+                                            <a href="javascript:control_table_evaluation(1);" class="page-link">2</a>
                                         </li>
                                         <li class="page-item">
-                                            <a href="#" class="page-link">→</a>
+                                            <a href="javascript:control_table_evaluation(1);" class="page-link">→</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -88,7 +103,7 @@
 
                                     <div class="card-body">
                                         <div class="table-responsive table-card">
-                                            <table class="table table-bordered table-nowrap mb-0">
+                                            <table class="table table-bordered table-nowrap mb-0" style="text-align: center;">
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th scope="col" colspan="2" rowspan="2" class="backslash"></th>
@@ -103,13 +118,13 @@
                                                     <tr>
                                                         <th rowspan="2">Actual</th>
                                                         <th>Positive</th>
-                                                        <td>1</td>
-                                                        <td>17</td>
+                                                        <td>{{ confusion_matrix.TP }}</td>
+                                                        <td>{{ confusion_matrix.TN }}</td>
                                                     </tr>
                                                     <tr>
                                                         <th>Negative</th>
-                                                        <td>1</td>
-                                                        <td>72</td>
+                                                        <td>{{ confusion_matrix.FP }}</td>
+                                                        <td>{{ confusion_matrix.FN }}</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -144,10 +159,6 @@
                                                     <tr>
                                                         <td>Max depth</td>
                                                         <td>20</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Min samples leaf</td>
-                                                        <td>5</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -232,4 +243,62 @@
                 </div>
             </div>
 
+            {% else %}
+            <div class="col-xl-12">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card mb-2" style="height: 80vh;">
+                            <div class="card-header align-items-center d-flex">
+                                <h4 class="card-title fw-semibold mb-0">Prediction</h4>
+                            </div>
+
+                            <div class="card-body px-2 h-100">
+                                <div class="border border-dashed rounded text-center p-3" style="margin-top:20%; background-color: #ddf2f3; color: #3d5653;">
+                                    <p class="mb-0">평가 분석할 모델이 없습니다. 모델 학습을 먼저 진행해주세요.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+
 <script src="{% static 'js/pages/model-result.init.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    init();
+});
+
+function init() {
+    control_table_evaluation(0);
+}
+
+function control_table_evaluation(n) {
+    if ( n == 0 ) {
+        $("#table_for_evaluation").find("tbody > tr").each(function(idx) {
+            $(this).show();
+            if(idx > 3) {
+                $(this).hide();
+            }
+        });
+        var li = $("ul.pagination").find("li");
+        li.eq(0).addClass("disabled");
+        li.eq(1).addClass("active");
+        li.eq(2).removeClass("active");
+        li.eq(3).removeClass("disabled");
+    } else {
+        $("#table_for_evaluation").find("tbody > tr").each(function(idx) {
+            $(this).hide();
+            if(idx > 3) {
+                $(this).show();
+            }
+        });
+        var li = $("ul.pagination").find("li");
+        li.eq(0).removeClass("disabled");
+        li.eq(1).removeClass("active");
+        li.eq(2).addClass("active");
+        li.eq(3).addClass("disabled");
+    }
+}
+</script>

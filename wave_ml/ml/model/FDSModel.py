@@ -21,7 +21,7 @@ class FDSModel:
 
     def __init__(self, data):
         self.data: SparkDataObject = data
-        self.log: Logger = LoggingHandler(f"{CommonUtil().now_type3()}_output", "a", "ERROR").get_log()
+        self.log: Logger = LoggingHandler(f"{CommonUtil().now_type3()}_output", "a", "DEBUG").get_log()
         self.pipeline_array = self.data.get_pipeline_array()
         self.prediction_bucketizer_size = 0.0
 

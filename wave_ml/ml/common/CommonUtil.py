@@ -13,10 +13,6 @@ class CommonUtil:
     __FASTDATE_TYPE_3 = "%Y%m%d"
     __FASTDATE_TYPE_4 = "%H%M%S"
 
-    def __init__(self):
-        self.logger = LoggingHandler(f"{self.now_type3()}_output", "a", "ERROR")
-        self.logger = self.logger.get_log()
-
     def log_time(self):
         return self.__now(self.__FASTDATE_TYPE_0)
 

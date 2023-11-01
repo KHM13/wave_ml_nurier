@@ -16,10 +16,10 @@
                                 <h5 class="fs-16 fw-semibold">MODEL</h5>
                             </div>
                             <div class="flex-shrink-0">
-                                <a href="javascript:void(0)" class="favourite-btn" role="button">
+                                <a href="#" onclick="show_favorite_list(this);" class="favourite-btn" role="button">
                                     <i class="ri-star-fill fs-18"></i>
                                 </a>
-                                <a href="javascript:void(0)" class="text-muted" role="button">
+                                <a href="#" class="text-muted" role="button">
                                     <i class="bx bx-sort-a-z fs-18"></i>
                                 </a>
                             </div>
@@ -38,7 +38,11 @@
                             <li class="nav-item">
                                 <a class="nav-link d-flex p-3" aria-current="page" href="#">
                                     <div class="flex-shrink-0 me-2">
+                                        {% if model.Favorite == 1 %}
+                                        <button type="button" class="btn p-0 lh-1 favourite-btn active">
+                                        {% else %}
                                         <button type="button" class="btn p-0 lh-1 favourite-btn">
+                                        {% endif %}
                                             <i class="ri-star-fill fs-18"></i>
                                         </button>
                                     </div>
@@ -66,13 +70,50 @@
 
 <script type="text/javascript">
 $(function() {
-    init();
+    $(".model-result-list > .nav-item").find("h5.text-uppercase").on("click", function() {
+        $("a.nav-link.active").removeClass("active");
+        $(this).parents("a.nav-link").addClass("active");
+        show_detail($(this).text().trim());
+    });
 
+    $("button.favourite-btn").on("click", function(e) {
+        var algorithm = $(this).parents("a.nav-link").find("h5.text-uppercase").text().trim();
+        var $button_obj = $(this);
+        var favorite = 1;
+        if ( $button_obj.hasClass("active") ) {
+            favorite = 0;
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '/evaluation/favorite',
+            data: {
+                'algorithm': algorithm,
+                'favorite': favorite,
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+            },
+            success: function(data) {
+                console.log(data);
+                if( data.result == "success" ) {
+                    $button_obj.toggleClass("active");
+                    console.log("success");
+                } else {
+                    Swal.fire({
+                        title:'잠시 후 다시 시도해주세요.',
+                        icon: 'error',
+                        confirmButtonClass: 'btn btn-primary w-xs mt-2',
+                        buttonsStyling: false
+                    })
+                }
+            }
+        });
+    });
+
+    init();
 });
 
 function init() {
-    var algorithm = $(".model-result-list > .nav-item").eq(0).find("h5.text-uppercase").text().trim();
-    show_detail(algorithm);
+    $(".model-result-list > .nav-item").eq(0).find("h5.text-uppercase").click();
 }
 
 function show_detail(algorithm) {
@@ -88,6 +129,24 @@ function show_detail(algorithm) {
             $("#div_for_mlmodel_result_detail").html(data);
         }
     });
+}
+
+function show_favorite_list(favorite_obj) {
+    $(favorite_obj).toggleClass("active");
+
+    if( $(favorite_obj).hasClass("active") ) {
+        $(".model-result-list > .nav-item").each(function() {
+            if ( $(this).find("button.favourite-btn").hasClass("active") ) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    } else {
+        $(".model-result-list > .nav-item").each(function() {
+            $(this).show();
+        });
+    }
 }
 
 </script>
